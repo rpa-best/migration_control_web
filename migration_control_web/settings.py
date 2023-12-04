@@ -96,15 +96,10 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': datetime.timedelta(days=30),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': False,
-
-    # 'ALGORITHM': "RS256",
-    # 'SIGNING_KEY': get_file('./jwtRS256.key'),
-    # 'VERIFYING_KEY': get_file('./jwtRS256.key.pub'),
     'AUTH_HEADER_TYPES': ('Bearer', 'Token',),
     'USER_ID_FIELD': 'username',
     'USER_ID_CLAIM': 'username',
 }
-
 
 ROOT_URLCONF = 'migration_control_web.urls'
 
