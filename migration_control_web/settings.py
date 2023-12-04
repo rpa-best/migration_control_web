@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
+import datetime
 import os
 from pathlib import Path
 from dotenv import load_dotenv
@@ -74,6 +75,8 @@ CORS_ALLOW_METHODS = (
     "PUT",
 )
 
+CLIENT_SIGNING_KEY = 'r9ow+8^)ne0o5d#e$cn(ck2xw04$&w=_$kq-rzg17#5#6ui2lk'
+
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
@@ -87,6 +90,21 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': datetime.timedelta(days=1),
+    'REFRESH_TOKEN_LIFETIME': datetime.timedelta(days=30),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': False,
+
+    # 'ALGORITHM': "RS256",
+    # 'SIGNING_KEY': get_file('./jwtRS256.key'),
+    # 'VERIFYING_KEY': get_file('./jwtRS256.key.pub'),
+    'AUTH_HEADER_TYPES': ('Bearer', 'Token',),
+    'USER_ID_FIELD': 'username',
+    'USER_ID_CLAIM': 'username',
+}
+
 
 ROOT_URLCONF = 'migration_control_web.urls'
 

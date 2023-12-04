@@ -16,7 +16,6 @@ class Organization(models.Model):
     ogrn = models.CharField(max_length=13, blank=True)
     kpp = models.CharField(max_length=20, blank=True)
     owner_id = models.ForeignKey(User, models.CASCADE)
-    owner = models.ForeignKey(User, on_delete=models.CASCADE)
     bank_info_id = models.ForeignKey(BankInfo, models.PROTECT)
     legal_address = models.CharField(max_length=255, blank=True)
     create_at = models.DateTimeField(auto_now=True)
