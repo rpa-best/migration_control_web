@@ -4,6 +4,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from v1_1.common_utils.token import get_token
 from v1_1.models import User
+from v1_1.common_utils.serializers import CharToStorageField
 
 
 class AuthSerializer(serializers.Serializer):
@@ -83,3 +84,14 @@ class AccountCreateSerializer(serializers.ModelSerializer):
         instance.set_password(validated_data['password'])
         instance.save()
         return instance
+
+
+class AccountDetailSerializer(serializers.ModelSerializer):
+    avatar = CharToStorageField(read_only=True, source='image_avatar')
+
+    class Meta:
+        model = User
+        fields = (
+            'username', 'name', 'surname', 'lastname', 'phone', 'birthday',
+            'avatar'
+        )
