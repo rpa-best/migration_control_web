@@ -9,11 +9,9 @@ from v1_1.common_utils.file_paths import UploadPath
 
 
 class User(AbstractBaseUser, PermissionsMixin):
-    email = models.EmailField(_("email address"), unique=True, error_messages={
-        "unique": _("A user with that email already exists."),
-    })
+    email = models.EmailField(blank=True, null=True)
     username = models.EmailField(max_length=150, unique=True)
-    password = models.CharField(max_length=20)
+    password = models.CharField(max_length=150)
     phone = models.CharField(max_length=28, unique=True, blank=True, null=True,
                              default=None)
     name = models.CharField(max_length=150, blank=True, null=True)
@@ -44,7 +42,7 @@ class UserOutstandingToken(OutstandingToken):
     ip_address = models.GenericIPAddressField(blank=True, null=True)
     mac_address = models.CharField(max_length=128, blank=True, null=True)
     user_agent = models.TextField(blank=True, null=True)
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True, to_field='username')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True, to_field='username')
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
