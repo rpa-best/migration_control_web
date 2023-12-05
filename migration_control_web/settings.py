@@ -89,6 +89,7 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    # 'DEFAULT_SCHEMA_CLASS': 'v1_1.common_utils.swagger_schema.CustomAutoSchema',
 }
 
 SIMPLE_JWT = {
@@ -101,12 +102,21 @@ SIMPLE_JWT = {
     'USER_ID_CLAIM': 'username',
 }
 
+SPECTACULAR_ACCOUNT_SETTINGS = {
+    'TITLE': 'Migration control Account',
+    'DESCRIPTION': 'Migration control Account',
+    'VERSION': '1.1',
+    'PREPROCESSING_HOOKS': ['v1_1.swagger_content.hooks.preprocessing_filter_account'],
+    'COMPONENT_SPLIT_REQUEST': True,
+    # OTHER SETTINGS
+}
+
 ROOT_URLCONF = 'migration_control_web.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

@@ -21,6 +21,7 @@ from v1_1.serializers.account import AccountCreateSerializer, AuthSerializer
 from ..swagger_content import account
 
 
+@account.auth
 class AuthView(CreateAPIView):
     serializer_class = AuthSerializer
     authentication_classes = ()
