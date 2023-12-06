@@ -4,7 +4,6 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from v1_1.common_utils.token import get_token
 from v1_1.models import User
-from v1_1.common_utils.serializers import CharToStorageField
 
 
 class AuthSerializer(serializers.Serializer):
@@ -86,12 +85,58 @@ class AccountCreateSerializer(serializers.ModelSerializer):
         return instance
 
 
-class AccountDetailSerializer(serializers.ModelSerializer):
-    avatar = CharToStorageField(read_only=True, source='image_avatar')
+class AccountPatchSerializer(serializers.ModelSerializer):
+    avatar = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = (
-            'username', 'name', 'surname', 'lastname', 'phone', 'birthday',
-            'avatar'
+            'username',
+            'name',
+            'surname',
+            'lastname',
+            'phone',
+            'avatar',
+            'birthday',
         )
+        read_only_fields = ('username',)
+        extra_kwargs = {
+            'lang': {'write_only': True},
+        }
+
+    def update(self, instance, validated_data):
+        updated_instance = super(AccountPatchSerializer, self).update(instance, validated_data)
+        return updated_instance
+
+    def get_avatar(self, instance):
+        request = self.context.get('request')
+        if instance.avatar:
+            # Getting the path to the image
+            image_path = instance.avatar.url
+            # Building a complete absolute path to the image
+            return request.build_absolute_uri(image_path)
+        else:
+            return None
+
+
+class AccountDetailSerializer(serializers.ModelSerializer):
+    avatar = serializers.SerializerMethodField()
+
+    def get_avatar(self, obj):
+        if obj.avatar:
+            return self.context['request'].build_absolute_uri(obj.avatar.url)
+        return None
+
+    class Meta:
+        model = User
+        fields = (
+            'username', 'name', 'surname', 'lastname', 'phone', 'avatar', 'birthday'
+        )
+
+
+class UserAvatarsSerializer(serializers.ModelSerializer):
+    """ User's avatars list serializer. """
+
+    class Meta:
+        model = User
+        fields = ('avatar',)

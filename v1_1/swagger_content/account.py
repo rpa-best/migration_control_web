@@ -32,3 +32,16 @@ create = extend_schema_view(
         }
     )
 )
+
+
+account = extend_schema_view(
+    get=extend_schema(
+        tags=['account']
+    ),
+    patch=extend_schema(
+        tags=['account']
+    ),
+    put=extend_schema(
+        tags=['account']
+    )
+)

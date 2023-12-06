@@ -1,23 +1,14 @@
-# from rest_framework import status
-# from rest_framework.generics import CreateAPIView, GenericAPIView, RetrieveUpdateAPIView
-# from rest_framework.response import Response
-# from v1_1.models.user import User
-# from v1_1.serializers.account import AuthSerializer, AccountCreateSerializer
-# from v1_1.common_utils.token import get_token
-# from django.db.transaction import atomic
-# from ..swagger_content import account
+import os
 
-from rest_framework import status
+from rest_framework import status, generics
 from rest_framework.generics import CreateAPIView, GenericAPIView, RetrieveUpdateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
-from rest_framework_simplejwt.views import TokenRefreshView
 from django.db.transaction import atomic
 from v1_1.common_utils.token import get_token
 from v1_1.models.user import User
-from v1_1.serializers.account import AccountCreateSerializer, AuthSerializer
-
+from v1_1.serializers.account import AccountCreateSerializer, AuthSerializer, AccountDetailSerializer, \
+    AccountPatchSerializer, UserAvatarsSerializer
 from ..swagger_content import account
 
 
@@ -26,6 +17,7 @@ class AuthView(CreateAPIView):
     serializer_class = AuthSerializer
     authentication_classes = ()
     permission_classes = ()
+
 
 @account.create
 class AccountCreateAPIView(CreateAPIView):
@@ -51,3 +43,39 @@ class AccountCreateAPIView(CreateAPIView):
             'refresh': str(token),
             'user': serializer.data
         }, status=status.HTTP_201_CREATED, headers=headers)
+
+
+@account.account
+class AccountDetailAPIView(RetrieveUpdateAPIView):
+    queryset = User.objects.all()
+    permission_class = IsAuthenticated
+
+    def get_serializer_class(self):
+        if self.request.method in ['PUT', 'PATCH']:
+            serializer_class = AccountPatchSerializer
+        else:
+            serializer_class = AccountDetailSerializer
+        return serializer_class
+
+    def get_object(self):
+        return self.request.user
+
+
+@account.account
+class MyAvatarViewSet(generics.UpdateAPIView):
+    permission_class = IsAuthenticated
+    serializer_class = UserAvatarsSerializer
+
+    def get_object(self):
+        return self.request.user
+
+    def perform_update(self, serializer):
+        # getting the current avatar of the user
+        current_avatar = self.request.user.avatar
+
+        # deleting the previous avatar from the folder
+        if current_avatar:
+            try:
+                os.remove(current_avatar.path)
+            except:
+                pass
