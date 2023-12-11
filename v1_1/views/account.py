@@ -9,7 +9,7 @@ from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from v1_1.common_utils.token import get_token
 from v1_1.models.user import User
 from v1_1.serializers.account import AccountCreateSerializer, AuthSerializer, AccountDetailSerializer, \
-    AccountPatchSerializer, UserAvatarsSerializer
+    AccountPatchSerializer, UserAvatarsSerializer, ChangePasswordSerializer
 from ..common_utils.serializers import TokenRefreshSerializer
 from ..swagger_content import account
 
@@ -63,6 +63,7 @@ class RefreshView(TokenRefreshView):
 
         return Response(serializer.validated_data, status=status.HTTP_200_OK)
 
+
 @account.account
 class AccountDetailAPIView(RetrieveUpdateAPIView):
     queryset = User.objects.all()
@@ -77,6 +78,20 @@ class AccountDetailAPIView(RetrieveUpdateAPIView):
 
     def get_object(self):
         return self.request.user
+
+
+@account.change_password
+class ChangePasswordView(CreateAPIView):
+    serializer_class = ChangePasswordSerializer
+    permission_classes = ()
+    authentication_classes = ()
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
 
 
 @account.account

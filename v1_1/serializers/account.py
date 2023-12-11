@@ -135,6 +135,36 @@ class AccountDetailSerializer(serializers.ModelSerializer):
         )
 
 
+class ChangePasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField(write_only=True)
+    password1 = serializers.CharField(write_only=True)
+    password2 = serializers.CharField(write_only=True)
+    message = serializers.JSONField(read_only=True)
+
+    def validate_email(self, value):
+        if not User.objects.filter(username=value).exists():
+            raise ValidationError({"email": "Не привязана почта к пользователю"})
+        return value
+
+    def validate_password1(self, value):
+        try:
+            password_validation.validate_password(value)
+        except ValidationError as e:
+            raise ValidationError({'password': e})
+        return value
+
+    def validate(self, attrs):
+        if not attrs['password1'] == attrs['password2']:
+            raise ValidationError({'message': 'пароли не совпадают'})
+        return attrs
+
+    def create(self, validated_data):
+        user = User.objects.get(username=validated_data.get("email"))
+        user.set_password(validated_data["password1"])
+        user.save()
+        return {"message": "пароль изменён"}
+
+
 class UserAvatarsSerializer(serializers.ModelSerializer):
     """ User's avatars list serializer. """
 

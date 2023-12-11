@@ -52,3 +52,9 @@ account = extend_schema_view(
         tags=['account']
     )
 )
+
+change_password = extend_schema_view(
+    post=extend_schema(
+        tags=['account'],
+    )
+)
