@@ -34,6 +34,13 @@ create = extend_schema_view(
 )
 
 
+refresh = extend_schema_view(
+    post=extend_schema(
+        tags=['sign in and sign up']
+    )
+)
+
+
 account = extend_schema_view(
     get=extend_schema(
         tags=['account']

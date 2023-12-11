@@ -1,15 +1,11 @@
 from django.urls import include, path
-# from rest_framework.routers import DefaultRouter
-from v1_1.views.account import AuthView, AccountCreateAPIView, AccountDetailAPIView, MyAvatarViewSet
-
-# router = DefaultRouter()
-# router.register('avatar', MyAvatarViewSet, basename='avatars')
+from v1_1.views.account import AuthView, AccountCreateAPIView, AccountDetailAPIView, MyAvatarViewSet, RefreshView
 
 
 urlpatterns = [
-    # path('', include(router.urls)),
     path('auth/', AuthView.as_view()),
     path('create/', AccountCreateAPIView.as_view()),
+    path('refresh-token/', RefreshView.as_view()),
     # Account
     path('me/', AccountDetailAPIView.as_view()),
     path('avatar/', MyAvatarViewSet.as_view()),

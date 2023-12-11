@@ -1,14 +1,16 @@
 import os
-
 from rest_framework import status, generics
 from rest_framework.generics import CreateAPIView, GenericAPIView, RetrieveUpdateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.db.transaction import atomic
+from rest_framework_simplejwt.views import TokenRefreshView
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from v1_1.common_utils.token import get_token
 from v1_1.models.user import User
 from v1_1.serializers.account import AccountCreateSerializer, AuthSerializer, AccountDetailSerializer, \
     AccountPatchSerializer, UserAvatarsSerializer
+from ..common_utils.serializers import TokenRefreshSerializer
 from ..swagger_content import account
 
 
@@ -45,6 +47,22 @@ class AccountCreateAPIView(CreateAPIView):
         }, status=status.HTTP_201_CREATED, headers=headers)
 
 
+@account.refresh
+class RefreshView(TokenRefreshView):
+    serializer_class = TokenRefreshSerializer
+    permission_classes = ()
+    authentication_classes = ()
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data, context=self.get_serializer_context())
+
+        try:
+            serializer.is_valid(raise_exception=True)
+        except TokenError as e:
+            raise InvalidToken(e.args[0])
+
+        return Response(serializer.validated_data, status=status.HTTP_200_OK)
+
 @account.account
 class AccountDetailAPIView(RetrieveUpdateAPIView):
     queryset = User.objects.all()
@@ -67,6 +85,7 @@ class MyAvatarViewSet(generics.UpdateAPIView):
     serializer_class = UserAvatarsSerializer
 
     def get_object(self):
+        print(self.request.user.avatar)
         return self.request.user
 
     def perform_update(self, serializer):
@@ -76,6 +95,10 @@ class MyAvatarViewSet(generics.UpdateAPIView):
         # deleting the previous avatar from the folder
         if current_avatar:
             try:
+                print(current_avatar.path)
                 os.remove(current_avatar.path)
             except:
                 pass
+
+        # saving a new avatar
+        serializer.save()

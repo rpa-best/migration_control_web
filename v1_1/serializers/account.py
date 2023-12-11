@@ -80,6 +80,7 @@ class AccountCreateSerializer(serializers.ModelSerializer):
             raise ValidationError({'verified_password': 'passwords_do_not_match'})
         validated_data.pop('verified_password')
         instance: User = super(AccountCreateSerializer, self).create(validated_data)
+        # the password hash is set instead of the password itself (for security)
         instance.set_password(validated_data['password'])
         instance.save()
         return instance
