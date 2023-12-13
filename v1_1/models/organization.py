@@ -1,6 +1,5 @@
 from django.db import models
 from v1_1.models.user import User
-# from v1_1.common_utils.managers import get_manager
 
 
 class BankInfo(models.Model):
@@ -10,14 +9,14 @@ class BankInfo(models.Model):
 
 
 class Organization(models.Model):
-    ORGANIZATIONAL_FORMS = [
-        (1, 'ООО'),
-        (2, 'ОАО'),
-        (3, 'НАО'),
-        (4, 'НАО'),
+    ORGANIZATIONAL_FORM = [
+        ('1', 'ООО'),
+        ('2', 'ОАО'),
+        ('3', 'НАО'),
+        ('4', 'НАО'),
     ]
 
-    organizational_form = models.IntegerField(choices=ORGANIZATIONAL_FORMS, default='1', max_length=1)
+    organizational_form = models.CharField(choices=ORGANIZATIONAL_FORM, default='1', max_length=1)
     name = models.CharField(max_length=255, blank=True)
     inn = models.CharField(max_length=20, unique=True)
     kpp = models.CharField(max_length=9, unique=True)

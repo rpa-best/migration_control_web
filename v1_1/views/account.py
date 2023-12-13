@@ -36,7 +36,6 @@ class AccountCreateAPIView(CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
-        print(serializer.data)
         headers = self.get_success_headers(serializer.data)
         # Return the access token for this request and the created user object.
         token = get_token(request, serializer.instance)
@@ -110,7 +109,6 @@ class MyAvatarViewSet(generics.UpdateAPIView):
         # deleting the previous avatar from the folder
         if current_avatar:
             try:
-                print(current_avatar.path)
                 os.remove(current_avatar.path)
             except:
                 pass
