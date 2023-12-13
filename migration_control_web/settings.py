@@ -89,7 +89,6 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-    # 'DEFAULT_SCHEMA_CLASS': 'v1_1.common_utils.swagger_schema.CustomAutoSchema',
 }
 
 SIMPLE_JWT = {
@@ -107,8 +106,21 @@ SPECTACULAR_ACCOUNT_SETTINGS = {
     'DESCRIPTION': 'Migration control Account',
     'VERSION': '1.1',
     'PREPROCESSING_HOOKS': ['v1_1.swagger_content.hooks.preprocessing_filter_account'],
+    'SWAGGER_UI_SETTINGS': {
+        'filter': True,
+    },
     'COMPONENT_SPLIT_REQUEST': True,
-    # OTHER SETTINGS
+}
+
+SPECTACULAR_ORGANIZATION_SETTINGS = {
+    'TITLE': 'Migration control Organization',
+    'DESCRIPTION': 'Migration control Organization',
+    'VERSION': '1.1',
+    'PREPROCESSING_HOOKS': ['v1_1.swagger_content.hooks.preprocessing_filter_organization'],
+    'SWAGGER_UI_SETTINGS': {
+        'filter': True,
+    },
+    'COMPONENT_SPLIT_REQUEST': True,
 }
 
 ROOT_URLCONF = 'migration_control_web.urls'

@@ -7,6 +7,7 @@ from rest_framework.response import Response
 
 SERVIES_SCHEMA_URLS = {
     'Migration control Account': '/api/v1.1/schema-account/',
+    'Migration control Organization': '/api/v1.1/schema-organization/',
 }
 
 

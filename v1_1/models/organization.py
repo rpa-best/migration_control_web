@@ -1,5 +1,6 @@
 from django.db import models
 from v1_1.models.user import User
+# from v1_1.common_utils.managers import get_manager
 
 
 class BankInfo(models.Model):
@@ -9,17 +10,30 @@ class BankInfo(models.Model):
 
 
 class Organization(models.Model):
+    ORGANIZATIONAL_FORMS = [
+        (1, 'ООО'),
+        (2, 'ОАО'),
+        (3, 'НАО'),
+        (4, 'НАО'),
+    ]
+
+    organizational_form = models.IntegerField(choices=ORGANIZATIONAL_FORMS, default='1', max_length=1)
     name = models.CharField(max_length=255, blank=True)
-    organizational_form = models.CharField(max_length=255, blank=True)
     inn = models.CharField(max_length=20, unique=True)
     kpp = models.CharField(max_length=9, unique=True)
     ogrn = models.CharField(max_length=13, blank=True)
-    kpp = models.CharField(max_length=20, blank=True)
-    owner_id = models.ForeignKey(User, models.CASCADE)
-    bank_info_id = models.ForeignKey(BankInfo, models.PROTECT)
+    name_director = models.CharField(max_length=150, blank=True, null=True)
+    surname_director = models.CharField(max_length=150, blank=True, null=True)
+    lastname_director = models.CharField(max_length=150, blank=True, null=True)
+    owner_id = models.ForeignKey(User, models.CASCADE, blank=True, null=True)
+    bank_info_id = models.ForeignKey(BankInfo, models.PROTECT, blank=True, null=True)
     legal_address = models.CharField(max_length=255, blank=True)
+    actual_address = models.CharField(max_length=255, blank=True)
     create_at = models.DateTimeField(auto_now=True)
     balance = models.FloatField(default=0)
+
+    def __str__(self):
+        return f"{self.get_organizational_form_display()}"
 
 
 class OrganizationUser(models.Model):
@@ -34,3 +48,8 @@ class OrganizationUser(models.Model):
 
     class Meta:
         unique_together = ('user', 'organization')
+
+
+class MigrationAddress(models.Model):
+    organization_id = models.ForeignKey(Organization, models.CASCADE)
+    name = models.CharField(max_length=255, blank=True)

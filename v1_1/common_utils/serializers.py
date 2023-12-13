@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from rest_framework_simplejwt.settings import api_settings
-
 from v1_1.common_utils.file_paths import get_absolute_media_url_from_field
 from v1_1.common_utils.token import get_token_class
 
