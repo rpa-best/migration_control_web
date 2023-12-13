@@ -19,7 +19,7 @@ class SpectacularSwaggerView(_SpectacularSwaggerView):
         return Response(
             data={
                 'services': SERVIES_SCHEMA_URLS.keys(),
-                'title': 'Swagger Keyman24',
+                'title': 'Swagger Migration control',
                 'dist': self._swagger_ui_dist(),
                 'favicon_href': self._swagger_ui_favicon(),
                 'schema_url': self._get_schema_url(request),

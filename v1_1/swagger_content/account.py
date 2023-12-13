@@ -5,7 +5,7 @@ from v1_1.serializers.account import AccountCreateSerializer
 
 auth = extend_schema_view(
     post=extend_schema(
-        tags=['sign in and sign up'],
+        tags=['Sign in and sign up'],
         request=inline_serializer('auth_request', {
             'username': serializers.CharField(),
             'password': serializers.CharField()
@@ -22,7 +22,7 @@ auth = extend_schema_view(
 
 create = extend_schema_view(
     post=extend_schema(
-        tags=['sign in and sign up'],
+        tags=['Sign in and sign up'],
         responses={
             '200': inline_serializer('user_create_response', {
                 'access': serializers.CharField(),
@@ -36,25 +36,25 @@ create = extend_schema_view(
 
 refresh = extend_schema_view(
     post=extend_schema(
-        tags=['sign in and sign up']
+        tags=['Sign in and sign up']
     )
 )
 
 
 account = extend_schema_view(
     get=extend_schema(
-        tags=['account']
+        tags=['Account']
     ),
     patch=extend_schema(
-        tags=['account']
+        tags=['Account']
     ),
     put=extend_schema(
-        tags=['account']
+        tags=['Account']
     )
 )
 
 change_password = extend_schema_view(
     post=extend_schema(
-        tags=['account'],
+        tags=['Account'],
     )
 )

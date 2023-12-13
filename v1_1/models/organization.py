@@ -41,7 +41,7 @@ class OrganizationUser(models.Model):
         ('admin', 'Administrator'),
         ('observer', 'Observer'),
     )
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, to_field='username')
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
     role = models.CharField(max_length=20, choices=USER_ROLE_CHOICES)
 
@@ -50,5 +50,5 @@ class OrganizationUser(models.Model):
 
 
 class MigrationAddress(models.Model):
-    organization_id = models.ForeignKey(Organization, models.CASCADE)
+    organization = models.ForeignKey(Organization, models.CASCADE)
     name = models.CharField(max_length=255, blank=True)
