@@ -28,16 +28,16 @@ class AccountCreateAPIView(CreateAPIView):
     authentication_classes = ()
     permission_classes = ()
 
-    # When using the @ atomic decorator, if an exception occurs inside a block of code, all changes made to the database
-    # inside that block are rolled back (i.e.undone) to keep the database in a consistent state.If no exception occurs,
-    # all changes are applied and saved to the database.
+    # При использовании декоратора @atomic, если внутри блока кода возникает исключение, все изменения, внесенные
+    # в базу данных внутри этого блока, откатываются (т.е. отменяются), чтобы сохранить базу данных в согласованном
+    # состоянии. Если исключение не возникает, все изменения применяются и сохраняются в базе данных
     @atomic
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
-        # Return the access token for this request and the created user object.
+        # Возвращает токен доступа для этого запроса и созданный пользовательский объект.
         token = get_token(request, serializer.instance)
         return Response({
             'access': str(token.access_token),
@@ -103,15 +103,15 @@ class MyAvatarViewSet(generics.UpdateAPIView):
         return self.request.user
 
     def perform_update(self, serializer):
-        # getting the current avatar of the user
+        # получение текущего аватара пользователя
         current_avatar = self.request.user.avatar
 
-        # deleting the previous avatar from the folder
+        # удаление предыдущего аватара из папки
         if current_avatar:
             try:
                 os.remove(current_avatar.path)
             except:
                 pass
 
-        # saving a new avatar
+        # сохранение нового аватара
         serializer.save()

@@ -5,7 +5,7 @@ from django.core.files.storage import default_storage
 from django.db.models import F
 
 
-# A class that allows to generate a path to save a file
+# Класс, позволяющий сгенерировать путь для сохранения файла
 class UploadPath:
 
     def __init__(self, folder_name, file_name_from='pk', hashing=True):
@@ -14,7 +14,7 @@ class UploadPath:
         self.hashing = hashing
         super(UploadPath, self).__init__()
 
-    # The method generates a path to save the file using the passed arguments
+    # Метод генерирует путь для сохранения файла, используя переданные аргументы
     def __call__(self, instance, filename):
         ext = Path(filename).suffix
         filename = uuid.uuid4()
@@ -24,17 +24,16 @@ class UploadPath:
             folder_name = getattr(instance, self.folder_name.name)
         return str(Path(instance.__class__.__name__, folder_name, filename))
 
-    # The method allows you to serialize an object of the UploadPath class for use in migrations.
+    # Метод позволяет сериализовать объект класса UploadPath для использования в миграциях.
     def deconstruct(self):
         return f'{self.__module__}.{self.__class__.__name__}', [self.folder_name], {}
 
 
-# The function takes a relative URL and returns an absolute URL to access the file. It also replaces the https protocol
-# with the value of the AWS_S3_ENDPOINT_URL environment variable, to get the correct URL to access the file
-# on the S3 server.
+# Функция принимает относительный URL и возвращает абсолютный URL для доступа к файлу. Она также заменяет протокол https
+# значением переменной окружения AWS_S3_ENDPOINT_URL, чтобы получить правильный URL для доступа к файлу на сервере S3.
 def get_absolute_media_url(releted_url):
     return f"{os.getenv('AWS_S3_ENDPOINT_URL')}/{releted_url}"
 
-# The function takes the ImageField model field and returns the absolute URL for accessing the file,
+# Функция принимает поле модели ImageField и возвращает абсолютный URL-адрес для доступа к файлу
 def get_absolute_media_url_from_field(field):
     return default_storage.url(field)

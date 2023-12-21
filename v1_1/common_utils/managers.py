@@ -33,6 +33,7 @@ def _find_foreign_field_name(from_model, to_field_model):
     assert False, f"Invalid  '{from_model.__name__}' model. " \
                   f"Can not find foregin field to {to_field_model.__name__}"
 
+
 def get_model(model):
     return apps.get_model('v1_1', model) if isinstance(model, str) else model
 

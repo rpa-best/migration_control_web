@@ -9,13 +9,13 @@ from v1_1.common_utils import get_client_ip
 from v1_1.models.user import UserOutstandingToken
 
 
-# This code is responsible for generating tokens for authenticating users in the application. It uses \
-# the rest_framework_simplejwt library to work with JWT tokens and the UserOutstandingToken model to store \
-# information about issued tokens.
+# Этот код отвечает за генерацию токенов для аутентификации пользователей в приложении. Он использует \
+# библиотеку rest_framework_simplejwt для работы с токенами JWT и модель UserOutstandingToken для хранения \
+# информация о выпущенных токенах.
 
 class RefreshToken(_RefreshToken):
 
-    # The method generates a token for a specific user.
+    # Метод генерирует токен для конкретного пользователя.
     @classmethod
     def for_user(cls, user, request=None):
         user_id = getattr(user, api_settings.USER_ID_FIELD)
@@ -29,7 +29,7 @@ class RefreshToken(_RefreshToken):
         user_ip = None
         user_agent = None
         if request:
-            # Getting information about the request: IP address, user - agent and device id.
+            # Получение информации о запросе: IP-адрес, пользовательский агент и идентификатор устройства
             device_id = int(request.META.get('HTTP_X_DEVICE_ID', 0))
             user_ip = get_client_ip(request)
             user_agent = request.META['HTTP_USER_AGENT']
@@ -49,7 +49,7 @@ class RefreshToken(_RefreshToken):
         return token
 
 
-# A class for generating tokens for client authentication, so it defines parameters for signing and verifying the token.
+# Класс для генерации токенов для аутентификации клиента, поэтому он определяет параметры для подписи и проверки токена
 class ClientRefreshToken(RefreshToken):
     _token_backend = TokenBackend(
         api_settings.ALGORITHM,
@@ -63,7 +63,8 @@ class ClientRefreshToken(RefreshToken):
     )
 
 
-# The function is used to determine the token class depending on the type of authentication (regular or client-side).
+# Функция используется для определения класса токена в зависимости от типа аутентификации
+# (обычная или на стороне клиента).
 def get_token_class(request):
     try:
         JWTAuthentication().authenticate(request)
@@ -71,7 +72,7 @@ def get_token_class(request):
     except InvalidToken:
         return RefreshToken
 
-# The function is used to generate a token for a specific user and request.
+# Функция используется для генерации токена для конкретного пользователя и запроса.
 def get_token(request, user):
     return get_token_class(request).for_user(user, request)
 

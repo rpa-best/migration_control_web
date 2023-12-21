@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from v1_1.models.organization import Organization, MigrationAddress, OrganizationUser
+from v1_1.models.subscription import Subscription
 from v1_1.models.user import User
 
 
@@ -26,12 +27,24 @@ class OrganizationCreateSerializer(serializers.ModelSerializer):
         )
 
     def create(self, validated_data):
+        user = self.context['request'].user
+        # Проверка на наличие подписки
+        subscription = Subscription.objects.filter(user=user, status='active').first()
+        if not subscription:
+            raise ValidationError({'message': 'У вас нет активной подписки.'})
+
+        # Проверка на превышение лимита по количеству создаваемых организаций
+        max_organizations = subscription.service_rate.number_companies
+        current_organizations = Organization.objects.filter(owner=user).count()
+        if current_organizations >= max_organizations:
+            raise ValidationError({'message': 'Вы достигли максимального предела для создания организаций.'})
+
         instance: Organization = super(OrganizationCreateSerializer, self).create(validated_data)
         instance.owner_id = self.context['request'].user
         instance.save()
         User.objects.filter(id=self.context['request'].user.id).update(is_owner=True)
-        # When creating an organization, a user with a subscription is recorded in the list of users of the
-        #organization with the rights of the owner
+        # При создании организации пользователь с подпиской заносится в список пользователей организации с правами
+        # владельца
         OrganizationUser.objects.create(
             user=self.context['request'].user,
             organization=instance,
@@ -58,8 +71,8 @@ class OrganizationPutAndPatchSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         user = self.context['request'].user.username
-        #Only an employee of this organization can delete an organization, taking into account that he has the rights\
-        # to do so
+        # Только сотрудник этой организации может удалить организацию, принимая во внимание, что у него есть права\
+        # сделать это
         if not Organization.objects.filter(organizationuser__user=user).exists():
             raise ValidationError({'message': 'Вы не являетесь сотрудником этой организации'})
         else:
@@ -81,7 +94,7 @@ class MigrationAddressSerializer(serializers.ModelSerializer):
 
     def validate_organization(self, value):
         user = self.context['request'].user.username
-        #Can add a migration address only to the organization where the user works.
+        # Можно добавить адрес миграции только для организации, в которой работает пользователь.
         if not OrganizationUser.objects.filter(organization=value, user_id=user).exists():
             raise ValidationError({'message': 'Вы не являетесь сотрудником этой организации'})
         else:

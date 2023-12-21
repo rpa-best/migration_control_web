@@ -24,7 +24,7 @@ class Organization(models.Model):
     name_director = models.CharField(max_length=150, blank=True, null=True)
     surname_director = models.CharField(max_length=150, blank=True, null=True)
     lastname_director = models.CharField(max_length=150, blank=True, null=True)
-    owner_id = models.ForeignKey(User, models.CASCADE, blank=True, null=True)
+    owner = models.ForeignKey(User, models.CASCADE, blank=True, null=True)
     bank_info_id = models.ForeignKey(BankInfo, models.PROTECT, blank=True, null=True)
     legal_address = models.CharField(max_length=255, blank=True)
     actual_address = models.CharField(max_length=255, blank=True)

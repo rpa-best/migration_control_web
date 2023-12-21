@@ -4,7 +4,7 @@ from v1_1.common_utils.file_paths import get_absolute_media_url_from_field
 from v1_1.common_utils.token import get_token_class
 
 
-# The class allows you to convert the value of a field into a representation.
+# Класс позволяет преобразовать значение поля в представление.
 class CharToStorageField(serializers.CharField):
 
     def to_representation(self, value):
@@ -30,11 +30,11 @@ class TokenRefreshSerializer(serializers.Serializer):
         if api_settings.ROTATE_REFRESH_TOKENS:
             if api_settings.BLACKLIST_AFTER_ROTATION:
                 try:
-                    # Attempt to blacklist the given refresh token
+                    # Попытка занести данный токен обновления в черный список
                     refresh.blacklist()
                 except AttributeError:
-                    # If blacklist app not installed, `blacklist` method will
-                    # not be present
+                    # Если приложение blacklist не установлено, метод `черный список` будет
+                    # отсутствовать
                     pass
 
             refresh.set_jti()

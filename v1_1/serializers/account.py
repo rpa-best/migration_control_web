@@ -49,6 +49,7 @@ class AccountCreateSerializer(serializers.ModelSerializer):
     name = serializers.CharField(required=True)
     surname = serializers.CharField(required=True)
     lastname = serializers.CharField()
+    phone = serializers.CharField(write_only=True)
 
     class Meta:
         model = User
@@ -57,8 +58,9 @@ class AccountCreateSerializer(serializers.ModelSerializer):
             'password',
             'verified_password',
             'name',
-            "surname",
-            'lastname'
+            'surname',
+            'lastname',
+            'phone'
         )
 
     @staticmethod
@@ -80,7 +82,7 @@ class AccountCreateSerializer(serializers.ModelSerializer):
             raise ValidationError({'verified_password': 'passwords_do_not_match'})
         validated_data.pop('verified_password')
         instance: User = super(AccountCreateSerializer, self).create(validated_data)
-        # the password hash is set instead of the password itself (for security)
+        # хэш пароля устанавливается вместо самого пароля (для безопасности)
         instance.set_password(validated_data['password'])
         instance.save()
         return instance
@@ -112,9 +114,9 @@ class AccountPatchSerializer(serializers.ModelSerializer):
     def get_avatar(self, instance):
         request = self.context.get('request')
         if instance.avatar:
-            # Getting the path to the image
+            # Получение пути к изображению
             image_path = instance.avatar.url
-            # Building a complete absolute path to the image
+            # Построение полного абсолютного пути к изображению
             return request.build_absolute_uri(image_path)
         else:
             return None
@@ -166,8 +168,6 @@ class ChangePasswordSerializer(serializers.Serializer):
 
 
 class UserAvatarsSerializer(serializers.ModelSerializer):
-    """ User's avatars list serializer. """
-
     class Meta:
         model = User
         fields = ('avatar',)
