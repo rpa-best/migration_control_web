@@ -19,6 +19,8 @@ class OrganizationCreateSerializer(serializers.ModelSerializer):
         fields = (
             'organizational_form',
             'name',
+            'inn',
+            'kpp',
             'name_director',
             "surname_director",
             'lastname_director',

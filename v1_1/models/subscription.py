@@ -15,12 +15,12 @@ class ServiceRate(models.Model):
 
 class Subscription(models.Model):
     STATUS = (
-        ("process", "Process"),
-        ("active", "Active"),
-        ("not_active", "No Active"),
-        ("pause", "Pause")
+        ('process', 'Process'),
+        ('active', 'Active'),
+        ('not_active', 'No Active'),
+        ('pause', 'Pause')
     )
 
-    status = models.CharField(max_length=50, default="process", choices=STATUS)
+    status = models.CharField(max_length=50, default='process', choices=STATUS)
     user = models.ForeignKey('User', models.CASCADE, to_field='username')
     service_rate = models.ForeignKey(ServiceRate, models.CASCADE, to_field='model_name')
