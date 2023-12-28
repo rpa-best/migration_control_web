@@ -7,9 +7,9 @@ from django.db.transaction import atomic
 from rest_framework_simplejwt.views import TokenRefreshView
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from v1_1.common_utils.token import get_token
-from v1_1.models.user import User
+from v1_1.models.user import User, UserPvc
 from v1_1.serializers.account import AccountCreateSerializer, AuthSerializer, AccountDetailSerializer, \
-    AccountPatchSerializer, UserAvatarsSerializer, ChangePasswordSerializer
+    AccountPatchSerializer, UserAvatarsSerializer, ChangePasswordSerializer, CheckEmailSerializer
 from ..common_utils.serializers import TokenRefreshSerializer
 from ..swagger_content import account
 
@@ -91,6 +91,25 @@ class ChangePasswordView(CreateAPIView):
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
+
+@account.email_check
+class CheckEmailView(CreateAPIView):
+    authentication_classes = ()
+    permission_classes = ()
+    serializer_class = CheckEmailSerializer
+
+    def create(self, request, *args, **kwargs):
+        # Получение значения email из запроса
+        email = request.data.get('email')
+        # Поиск последнего экземпляра UserPvc с указанным email
+        instance = UserPvc.objects.filter(email=email).last()
+        # Создание сериализатора на основе данных из запроса, если экземпляр не найден,
+        # или на основе найденного экземпляра, если он есть
+        serializer = self.get_serializer(data=request.data) if not instance else self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        # Возвращение ответа с сообщением об успешной отправке кода
+        return Response({'message': 'PVC sended'})
 
 
 @account.account

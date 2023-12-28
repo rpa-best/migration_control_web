@@ -4,6 +4,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from v1_1.common_utils.token import get_token
 from v1_1.models import User
+from v1_1.models.user import UserPvc
 
 
 class AuthSerializer(serializers.Serializer):
@@ -50,6 +51,7 @@ class AccountCreateSerializer(serializers.ModelSerializer):
     surname = serializers.CharField(required=True)
     lastname = serializers.CharField()
     phone = serializers.CharField(write_only=True)
+    pvc = serializers.CharField(write_only=True, required=True)
 
     class Meta:
         model = User
@@ -60,13 +62,15 @@ class AccountCreateSerializer(serializers.ModelSerializer):
             'name',
             'surname',
             'lastname',
-            'phone'
+            'phone',
+            'pvc'
         )
+        write_only_fields = ('password', 'verified_password', 'pvc')
 
     @staticmethod
     def validate_username(value):
         if User.objects.filter(username=value).exists():
-            raise ValidationError({'username': 'username_already_has'})
+            raise ValidationError({'username': 'Почта занята другим пользователем'})
         return value
 
     @staticmethod
@@ -77,10 +81,17 @@ class AccountCreateSerializer(serializers.ModelSerializer):
             raise ValidationError({'password': e})
         return value
 
+    def validate(self, data):
+        if not UserPvc.objects.filter(email=data['username'], pvc=data['pvc']).exists():
+            raise ValidationError({'pvc': "Неверный код"})
+        return data
+
     def create(self, validated_data):
+        UserPvc.objects.filter(email=validated_data.get('email'), pvc=validated_data.get('pvc')).delete()
         if validated_data['verified_password'] != validated_data['password']:
             raise ValidationError({'verified_password': 'passwords_do_not_match'})
         validated_data.pop('verified_password')
+        validated_data.pop('pvc')
         instance: User = super(AccountCreateSerializer, self).create(validated_data)
         # хэш пароля устанавливается вместо самого пароля (для безопасности)
         instance.set_password(validated_data['password'])
@@ -138,9 +149,10 @@ class AccountDetailSerializer(serializers.ModelSerializer):
 
 
 class ChangePasswordSerializer(serializers.Serializer):
+    pvc = serializers.CharField(write_only=True)
     email = serializers.EmailField(write_only=True)
-    password1 = serializers.CharField(write_only=True)
-    password2 = serializers.CharField(write_only=True)
+    password = serializers.CharField(write_only=True)
+    verified_password = serializers.CharField(write_only=True)
     message = serializers.JSONField(read_only=True)
 
     def validate_email(self, value):
@@ -148,23 +160,56 @@ class ChangePasswordSerializer(serializers.Serializer):
             raise ValidationError({"email": "Не привязана почта к пользователю"})
         return value
 
-    def validate_password1(self, value):
+    def validate_password(self, value):
         try:
             password_validation.validate_password(value)
         except ValidationError as e:
             raise ValidationError({'password': e})
         return value
 
-    def validate(self, attrs):
-        if not attrs['password1'] == attrs['password2']:
-            raise ValidationError({'message': 'пароли не совпадают'})
-        return attrs
+    def validate(self, data):
+        if not UserPvc.objects.filter(email=data['email'], pvc=data['pvc']).exists():
+            raise ValidationError({'pvc': 'Неверный код'})
+        if not data['password'] == data['verified_password']:
+            raise ValidationError({'password': 'Пароли не совпадают'})
+        return data
 
     def create(self, validated_data):
-        user = User.objects.get(username=validated_data.get("email"))
-        user.set_password(validated_data["password1"])
+        UserPvc.objects.filter(email=validated_data.get('email'), pvc=validated_data.get('pvc')).delete()
+        user = User.objects.get(username=validated_data.get('email'))
+        user.set_password(validated_data['password'])
         user.save()
-        return {"message": "пароль изменён"}
+        return {'message': 'пароль изменён'}
+
+
+class CheckEmailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserPvc
+        fields = ['email']
+
+    def validate_email(self, value):
+        place = self.context['request'].query_params.get('place')
+        place = 'register'
+        if not place:
+            raise ValidationError({'place': 'Не заданы параметры запроса: Выберите один - регистрация, изменения пароля'})
+        if not place in ('register', 'change_password'):
+            raise ValidationError({'place': 'Ошибка в параметрах запроса'})
+        if User.objects.filter(username=value).exists() and place == 'register':
+            raise ValidationError({'email': 'Почта занята другим пользователем'})
+        if not User.objects.filter(username=value).exists() and place == 'change_password':
+            raise ValidationError({'email': 'Почта не найдена'})
+        return value
+
+    def create(self, validated_data):
+        instance: UserPvc = super().create(validated_data)
+        # Отправка 6-ти значного кода на почту
+        instance.send_pvc()
+        return instance
+
+    def update(self, instance, validated_data):
+        instance: UserPvc = super().update(instance, validated_data)
+        instance.send_pvc()
+        return instance
 
 
 class UserAvatarsSerializer(serializers.ModelSerializer):

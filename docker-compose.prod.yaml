@@ -1,0 +1,15 @@
+version: '3.3'
+
+services:
+  migration_control_web:
+    image: migration_control
+    container_name: migration_control_web
+    build: .
+    ports:
+      - "4001:4001"
+    command: sh -c "gunicorn migration_control_web.wsgi:application --bind 0.0.0.0:4001"
+    restart: always
+    env_file:
+      - ./.env
+    volumes:
+      - .:/app/

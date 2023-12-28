@@ -38,6 +38,6 @@ class WorkerSerializer(serializers.ModelSerializer):
 
         # Проверка на превышение лимита по количеству создаваемых работников
         if unique_employees >= max_employees:
-            raise serializers.ValidationError({'message': 'Вы достигли максимального лимита на создание сотрудников.'})
+            raise ValidationError({'message': 'Вы достигли максимального лимита на создание сотрудников.'})
 
         return data

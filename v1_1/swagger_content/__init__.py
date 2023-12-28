@@ -35,8 +35,7 @@ class SpectacularSwaggerView(_SpectacularSwaggerView):
     def _get_schema_url(self, request):
         host = f"{request.scheme}://{request.get_host()}"
         return set_query_parameters(
-            url=f"{host}{SERVIES_SCHEMA_URLS.get(self.request.query_params.get('service', 'Migration control Account'), 
-                                                 'Migration control Account')}",
+            url=f"{host}{SERVIES_SCHEMA_URLS.get(self.request.query_params.get('service', 'Migration control Account'))}",
             lang=request.GET.get('lang'),
             version=request.GET.get('version')
         )

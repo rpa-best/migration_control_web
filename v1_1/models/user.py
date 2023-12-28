@@ -1,9 +1,11 @@
 from django.contrib.auth.base_user import AbstractBaseUser
+from django.contrib.auth.hashers import make_password
 from django.db import models
 from django.contrib.auth.models import PermissionsMixin
 from django.utils import timezone
 from rest_framework_simplejwt.token_blacklist.models import OutstandingToken
 from v1_1.common_utils.file_paths import UploadPath
+from v1_1.common_utils.pvc import get_random_integer, send_email, send_sms
 
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -23,8 +25,23 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_superuser = models.BooleanField(default=0, null=True)
     is_active = models.BooleanField(default=1, null=True)
     is_official = models.BooleanField(default=False, null=True)
+    pvc = models.CharField(max_length=150, null=True, blank=True)
 
     USERNAME_FIELD = "username"
+
+    def regenerate_pvc(self, is_send=True):
+        new_pvc = get_random_integer(6)
+        self.save_pvc(new_pvc)
+        if is_send:
+            send_sms(
+                self.phone,
+                f"{new_pvc}"
+            )
+
+    def save_pvc(self, pvc):
+        self.pvc = make_password(pvc)
+        self.save()
+        self.set_password()
 
 
 class UserOutstandingToken(OutstandingToken):
@@ -47,3 +64,16 @@ class UserOutstandingToken(OutstandingToken):
     class Meta:
         db_table = 'token_blacklist_outstandingtoken'
 
+
+def generate_pvc():
+    return get_random_integer(6)
+
+
+class UserPvc(models.Model):
+    email = models.CharField(unique=True, max_length=255)
+    pvc = models.CharField(max_length=10, default=generate_pvc)
+
+    def send_pvc(self):
+        self.pvc = generate_pvc()
+        send_email(self.email, "Код подтверждения для Миграскопа", self.pvc)
+        self.save()

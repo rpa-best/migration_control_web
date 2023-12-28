@@ -58,3 +58,14 @@ change_password = extend_schema_view(
         tags=['Account'],
     )
 )
+
+email_check = extend_schema_view(
+    post=extend_schema(
+        tags=['Account'],
+        parameters=[OpenApiParameter(
+            'place', str,
+            enum=['register', 'change_password'],
+            default='change_password'
+        )],
+    )
+)
