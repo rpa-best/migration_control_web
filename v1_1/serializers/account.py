@@ -157,7 +157,7 @@ class ChangePasswordSerializer(serializers.Serializer):
 
     def validate_email(self, value):
         if not User.objects.filter(username=value).exists():
-            raise ValidationError({"email": "Не привязана почта к пользователю"})
+            raise ValidationError({'email': 'Не привязана почта к пользователю'})
         return value
 
     def validate_password(self, value):
@@ -179,7 +179,7 @@ class ChangePasswordSerializer(serializers.Serializer):
         user = User.objects.get(username=validated_data.get('email'))
         user.set_password(validated_data['password'])
         user.save()
-        return {'message': 'пароль изменён'}
+        return {'message': 'Пароль изменён'}
 
 
 class CheckEmailSerializer(serializers.ModelSerializer):
@@ -189,7 +189,6 @@ class CheckEmailSerializer(serializers.ModelSerializer):
 
     def validate_email(self, value):
         place = self.context['request'].query_params.get('place')
-        place = 'register'
         if not place:
             raise ValidationError({'place': 'Не заданы параметры запроса: Выберите один - регистрация, изменения пароля'})
         if not place in ('register', 'change_password'):

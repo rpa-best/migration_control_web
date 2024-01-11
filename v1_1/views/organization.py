@@ -1,12 +1,17 @@
+from rest_framework.generics import CreateAPIView
+from django.db.transaction import atomic
 from drf_spectacular.utils import extend_schema
+from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
-from v1_1.models.organization import Organization, MigrationAddress
+from rest_framework.response import Response
+from v1_1.models.organization import Organization, MigrationAddress, OrganizationUser
 from v1_1.permissions.admin import IsAdministrator
 from v1_1.permissions.observer import IsObserver
 from v1_1.permissions.owner import IsOwner
 from v1_1.serializers.organization import OrganizationCreateSerializer, OrganizationShowSerializer, \
-    OrganizationPutAndPatchSerializer, MigrationAddressSerializer, MigrationAddressShowSerializer
+    OrganizationPutAndPatchSerializer, MigrationAddressSerializer, MigrationAddressShowSerializer, \
+    OrganizationCreateUserSerializer
 
 
 @extend_schema(tags=['Organization'])
@@ -18,16 +23,12 @@ class OrganizationAPIViewSet(ModelViewSet):
         return Organization.objects.filter(organizationuser__user=user)
 
     def get_serializer_class(self):
-        #Создать организацию и обновить её данные можно только владелец подписки
         if self.request.method in ['POST']:
             serializer_class = OrganizationCreateSerializer
-            # permission_class = IsOwner
         elif self.request.method in ['PUT', 'PATCH']:
             serializer_class = OrganizationPutAndPatchSerializer
-            # permission_class = IsOwner
         else:
             serializer_class = OrganizationShowSerializer
-            # permission_class = IsAuthenticated
 
         return serializer_class
 
@@ -58,3 +59,18 @@ class MigrationAddressAPIViewSet(ModelViewSet):
             serializer_class = MigrationAddressSerializer
 
         return serializer_class
+
+
+@extend_schema(tags=['Users of the organization'])
+class CreateOrganizationUserView(CreateAPIView):
+    queryset = OrganizationUser.objects.all()
+    serializer_class = OrganizationCreateUserSerializer
+    permission_classes = [IsOwner, IsAdministrator]
+
+    @atomic
+    def create(self, request, *args, **kwargs):
+        serializer = OrganizationCreateUserSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

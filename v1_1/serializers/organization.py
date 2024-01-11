@@ -3,7 +3,8 @@ from rest_framework.exceptions import ValidationError
 from v1_1.models.organization import Organization, MigrationAddress, OrganizationUser
 from v1_1.models.subscription import Subscription
 from v1_1.models.user import User
-
+import random
+import string
 
 class OrganizationShowSerializer(serializers.ModelSerializer):
     organizational_form = serializers.CharField(source='get_organizational_form_display')
@@ -97,9 +98,68 @@ class MigrationAddressSerializer(serializers.ModelSerializer):
     def validate_organization(self, value):
         user = self.context['request'].user.username
         # Можно добавить адрес миграции только для организации, в которой работает пользователь.
-        if not OrganizationUser.objects.filter(organization=value, user_id=user).exists():
+        if not OrganizationUser.objects.filter(organization=value, user=user).exists():
             raise ValidationError({'message': 'Вы не являетесь сотрудником этой организации'})
         else:
             return value
 
 
+class OrganizationCreateUserSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username')
+    name = serializers.CharField(source='user.name')
+    organization_id = serializers.PrimaryKeyRelatedField(queryset=Organization.objects.all(), source='organization')
+    role = serializers.ChoiceField(choices=OrganizationUser.USER_ROLE_CHOICES)
+
+    class Meta:
+        model = OrganizationUser
+        fields = ['username', 'name', 'organization_id', 'role']
+
+    def validate_username(self, value):
+        if User.objects.filter(username=value).exists():
+            raise ValidationError('Пользователь с этой почтой уже есть в организации')
+
+        return value
+
+    def validate_organization_id(self, value):
+        user = self.context['request'].user.username
+        # Можно добавить только пользователя к организации, в которой работает авторизованный пользователь.
+        if not OrganizationUser.objects.filter(organization=value.id, user=user).exists():
+            raise ValidationError('Вы не являетесь сотрудником этой организации')
+
+        return value
+
+    def validate_role(self, value):
+        role_user = OrganizationUser.objects.filter(user=self.context['request'].user.username).first().role
+
+        if value == 'owner':
+            raise ValidationError('Запрещено назначать роль владельца')
+
+        if role_user == 'admin' and value == 'admin':
+            raise ValidationError('У вас нет прав назначать роль администратора')
+
+        if role_user == 'observer':
+            raise ValidationError('У вас нет прав добавлять пользователей')
+
+        return value
+
+    def create(self, validated_data):
+        username = validated_data['user']['username']
+        name = validated_data['user']['name']
+        organization_id = validated_data['organization'].id
+        role = validated_data['role']
+        print(username)
+
+        if not User.objects.filter(username=username).exists():
+            #Создание пользователя
+            user = User.objects.create(username=username, name=name)
+            user.regenerate_and_send_password()
+        else:
+            user = User.objects.filter(username=username).first()
+
+        # Занесение созданного пользователя в выбранную организацию
+        organization_user = OrganizationUser.objects.create(
+            user=user,
+            organization_id=organization_id,
+            role=role
+        )
+        return organization_user

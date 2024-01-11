@@ -1,3 +1,6 @@
+import string
+import random
+
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.hashers import make_password
 from django.db import models
@@ -42,6 +45,15 @@ class User(AbstractBaseUser, PermissionsMixin):
         self.pvc = make_password(pvc)
         self.save()
         self.set_password()
+
+    def regenerate_and_send_password(self):
+        # Генерирация пароля из допустимых символов
+        password = ''.join(random.choice(string.ascii_letters + string.digits + string.punctuation) for _ in range(12))
+        self.set_password(password)
+
+        send_email(self.username, 'Код подтверждения для Миграскопа', f'Вас зарегистрировали в Миграскопе. '
+                                                                      f'Ваш пароль для входа: {password}')
+        self.save()
 
 
 class UserOutstandingToken(OutstandingToken):
