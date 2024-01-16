@@ -3,19 +3,19 @@ from v1_1.models.organization import OrganizationUser
 from v1_1.models.subscription import Subscription
 
 
-class IsObserver(BasePermission):
+class IsOwnerOrIsAdministratorInOrganization(BasePermission):
     def has_permission(self, request, view):
         organization = request.data.get('organization')
+        print(organization)
         if request.user.is_authenticated:
-            # Проверяем, является ли пользователь наблюдателем организации
-            if OrganizationUser.objects.filter(user=request.user, organization=organization, role='observer').exists():
+            # Проверяем, является ли пользователь администратором организации
+            if OrganizationUser.objects.filter(user=request.user, organization=organization, role='owner').exists() or\
+            OrganizationUser.objects.filter(user=request.user, organization=organization, role='admin').exists():
                 # Получение владельца организации
                 owner = OrganizationUser.objects.filter(organization=organization, role='owner').first().user
                 # Проверка на активную подписку владельца
                 if Subscription.objects.filter(user=owner, status='active').exists():
                     return True
-            else:
-                return False
         return False
 
     def has_object_permission(self, request, view, obj):

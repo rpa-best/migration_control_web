@@ -1,11 +1,13 @@
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
+from v1_1.common_utils.custom_handler import CustomValidationError
 from v1_1.models.organization import OrganizationUser
 from v1_1.models.subscription import Subscription
 from v1_1.models.worker import Worker
 
 
 class WorkerSerializer(serializers.ModelSerializer):
+    patronymic = serializers.CharField(required=False)
+
     class Meta:
         model = Worker
         fields = '__all__'
@@ -14,18 +16,17 @@ class WorkerSerializer(serializers.ModelSerializer):
         user = self.context['request'].user.username
         # Можно указать только ту организацию, в которой работает пользователь.
         if not OrganizationUser.objects.filter(organization=value, user_id=user).exists():
-            raise ValidationError({'message': 'Вы не являетесь сотрудником этой организации'})
+            raise CustomValidationError({'error': 'Вы не являетесь сотрудником этой организации'})
         else:
             return value
 
     def validate(self, data):
         # Получение владельца организации
         organization_owner = OrganizationUser.objects.filter(organization=data['organization'].id, role='owner').first()
-        print(organization_owner)
         # Проверка на наличие активной подписки у владельца организации
         subscription = Subscription.objects.filter(user=organization_owner.user, status='active').first()
         if not subscription:
-            raise ValidationError({'message': "У владельца нет активной подписки."})
+            raise CustomValidationError({'error': "У владельца нет активной подписки."})
 
         # Получение максимального количества работников, которых можно создать
         max_employees = subscription.service_rate.number_employees
@@ -38,6 +39,6 @@ class WorkerSerializer(serializers.ModelSerializer):
 
         # Проверка на превышение лимита по количеству создаваемых работников
         if unique_employees >= max_employees:
-            raise ValidationError({'message': 'Вы достигли максимального лимита на создание сотрудников.'})
+            raise CustomValidationError({'error': 'Вы достигли максимального лимита на создание сотрудников.'})
 
         return data

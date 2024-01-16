@@ -10,3 +10,9 @@ def get_client_ip(request):
         # находится в значении ключа 'REMOTE_ADDR' в словаре request.META
         ip = request.META.get('REMOTE_ADDR')
     return ip
+
+
+def get_system_message(error):
+    key = list(error.keys())[0]
+    value = error[key]
+    return {key: value}

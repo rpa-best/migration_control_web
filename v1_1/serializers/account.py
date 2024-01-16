@@ -1,11 +1,13 @@
+import re
+
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth import password_validation
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
+from v1_1.common_utils.custom_handler import CustomValidationError
 from v1_1.common_utils.token import get_token
 from v1_1.models import User
 from v1_1.models.user import UserPvc
-
+from rest_framework.exceptions import ParseError, ValidationError
 
 class AuthSerializer(serializers.Serializer):
     username = serializers.CharField(write_only=True)
@@ -22,9 +24,9 @@ class AuthSerializer(serializers.Serializer):
         try:
             user = self._get_user(attrs)
             if not check_password(attrs.get('password'), user.password):
-                raise ValidationError({'message': 'username_or_password_invalid'})
+                raise CustomValidationError({'message': 'Логин или пароль неверный'})
         except User.DoesNotExist:
-            raise ValidationError({'message': 'username_or_password_invalid'})
+            raise CustomValidationError({'message': 'Логин или пароль неверный'})
         return attrs
 
     def create(self, validated_data):
@@ -49,8 +51,8 @@ class AccountCreateSerializer(serializers.ModelSerializer):
     verified_password = serializers.CharField(write_only=True, required=True)
     name = serializers.CharField(required=True)
     surname = serializers.CharField(required=True)
-    lastname = serializers.CharField()
-    phone = serializers.CharField(write_only=True)
+    patronymic = serializers.CharField(required=False)
+    phone = serializers.CharField(required=False)
     pvc = serializers.CharField(write_only=True, required=True)
 
     class Meta:
@@ -61,7 +63,7 @@ class AccountCreateSerializer(serializers.ModelSerializer):
             'verified_password',
             'name',
             'surname',
-            'lastname',
+            'patronymic',
             'phone',
             'pvc'
         )
@@ -70,7 +72,7 @@ class AccountCreateSerializer(serializers.ModelSerializer):
     @staticmethod
     def validate_username(value):
         if User.objects.filter(username=value).exists():
-            raise ValidationError({'username': 'Почта занята другим пользователем'})
+            raise CustomValidationError({'username': 'Почта занята другим пользователем'})
         return value
 
     @staticmethod
@@ -78,18 +80,29 @@ class AccountCreateSerializer(serializers.ModelSerializer):
         try:
             password_validation.validate_password(value)
         except ValidationError as e:
-            raise ValidationError({'password': e})
+            raise CustomValidationError({'password': e})
+        return value
+
+    @staticmethod
+    def validate_phone(value):
+        if User.objects.filter(phone=value).exists():
+            raise CustomValidationError({'phone': 'Номер телефона занят другим пользователем'})
+
+        phone_pattern = re.compile(r'^\+?1?\d{9,15}$')
+        if not phone_pattern.match(value):
+            raise CustomValidationError({'phone': 'Введён некорректный номер телефона'})
+
         return value
 
     def validate(self, data):
         if not UserPvc.objects.filter(email=data['username'], pvc=data['pvc']).exists():
-            raise ValidationError({'pvc': "Неверный код"})
+            raise CustomValidationError({'pvc':  'Неверный код'})
         return data
 
     def create(self, validated_data):
         UserPvc.objects.filter(email=validated_data.get('email'), pvc=validated_data.get('pvc')).delete()
         if validated_data['verified_password'] != validated_data['password']:
-            raise ValidationError({'verified_password': 'passwords_do_not_match'})
+            raise CustomValidationError({'verified_password': 'Пароли не совпадают'})
         validated_data.pop('verified_password')
         validated_data.pop('pvc')
         instance: User = super(AccountCreateSerializer, self).create(validated_data)
@@ -101,6 +114,8 @@ class AccountCreateSerializer(serializers.ModelSerializer):
 
 class AccountPatchSerializer(serializers.ModelSerializer):
     avatar = serializers.SerializerMethodField()
+    patronymic = serializers.CharField(required=False)
+    phone = serializers.CharField(required=False)
 
     class Meta:
         model = User
@@ -108,7 +123,7 @@ class AccountPatchSerializer(serializers.ModelSerializer):
             'username',
             'name',
             'surname',
-            'lastname',
+            'patronymic',
             'phone',
             'avatar',
             'birthday',
@@ -117,6 +132,17 @@ class AccountPatchSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'lang': {'write_only': True},
         }
+
+    @staticmethod
+    def validate_phone(value):
+        if User.objects.filter(phone=value).exists():
+            raise CustomValidationError({'phone': 'Номер телефона занят другим пользователем'})
+
+        phone_pattern = re.compile(r'^\+?1?\d{9,15}$')
+        if not phone_pattern.match(value):
+            raise CustomValidationError({'phone': 'Введён некорректный номер телефона'})
+
+        return value
 
     def update(self, instance, validated_data):
         updated_instance = super(AccountPatchSerializer, self).update(instance, validated_data)
@@ -144,7 +170,7 @@ class AccountDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            'username', 'name', 'surname', 'lastname', 'phone', 'avatar', 'birthday'
+            'username', 'name', 'surname', 'patronymic', 'phone', 'avatar', 'birthday'
         )
 
 
@@ -157,21 +183,21 @@ class ChangePasswordSerializer(serializers.Serializer):
 
     def validate_email(self, value):
         if not User.objects.filter(username=value).exists():
-            raise ValidationError({'email': 'Не привязана почта к пользователю'})
+            raise CustomValidationError({'email': 'Не привязана почта к пользователю'})
         return value
 
     def validate_password(self, value):
         try:
             password_validation.validate_password(value)
         except ValidationError as e:
-            raise ValidationError({'password': e})
+            raise CustomValidationError({'password': 'Введён слабый пароль'})
         return value
 
     def validate(self, data):
         if not UserPvc.objects.filter(email=data['email'], pvc=data['pvc']).exists():
-            raise ValidationError({'pvc': 'Неверный код'})
+            raise CustomValidationError({'pvc': 'Неверный код'})
         if not data['password'] == data['verified_password']:
-            raise ValidationError({'password': 'Пароли не совпадают'})
+            raise CustomValidationError({'password': 'Пароли не совпадают'})
         return data
 
     def create(self, validated_data):
@@ -190,13 +216,13 @@ class CheckEmailSerializer(serializers.ModelSerializer):
     def validate_email(self, value):
         place = self.context['request'].query_params.get('place')
         if not place:
-            raise ValidationError({'place': 'Не заданы параметры запроса: Выберите один - регистрация, изменения пароля'})
+            raise CustomValidationError({'place': 'Не заданы параметры запроса: Выберите один - регистрация, изменения пароля'})
         if not place in ('register', 'change_password'):
-            raise ValidationError({'place': 'Ошибка в параметрах запроса'})
+            raise CustomValidationError({'place': 'Ошибка в параметрах запроса'})
         if User.objects.filter(username=value).exists() and place == 'register':
-            raise ValidationError({'email': 'Почта занята другим пользователем'})
+            raise CustomValidationError({'email': 'Почта занята другим пользователем'})
         if not User.objects.filter(username=value).exists() and place == 'change_password':
-            raise ValidationError({'email': 'Почта не найдена'})
+            raise CustomValidationError({'email': 'Почта не найдена'})
         return value
 
     def create(self, validated_data):

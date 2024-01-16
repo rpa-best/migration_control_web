@@ -1,6 +1,5 @@
 import string
 import random
-
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.hashers import make_password
 from django.db import models
@@ -19,7 +18,7 @@ class User(AbstractBaseUser, PermissionsMixin):
                              default=None)
     name = models.CharField(max_length=150, blank=True, null=True)
     surname = models.CharField(max_length=150, blank=True, null=True)
-    lastname = models.CharField(max_length=150, blank=True, null=True)
+    patronymic = models.CharField(max_length=150, blank=True, null=True)
     avatar = models.ImageField(upload_to=UploadPath('image'), null=True)
     birthday = models.DateField(blank=True, null=True)
     is_owner = models.BooleanField(default=False, null=True)
@@ -30,7 +29,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_official = models.BooleanField(default=False, null=True)
     pvc = models.CharField(max_length=150, null=True, blank=True)
 
-    USERNAME_FIELD = "username"
+    USERNAME_FIELD = 'username'
 
     def regenerate_pvc(self, is_send=True):
         new_pvc = get_random_integer(6)
@@ -78,7 +77,7 @@ class UserOutstandingToken(OutstandingToken):
 
 
 def generate_pvc():
-    return get_random_integer(6)
+    return get_random_integer(4)
 
 
 class UserPvc(models.Model):
@@ -87,5 +86,5 @@ class UserPvc(models.Model):
 
     def send_pvc(self):
         self.pvc = generate_pvc()
-        send_email(self.email, "Код подтверждения для Миграскопа", self.pvc)
+        send_email(self.email, 'Код подтверждения для Миграскопа', self.pvc)
         self.save()

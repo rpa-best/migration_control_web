@@ -1,10 +1,9 @@
 from drf_spectacular.utils import extend_schema
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 from v1_1.models.organization import OrganizationUser
 from v1_1.models.worker import Worker
-from v1_1.permissions.admin import IsAdministrator
-from v1_1.permissions.observer import IsObserver
-from v1_1.permissions.owner import IsOwner
+from v1_1.permissions.owner_or_admin import IsOwnerOrIsAdministratorInOrganization
 from v1_1.serializers.worker import WorkerSerializer
 
 
@@ -27,8 +26,8 @@ class WorkerAPIViewSet(ModelViewSet):
     def get_permissions(self):
         # Определение разрешений в зависимости от типа запроса
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
-            permission_classes = [IsOwner, IsAdministrator]
+            permission_classes = [IsOwnerOrIsAdministratorInOrganization]
         else:
-            permission_classes = [IsOwner, IsAdministrator, IsObserver]
+            permission_classes = [IsAuthenticated]
 
         return [permission() for permission in permission_classes]

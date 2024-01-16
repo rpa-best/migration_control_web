@@ -1,4 +1,5 @@
-from rest_framework.generics import CreateAPIView
+from django.core.paginator import Paginator
+from django.db.models import Q
 from django.db.transaction import atomic
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
@@ -6,12 +7,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from v1_1.models.organization import Organization, MigrationAddress, OrganizationUser
-from v1_1.permissions.admin import IsAdministrator
-from v1_1.permissions.observer import IsObserver
 from v1_1.permissions.owner import IsOwner
+from v1_1.permissions.owner_or_admin import IsOwnerOrIsAdministratorInOrganization
 from v1_1.serializers.organization import OrganizationCreateSerializer, OrganizationShowSerializer, \
     OrganizationPutAndPatchSerializer, MigrationAddressSerializer, MigrationAddressShowSerializer, \
-    OrganizationCreateUserSerializer
+    OrganizationCreateUserSerializer, ShowOrganizationUserSerializer
 
 
 @extend_schema(tags=['Organization'])
@@ -35,17 +35,15 @@ class OrganizationAPIViewSet(ModelViewSet):
     def get_permissions(self):
         # Определение разрешений в зависимости от типа запроса
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
-            permission_classes = [IsOwner,]
+            permission_classes = [IsOwner, ]
         else:
-            permission_classes = [IsOwner, IsAdministrator, IsObserver]
+            permission_classes = [IsAuthenticated]
 
         return [permission() for permission in permission_classes]
 
 
 @extend_schema(tags=['Migration addresses of organizations'])
 class MigrationAddressAPIViewSet(ModelViewSet):
-    permission_class = IsAuthenticated
-
     def get_queryset(self):
         # Получение авторизованного пользователя
         user = self.request.user
@@ -60,12 +58,39 @@ class MigrationAddressAPIViewSet(ModelViewSet):
 
         return serializer_class
 
+    def get_permissions(self):
+        # Определение разрешений в зависимости от типа запроса
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            permission_classes = [IsOwnerOrIsAdministratorInOrganization]
+        else:
+            permission_classes = [IsAuthenticated]
+
+        return [permission() for permission in permission_classes]
+
 
 @extend_schema(tags=['Users of the organization'])
-class CreateOrganizationUserView(CreateAPIView):
-    queryset = OrganizationUser.objects.all()
-    serializer_class = OrganizationCreateUserSerializer
-    permission_classes = [IsOwner, IsAdministrator]
+class OrganizationUsersListView(ModelViewSet):
+    filterset_fields = ['role']
+
+    def get_serializer_class(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            serializer_class = OrganizationCreateUserSerializer
+        else:
+            serializer_class = ShowOrganizationUserSerializer
+
+        return serializer_class
+
+    def get_permissions(self):
+        # Определение разрешений в зависимости от типа запроса
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            permission_classes = [IsOwnerOrIsAdministratorInOrganization]
+        else:
+            permission_classes = [IsAuthenticated, ]
+
+        return [permission() for permission in permission_classes]
+
+    def get_queryset(self):
+        return OrganizationUser.objects.filter(Q(organization=self.kwargs.get('organization')))
 
     @atomic
     def create(self, request, *args, **kwargs):

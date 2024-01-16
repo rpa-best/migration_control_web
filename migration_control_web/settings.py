@@ -69,14 +69,14 @@ CORS_ORIGIN_WHITELIST = [
 
 XS_SHARING_ALLOWED_METHODS = ['POST', 'GET', 'OPTIONS', 'PUT', 'PATCH', 'DELETE']
 
-# CORS_ALLOW_METHODS = (
-#     "DELETE",
-#     "GET",
-#     "OPTIONS",
-#     "PATCH",
-#     "POST",
-#     "PUT",
-# )
+CORS_ALLOW_METHODS = (
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+)
 
 CORS_ALLOW_HEADERS = (
     'accept',
@@ -112,11 +112,16 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+    # 'DEFAULT_AUTHENTICATION_CLASSES': (
+    #   'v1_1.common_utils.authenticate.CustomAuthentication',
+    # ),
     'DEFAULT_FILTER_BACKENDS': (
         'django_filters.rest_framework.DjangoFilterBackend',
         "rest_framework.filters.SearchFilter",
     ),
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    # 'DEFAULT_SCHEMA_CLASS': 'v1_1.common_utils.swagger_schema.CustomAutoSchema',
+
 }
 
 SIMPLE_JWT = {
@@ -127,7 +132,53 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer', 'Token',),
     'USER_ID_FIELD': 'username',
     'USER_ID_CLAIM': 'username',
+    'AUTH_COOKIE_HTTP_ONLY': True,  # Установка флага HTTP Only для Access токена
+
+    # 'AUTH_COOKIE': 'access_token',  # Cookie name. Enables cookies if value is set.
+    # 'AUTH_COOKIE_DOMAIN': None,     # A string like "example.com", or None for standard domain cookie.
+    # 'AUTH_COOKIE_SECURE': False,    # Whether the auth cookies should be secure (https:// only).
+    # 'AUTH_COOKIE_HTTP_ONLY': True, # Http only cookie flag.It's not fetch by javascript.
+    # 'AUTH_COOKIE_PATH': '/',        # The path of the auth cookie.
+    # 'AUTH_COOKIE_SAMESITE': 'Lax',  # Whether to set the flag restricting cookie leaks on cross-site requests. This can be 'Lax', 'Strict', or None to disable the flag.
 }
+
+
+# SIMPLE_JWT = {
+#   'ACCESS_TOKEN_LIFETIME': datetime.timedelta(days=1),
+#   'REFRESH_TOKEN_LIFETIME': datetime.timedelta(days=30),
+#   'ROTATE_REFRESH_TOKENS': False,
+#   'BLACKLIST_AFTER_ROTATION': True,
+#   'UPDATE_LAST_LOGIN': False,
+#
+#   'ALGORITHM': 'HS256',
+#   'SIGNING_KEY': SECRET_KEY,
+#   'VERIFYING_KEY': None,
+#   'AUDIENCE': None,
+#   'ISSUER': None,
+#
+#   'AUTH_HEADER_TYPES': ('Bearer',),
+#   'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
+#   'USER_ID_FIELD': 'id',
+#   'USER_ID_CLAIM': 'user_id',
+#   'USER_AUTHENTICATION_RULE': 'rest_framework_simplejwt.authentication.default_user_authentication_rule',
+#
+#   'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+#   'TOKEN_TYPE_CLAIM': 'token_type',
+#
+#   'JTI_CLAIM': 'jti',
+#
+#   'SLIDING_TOKEN_REFRESH_EXP_CLAIM': 'refresh_exp',
+#   'SLIDING_TOKEN_LIFETIME': datetime.timedelta(days=1),
+#   'SLIDING_TOKEN_REFRESH_LIFETIME': datetime.timedelta(days=1),
+#
+#   # custom
+#   'AUTH_COOKIE': 'access_token',  # Cookie name. Enables cookies if value is set.
+#   'AUTH_COOKIE_DOMAIN': None,     # A string like "example.com", or None for standard domain cookie.
+#   'AUTH_COOKIE_SECURE': False,    # Whether the auth cookies should be secure (https:// only).
+#   'AUTH_COOKIE_HTTP_ONLY': True, # Http only cookie flag.It's not fetch by javascript.
+#   'AUTH_COOKIE_PATH': '/',        # The path of the auth cookie.
+#   'AUTH_COOKIE_SAMESITE': 'Lax',  # Whether to set the flag restricting cookie leaks on cross-site requests. This can be 'Lax', 'Strict', or None to disable the flag.
+# }
 
 SPECTACULAR_ACCOUNT_SETTINGS = {
     'TITLE': 'Migration control Account',

@@ -3,9 +3,8 @@ from v1_1.models import OrganizationUser
 
 
 class OrganizationUserFilter(filters.FilterSet):
-    # id = filters.BaseInFilter()
-    organization_id = filters.BaseInFilter('organization_id')
+    role = filters.BaseInFilter('role')
 
     class Meta:
         model = OrganizationUser
-        fields = ('organization_id',)
+        fields = ('role',)

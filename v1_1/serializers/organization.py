@@ -1,10 +1,11 @@
+from django.db.transaction import atomic
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
+from v1_1.common_utils.custom_handler import CustomValidationError
 from v1_1.models.organization import Organization, MigrationAddress, OrganizationUser
 from v1_1.models.subscription import Subscription
 from v1_1.models.user import User
-import random
-import string
+
 
 class OrganizationShowSerializer(serializers.ModelSerializer):
     organizational_form = serializers.CharField(source='get_organizational_form_display')
@@ -15,32 +16,40 @@ class OrganizationShowSerializer(serializers.ModelSerializer):
 
 
 class OrganizationCreateSerializer(serializers.ModelSerializer):
+    organizational_form = serializers.ChoiceField(choices=Organization.ORGANIZATIONAL_FORM)
+    patronymic_director = serializers.CharField(required=False)
+    inn = serializers.CharField(max_length=20)
+
     class Meta:
         model = Organization
         fields = (
             'organizational_form',
             'name',
             'inn',
-            'kpp',
             'name_director',
             "surname_director",
-            'lastname_director',
+            'patronymic_director',
             'legal_address',
             'actual_address'
         )
+
+    def validate_inn(self, value):
+        if Organization.objects.filter(inn=value).exists():
+            raise CustomValidationError({'inn': 'Организация с таким ИНН уже существует'})
+        return value
 
     def create(self, validated_data):
         user = self.context['request'].user
         # Проверка на наличие подписки
         subscription = Subscription.objects.filter(user=user, status='active').first()
         if not subscription:
-            raise ValidationError({'message': 'У вас нет активной подписки.'})
+            raise CustomValidationError({'message': 'У вас нет активной подписки.'})
 
         # Проверка на превышение лимита по количеству создаваемых организаций
         max_organizations = subscription.service_rate.number_companies
         current_organizations = Organization.objects.filter(owner=user).count()
         if current_organizations >= max_organizations:
-            raise ValidationError({'message': 'Вы достигли максимального предела для создания организаций.'})
+            raise CustomValidationError({'message': 'Вы достигли максимального предела для создания организаций.'})
 
         instance: Organization = super(OrganizationCreateSerializer, self).create(validated_data)
         instance.owner_id = self.context['request'].user
@@ -57,6 +66,8 @@ class OrganizationCreateSerializer(serializers.ModelSerializer):
 
 
 class OrganizationPutAndPatchSerializer(serializers.ModelSerializer):
+    patronymic_director = serializers.CharField(required=False)
+
     class Meta:
         model = Organization
         fields = (
@@ -67,17 +78,22 @@ class OrganizationPutAndPatchSerializer(serializers.ModelSerializer):
             'ogrn',
             'name_director',
             "surname_director",
-            'lastname_director',
+            'patronymic_director',
             'legal_address',
             'actual_address'
         )
+
+    def validate_inn(self, value):
+        if Organization.objects.filter(inn=value).exists():
+            raise CustomValidationError({'inn': 'Организация с таким ИНН уже существует'})
+        return value
 
     def validate(self, data):
         user = self.context['request'].user.username
         # Только сотрудник этой организации может удалить организацию, принимая во внимание, что у него есть права\
         # сделать это
         if not Organization.objects.filter(organizationuser__user=user).exists():
-            raise ValidationError({'message': 'Вы не являетесь сотрудником этой организации'})
+            raise CustomValidationError({'message': 'Вы не являетесь сотрудником этой организации'})
         else:
             return data
 
@@ -99,7 +115,7 @@ class MigrationAddressSerializer(serializers.ModelSerializer):
         user = self.context['request'].user.username
         # Можно добавить адрес миграции только для организации, в которой работает пользователь.
         if not OrganizationUser.objects.filter(organization=value, user=user).exists():
-            raise ValidationError({'message': 'Вы не являетесь сотрудником этой организации'})
+            raise CustomValidationError({'organization': 'Вы не являетесь сотрудником этой организации'})
         else:
             return value
 
@@ -107,7 +123,6 @@ class MigrationAddressSerializer(serializers.ModelSerializer):
 class OrganizationCreateUserSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source='user.username')
     name = serializers.CharField(source='user.name')
-    organization_id = serializers.PrimaryKeyRelatedField(queryset=Organization.objects.all(), source='organization')
     role = serializers.ChoiceField(choices=OrganizationUser.USER_ROLE_CHOICES)
 
     class Meta:
@@ -115,16 +130,9 @@ class OrganizationCreateUserSerializer(serializers.ModelSerializer):
         fields = ['username', 'name', 'organization_id', 'role']
 
     def validate_username(self, value):
-        if User.objects.filter(username=value).exists():
-            raise ValidationError('Пользователь с этой почтой уже есть в организации')
-
-        return value
-
-    def validate_organization_id(self, value):
-        user = self.context['request'].user.username
-        # Можно добавить только пользователя к организации, в которой работает авторизованный пользователь.
-        if not OrganizationUser.objects.filter(organization=value.id, user=user).exists():
-            raise ValidationError('Вы не являетесь сотрудником этой организации')
+        organization_id = self.context['request'].parser_context['kwargs'].get('organization_id')
+        if OrganizationUser.objects.filter(user=value, organization=organization_id).exists():
+            raise CustomValidationError({'username': 'Пользователь с этой почтой уже есть в организации'})
 
         return value
 
@@ -135,24 +143,37 @@ class OrganizationCreateUserSerializer(serializers.ModelSerializer):
             raise ValidationError('Запрещено назначать роль владельца')
 
         if role_user == 'admin' and value == 'admin':
-            raise ValidationError('У вас нет прав назначать роль администратора')
+            raise CustomValidationError({'error': 'У вас нет прав назначать роль администратора'})
 
         if role_user == 'observer':
-            raise ValidationError('У вас нет прав добавлять пользователей')
+            raise CustomValidationError({'error': 'У вас нет прав добавлять пользователей'})
 
         return value
 
+    def validate(self, data):
+        user = self.context['request'].user.username
+        organization_id = self.context['request'].parser_context['kwargs'].get('organization_id')
+        # Можно добавить только пользователя к организации, в которой работает авторизованный пользователь.
+        if not OrganizationUser.objects.filter(organization=organization_id, user=user).exists():
+            raise CustomValidationError({'organization_id': 'Вы не являетесь сотрудником этой организации'})
+        return data
+
+    @atomic
     def create(self, validated_data):
         username = validated_data['user']['username']
         name = validated_data['user']['name']
-        organization_id = validated_data['organization'].id
         role = validated_data['role']
-        print(username)
+        organization_id = self.context['request'].parser_context['kwargs'].get('organization_id')
 
         if not User.objects.filter(username=username).exists():
             #Создание пользователя
             user = User.objects.create(username=username, name=name)
-            user.regenerate_and_send_password()
+            try:
+                user.regenerate_and_send_password()
+            except Exception:
+                raise CustomValidationError({'error': 'Ошибка при генерации пароля для пользователя. Возможно email '
+                                                'не существует'})
+
         else:
             user = User.objects.filter(username=username).first()
 
@@ -163,3 +184,9 @@ class OrganizationCreateUserSerializer(serializers.ModelSerializer):
             role=role
         )
         return organization_user
+
+
+class ShowOrganizationUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrganizationUser
+        fields = '__all__'

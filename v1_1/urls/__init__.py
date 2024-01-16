@@ -11,4 +11,5 @@ urlpatterns = [
          name='schema_account'),
     path('account/', include('v1_1.urls.account')),
     path('organization/', include('v1_1.urls.organization')),
+    path('<int:org_id>/dd/', include('v1_1.urls.users_organization')),
 ]

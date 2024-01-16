@@ -11,7 +11,7 @@ class Worker(models.Model):
 
     name = models.CharField(max_length=150)
     surname = models.CharField(max_length=150)
-    lastname = models.CharField(max_length=150, blank=True, null=True)
+    patronymic = models.CharField(max_length=150, blank=True, null=True)
     gender = models.CharField(max_length=50, choices=GENDERS)
     citizenship = models.CharField(max_length=255, blank=True)
     birthday = models.DateField(blank=True, null=True)
