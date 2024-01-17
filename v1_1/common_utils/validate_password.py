@@ -13,8 +13,4 @@ def validate_password(password):
     if not re.search(r'[a-z]', password) or not re.search(r'[A-Z]', password):
         return False, 'Пароль должен содержать буквы верхнего и нижнего регистра'
 
-    # Проверка наличия специальных символов
-    if not re.search(r'[^a-zA-Z0-9]', password):
-        return False, 'Пароль должен содержать специальные символы'
-
     return True, 'Пароль прошел валидацию'

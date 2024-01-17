@@ -14,3 +14,13 @@ def preprocessing_filter_organization(endpoints):
         if "api/v1.1/organization" in path:
             filtered.append((path, path_regex, method, callback))
     return filtered
+
+
+def preprocessing_filter_worker(endpoints):
+    filtered = []
+    for (path, path_regex, method, callback) in endpoints:
+        # Remove all but DRF API endpoints
+        if "api/v1.1/worker" in path:
+            filtered.append((path, path_regex, method, callback))
+    return filtered
+

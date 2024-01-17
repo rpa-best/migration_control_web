@@ -1,13 +1,12 @@
 import re
 from django.contrib.auth.hashers import check_password
-from django.contrib.auth import password_validation
 from rest_framework import serializers
 from v1_1.common_utils.custom_handler import CustomValidationError
 from v1_1.common_utils.token import get_token
 from v1_1.common_utils.validate_password import validate_password
 from v1_1.models import User
 from v1_1.models.user import UserPvc
-from rest_framework.exceptions import ParseError, ValidationError
+
 
 class AuthSerializer(serializers.Serializer):
     username = serializers.CharField(write_only=True)

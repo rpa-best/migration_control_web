@@ -1,6 +1,5 @@
 from rest_framework import status
-from rest_framework.exceptions import APIException, ValidationError, _get_error_details
-from rest_framework.views import exception_handler
+from rest_framework.exceptions import APIException, _get_error_details
 from django.utils.translation import gettext_lazy as _
 
 
