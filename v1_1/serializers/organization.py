@@ -1,6 +1,5 @@
 from django.db.transaction import atomic
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
 from v1_1.common_utils.custom_handler import CustomValidationError
 from v1_1.models.organization import Organization, MigrationAddress, OrganizationUser
 from v1_1.models.subscription import Subscription
@@ -103,13 +102,13 @@ class MigrationAddressShowSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MigrationAddress
-        fields = "__all__"
+        fields = '__all__'
 
 
 class MigrationAddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = MigrationAddress
-        fields = "__all__"
+        fields = '__all__'
 
     def validate_organization(self, value):
         user = self.context['request'].user.username
@@ -155,7 +154,7 @@ class OrganizationCreateUserSerializer(serializers.ModelSerializer):
         organization_id = self.context['request'].parser_context['kwargs'].get('organization')
         # Можно добавить только пользователя к организации, в которой работает авторизованный пользователь.
         if not OrganizationUser.objects.filter(organization=organization_id, user=user).exists():
-            raise CustomValidationError({'organization_id': 'Вы не являетесь сотрудником этой организации'})
+            raise CustomValidationError({'organization': 'Вы не являетесь сотрудником этой организации'})
         return data
 
     @atomic

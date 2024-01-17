@@ -11,7 +11,8 @@ from migration_control_web import settings
 from v1_1.common_utils.token import get_token, RefreshToken
 from v1_1.models.user import User, UserPvc
 from v1_1.serializers.account import AccountCreateSerializer, AuthSerializer, AccountDetailSerializer, \
-    AccountPatchSerializer, UserAvatarsSerializer, ChangePasswordSerializer, CheckEmailSerializer
+    AccountPatchSerializer, UserAvatarsSerializer, ChangePasswordSerializer, CheckEmailSerializer, \
+    ValidationPasswordAndPhoneSerializer
 from ..common_utils.serializers import TokenRefreshSerializer
 from ..swagger_content import account
 
@@ -92,6 +93,19 @@ class AccountCreateAPIView(CreateAPIView):
             'refresh': str(token),
             'user': serializer.data
         }, status=status.HTTP_201_CREATED, headers=headers)
+
+
+@account.password_and_phone_validation
+class ValidationPasswordAndPhoneAPIView(CreateAPIView):
+    serializer_class = ValidationPasswordAndPhoneSerializer
+    authentication_classes = ()
+    permission_classes = ()
+
+    def post(self, request):
+        serializer = ValidationPasswordAndPhoneSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({'message': 'Валидация прошла успешно'})
 
 
 @account.refresh

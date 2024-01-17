@@ -77,7 +77,7 @@ class UserOutstandingToken(OutstandingToken):
 
 
 def generate_pvc():
-    return get_random_integer(4)
+    return get_random_integer(6)
 
 
 class UserPvc(models.Model):

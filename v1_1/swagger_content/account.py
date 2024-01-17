@@ -34,6 +34,12 @@ create = extend_schema_view(
 )
 
 
+password_and_phone_validation = extend_schema_view(
+    post=extend_schema(
+        tags=['Sign in and sign up']
+    )
+)
+
 refresh = extend_schema_view(
     post=extend_schema(
         tags=['Sign in and sign up']

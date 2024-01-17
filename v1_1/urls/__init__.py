@@ -10,6 +10,5 @@ urlpatterns = [
     path('schema-organization/', SpectacularAPIView.as_view(custom_settings=SPECTACULAR_ORGANIZATION_SETTINGS),
          name='schema_account'),
     path('account/', include('v1_1.urls.account')),
-    path('organization/', include('v1_1.urls.organization')),
-    path('<int:org_id>/dd/', include('v1_1.urls.users_organization')),
+    path('organization/', include('v1_1.urls.organization'))
 ]

@@ -1,10 +1,10 @@
 import re
-
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth import password_validation
 from rest_framework import serializers
 from v1_1.common_utils.custom_handler import CustomValidationError
 from v1_1.common_utils.token import get_token
+from v1_1.common_utils.validate_password import validate_password
 from v1_1.models import User
 from v1_1.models.user import UserPvc
 from rest_framework.exceptions import ParseError, ValidationError
@@ -77,10 +77,10 @@ class AccountCreateSerializer(serializers.ModelSerializer):
 
     @staticmethod
     def validate_password(value):
-        try:
-            password_validation.validate_password(value)
-        except ValidationError as e:
-            raise CustomValidationError({'password': e})
+        if not validate_password(value)[0] == True:
+            print(validate_password(value)[1])
+            raise CustomValidationError({'password': validate_password(value)[1]})
+
         return value
 
     @staticmethod
@@ -110,6 +110,51 @@ class AccountCreateSerializer(serializers.ModelSerializer):
         instance.set_password(validated_data['password'])
         instance.save()
         return instance
+
+
+class ValidationPasswordAndPhoneSerializer(serializers.Serializer):
+    password = serializers.CharField(write_only=True, required=True)
+    phone = serializers.CharField(required=False)
+
+    @staticmethod
+    def validate_password(value):
+        if not validate_password(value)[0] == True:
+            raise CustomValidationError({'password': validate_password(value)[1]})
+
+        return value
+
+    @staticmethod
+    def validate_phone(value):
+        if User.objects.filter(phone=value).exists():
+            raise CustomValidationError({'phone': 'Номер телефона занят другим пользователем'})
+
+        phone_pattern = re.compile(r'^\+?1?\d{9,15}$')
+        if not phone_pattern.match(value):
+            raise CustomValidationError({'phone': 'Введён некорректный номер телефона'})
+
+        return value
+
+    def create(self, validated_data):
+        return {'message': 'Валидация прошла успешна'}
+
+
+class PasswordAndPhoneValidationCreateSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, required=True)
+    phone = serializers.CharField(required=False)
+
+    class Meta:
+        model = User
+        fields = (
+            'username',
+            'password',
+            'verified_password',
+            'name',
+            'surname',
+            'patronymic',
+            'phone',
+            'pvc'
+        )
+        write_only_fields = ('password', 'verified_password', 'pvc')
 
 
 class AccountPatchSerializer(serializers.ModelSerializer):
@@ -186,11 +231,11 @@ class ChangePasswordSerializer(serializers.Serializer):
             raise CustomValidationError({'email': 'Не привязана почта к пользователю'})
         return value
 
-    def validate_password(self, value):
-        try:
-            password_validation.validate_password(value)
-        except ValidationError as e:
-            raise CustomValidationError({'password': 'Введён слабый пароль'})
+    @staticmethod
+    def validate_password(value):
+        if not validate_password(value)[0] == True:
+            raise CustomValidationError({'password': validate_password(value)[1]})
+
         return value
 
     def validate(self, data):
