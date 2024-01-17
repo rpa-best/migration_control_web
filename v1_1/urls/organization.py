@@ -7,7 +7,7 @@ router = routers.DefaultRouter()
 router.register('organization', OrganizationAPIViewSet, 'organization')
 router.register('migration_address', MigrationAddressAPIViewSet, 'migration_address')
 router.register('worker', WorkerAPIViewSet, 'worker')
-router.register(r'(?P<organization_id>\d+)/list-users', OrganizationUsersListView, 'list-users'),
+router.register(r'(?P<organization>\d+)/list-users', OrganizationUsersListView, 'list-users'),
 
 urlpatterns = [
     path('', include(router.urls)),

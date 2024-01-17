@@ -140,7 +140,7 @@ class OrganizationCreateUserSerializer(serializers.ModelSerializer):
         role_user = OrganizationUser.objects.filter(user=self.context['request'].user.username).first().role
 
         if value == 'owner':
-            raise ValidationError('Запрещено назначать роль владельца')
+            raise CustomValidationError({'role': 'Запрещено назначать роль владельца'})
 
         if role_user == 'admin' and value == 'admin':
             raise CustomValidationError({'error': 'У вас нет прав назначать роль администратора'})
@@ -152,7 +152,7 @@ class OrganizationCreateUserSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         user = self.context['request'].user.username
-        organization_id = self.context['request'].parser_context['kwargs'].get('organization_id')
+        organization_id = self.context['request'].parser_context['kwargs'].get('organization')
         # Можно добавить только пользователя к организации, в которой работает авторизованный пользователь.
         if not OrganizationUser.objects.filter(organization=organization_id, user=user).exists():
             raise CustomValidationError({'organization_id': 'Вы не являетесь сотрудником этой организации'})
@@ -163,7 +163,7 @@ class OrganizationCreateUserSerializer(serializers.ModelSerializer):
         username = validated_data['user']['username']
         name = validated_data['user']['name']
         role = validated_data['role']
-        organization_id = self.context['request'].parser_context['kwargs'].get('organization_id')
+        organization = self.context['request'].parser_context['kwargs'].get('organization')
 
         if not User.objects.filter(username=username).exists():
             #Создание пользователя
@@ -180,7 +180,7 @@ class OrganizationCreateUserSerializer(serializers.ModelSerializer):
         # Занесение созданного пользователя в выбранную организацию
         organization_user = OrganizationUser.objects.create(
             user=user,
-            organization_id=organization_id,
+            organization_id=organization,
             role=role
         )
         return organization_user

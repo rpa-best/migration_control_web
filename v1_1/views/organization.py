@@ -1,4 +1,3 @@
-from django.core.paginator import Paginator
 from django.db.models import Q
 from django.db.transaction import atomic
 from drf_spectacular.utils import extend_schema
