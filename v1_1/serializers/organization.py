@@ -172,7 +172,7 @@ class OrganizationCreateUserSerializer(serializers.ModelSerializer):
                 user.regenerate_and_send_password()
             except Exception:
                 raise CustomValidationError({'error': 'Ошибка при генерации пароля для пользователя. Возможно email '
-                                                'не существует'})
+                                                      'не существует'})
 
         else:
             user = User.objects.filter(username=username).first()
