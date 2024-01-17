@@ -120,6 +120,7 @@ REST_FRAMEWORK = {
         "rest_framework.filters.SearchFilter",
     ),
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_PAGINATION_CLASS': 'v1_1.common_utils.paginations.CustomPagination'
     # 'DEFAULT_SCHEMA_CLASS': 'v1_1.common_utils.swagger_schema.CustomAutoSchema',
 
 }
