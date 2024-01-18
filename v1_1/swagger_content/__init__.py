@@ -9,6 +9,7 @@ SERVIES_SCHEMA_URLS = {
     'Migration control Account': '/api/v1.1/schema-account/',
     'Migration control Organization': '/api/v1.1/schema-organization/',
     'Migration control Worker': '/api/v1.1/schema-worker/',
+    'Migration control Blanks': '/api/v1.1/schema-blanks/',
 }
 
 
