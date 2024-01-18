@@ -4,12 +4,18 @@ from rest_framework.viewsets import ModelViewSet
 from v1_1.models.organization import OrganizationUser
 from v1_1.models.worker import Worker
 from v1_1.permissions.owner_or_admin import IsOwnerOrIsAdministratorInOrganization
-from v1_1.serializers.worker import WorkerSerializer
+from v1_1.serializers.worker import WorkerSerializer, CreateWorkerSerializer
 
 
 @extend_schema(tags=['Worker'])
 class WorkerAPIViewSet(ModelViewSet):
-    serializer_class = WorkerSerializer
+    def get_serializer_class(self):
+        if self.action in ['create']:
+            serializer_class = CreateWorkerSerializer
+        else:
+            serializer_class = WorkerSerializer
+
+        return serializer_class
 
     def get_queryset(self):
         # Получение авторизованного пользователя

@@ -101,7 +101,7 @@ class ValidationPasswordAndPhoneAPIView(CreateAPIView):
     authentication_classes = ()
     permission_classes = ()
 
-    def post(self, request):
+    def post(self, request, **kwargs):
         serializer = ValidationPasswordAndPhoneSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()

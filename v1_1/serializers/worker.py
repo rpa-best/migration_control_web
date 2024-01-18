@@ -1,3 +1,4 @@
+import re
 from rest_framework import serializers
 from v1_1.common_utils.custom_handler import CustomValidationError
 from v1_1.models.organization import OrganizationUser
@@ -5,20 +6,46 @@ from v1_1.models.subscription import Subscription
 from v1_1.models.worker import Worker
 
 
-class WorkerSerializer(serializers.ModelSerializer):
+class CreateWorkerSerializer(serializers.ModelSerializer):
     patronymic = serializers.CharField(required=False)
+    phone = serializers.CharField(required=False)
+    email = serializers.CharField(required=False)
 
     class Meta:
         model = Worker
-        fields = '__all__'
+        fields = (
+            'organization',
+            'name',
+            'surname',
+            'patronymic',
+            'citizenship',
+            'identification_card',
+            'phone',
+            'email'
+        )
 
     def validate_organization(self, value):
         user = self.context['request'].user.username
         # Можно указать только ту организацию, в которой работает пользователь.
         if not OrganizationUser.objects.filter(organization=value, user_id=user).exists():
-            raise CustomValidationError({'error': 'Вы не являетесь сотрудником этой организации'})
-        else:
-            return value
+            raise CustomValidationError({'organization': 'Вы не являетесь сотрудником этой организации'})
+
+        return value
+
+    @staticmethod
+    def validate_phone(value):
+        phone_pattern = re.compile(r'^\+?1?\d{9,15}$')
+        if not phone_pattern.match(value):
+            raise CustomValidationError({'phone': 'Введён некорректный номер телефона'})
+
+        return value
+
+    @staticmethod
+    def validate_email(value):
+        if not re.match(r"[^@]+@[^@]+\.[^@]+", value):
+            raise CustomValidationError({'email': 'Введён некорректный формат почты'})
+
+        return value
 
     def validate(self, data):
         # Получение владельца организации
@@ -30,15 +57,27 @@ class WorkerSerializer(serializers.ModelSerializer):
 
         # Получение максимального количества работников, которых можно создать
         max_employees = subscription.service_rate.number_employees
+        #
+        # # Получение списка ИНН работников, созданных пользователем
+        # user_employees = Worker.objects.filter(organization__owner=organization_owner.user).values_list('inn',
+        #                                                                                                 flat=True)
+        # # Подсчет количества уникальных ИНН работников
+        # unique_employees = len(set(user_employees))
 
-        # Получение списка ИНН работников, созданных пользователем
-        user_employees = Worker.objects.filter(organization__owner=organization_owner.user).values_list('inn',
-                                                                                                        flat=True)
-        # Подсчет количества уникальных ИНН работников
-        unique_employees = len(set(user_employees))
+        # Получение списка работников, созданных пользователем
+        user_employees = Worker.objects.filter(organization__owner=organization_owner.user).count()
+
+        unique_employees = user_employees
 
         # Проверка на превышение лимита по количеству создаваемых работников
         if unique_employees >= max_employees:
             raise CustomValidationError({'error': 'Вы достигли максимального лимита на создание сотрудников.'})
 
         return data
+
+
+class WorkerSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Worker
+        fields = '__all__'
