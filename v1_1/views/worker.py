@@ -46,7 +46,7 @@ class DocumentsWorkerAPIViewSet(ModelViewSet):
     serializer_class = DocumentsWorkerSerializer
 
     def get_queryset(self):
-        return DocumentsWorker.objects.filter(Q(worker=self.kwargs.get('worker')))
+        return DocumentsWorker.objects.filter(Q(worker_id=self.kwargs.get('worker_id')))
 
     def get_permissions(self):
         # Определение разрешений в зависимости от типа запроса
