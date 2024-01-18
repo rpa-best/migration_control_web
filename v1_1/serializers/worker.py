@@ -3,7 +3,7 @@ from rest_framework import serializers
 from v1_1.common_utils.custom_handler import CustomValidationError
 from v1_1.models.organization import OrganizationUser
 from v1_1.models.subscription import Subscription
-from v1_1.models.worker import Worker
+from v1_1.models.worker import Worker, DocumentsWorker
 
 
 class CreateWorkerSerializer(serializers.ModelSerializer):
@@ -48,6 +48,9 @@ class CreateWorkerSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, data):
+        if Worker.objects.filter(organization=data['organization'].id, phone=data['phone']).exists():
+            raise CustomValidationError({'phone': 'Номер телефона занят другим работником'})
+
         # Получение владельца организации
         organization_owner = OrganizationUser.objects.filter(organization=data['organization'].id, role='owner').first()
         # Проверка на наличие активной подписки у владельца организации
@@ -81,3 +84,24 @@ class WorkerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Worker
         fields = '__all__'
+
+
+class DocumentsWorkerSerializer(serializers.ModelSerializer):
+    type_document = serializers.ChoiceField(choices=DocumentsWorker.TYPES_DOCUMENTS)
+
+    class Meta:
+        model = DocumentsWorker
+        fields = '__all__'
+        read_only_fields = ('worker_id',)
+
+    def validate(self, data):
+        if not Worker.objects.filter(pk=self.context['request'].parser_context['kwargs'].get('worker_id')).exists():
+            raise CustomValidationError({'worker_id':  'Сотрудник не найден'})
+        return data
+
+    def create(self, validated_data):
+        # print(self.context['request'].parser_context['kwargs'].get('worker'))
+        validated_data['worker_id'] = Worker.objects.filter(pk=self.context['request'].parser_context['kwargs'].get('worker_id')).first()
+        instance: DocumentsWorker = super(DocumentsWorkerSerializer, self).create(validated_data)
+        instance.save()
+        return instance

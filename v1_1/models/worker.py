@@ -41,7 +41,7 @@ class DocumentsWorker(models.Model):
         ('INN', 'ИНН')
     )
 
-    worker = models.ForeignKey(Worker, models.CASCADE)
+    worker_id = models.ForeignKey(Worker, models.CASCADE)
     type_document = models.CharField(max_length=50, choices=TYPES_DOCUMENTS)
     file_document = models.ImageField(upload_to=UploadPath('image'), null=True)
     number = models.CharField(max_length=30)

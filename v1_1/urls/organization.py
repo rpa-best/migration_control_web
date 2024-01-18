@@ -5,8 +5,8 @@ from v1_1.views.organization import OrganizationAPIViewSet, MigrationAddressAPIV
 
 router = routers.DefaultRouter()
 router.register('organization', OrganizationAPIViewSet, 'organization')
-router.register('migration_address', MigrationAddressAPIViewSet, 'migration_address')
-router.register(r'(?P<organization>\d+)/list-users', OrganizationUsersListView, 'list-users'),
+router.register('migration-address', MigrationAddressAPIViewSet, 'migration-address')
+router.register(r'(?P<organization>\d+)/users', OrganizationUsersListView, 'organization-users'),
 
 urlpatterns = [
     path('', include(router.urls)),

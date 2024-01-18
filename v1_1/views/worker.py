@@ -1,10 +1,12 @@
+from django.db.models import Q
 from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 from v1_1.models.organization import OrganizationUser
-from v1_1.models.worker import Worker
-from v1_1.permissions.owner_or_admin import IsOwnerOrIsAdministratorInOrganization
-from v1_1.serializers.worker import WorkerSerializer, CreateWorkerSerializer
+from v1_1.models.worker import Worker, DocumentsWorker
+from v1_1.permissions.owner_or_admin import IsOwnerOrIsAdministratorInOrganization, \
+    IsOwnerOrIsAdministratorInOrganizationWorker
+from v1_1.serializers.worker import WorkerSerializer, CreateWorkerSerializer, DocumentsWorkerSerializer
 
 
 @extend_schema(tags=['Worker'])
@@ -33,6 +35,23 @@ class WorkerAPIViewSet(ModelViewSet):
         # Определение разрешений в зависимости от типа запроса
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
             permission_classes = [IsOwnerOrIsAdministratorInOrganization]
+        else:
+            permission_classes = [IsAuthenticated]
+
+        return [permission() for permission in permission_classes]
+
+
+@extend_schema(tags=['Documents worker'])
+class DocumentsWorkerAPIViewSet(ModelViewSet):
+    serializer_class = DocumentsWorkerSerializer
+
+    def get_queryset(self):
+        return DocumentsWorker.objects.filter(Q(worker=self.kwargs.get('worker')))
+
+    def get_permissions(self):
+        # Определение разрешений в зависимости от типа запроса
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            permission_classes = [IsOwnerOrIsAdministratorInOrganizationWorker]
         else:
             permission_classes = [IsAuthenticated]
 

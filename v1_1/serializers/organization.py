@@ -126,7 +126,8 @@ class OrganizationCreateUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OrganizationUser
-        fields = ['username', 'name', 'organization_id', 'role']
+        fields = ('username', 'name', 'organization', 'role')
+        read_only_fields = ('organization', )
 
     def validate_username(self, value):
         organization_id = self.context['request'].parser_context['kwargs'].get('organization_id')
