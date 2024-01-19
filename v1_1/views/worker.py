@@ -2,12 +2,15 @@ from django.db.models import Q
 from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
+
+from v1_1.common_utils.custom_handler import CustomValidationError
 from v1_1.models.organization import OrganizationUser
 from v1_1.models.worker import Worker, DocumentsWorker
 from v1_1.permissions.owner_or_admin import IsOwnerOrIsAdministratorInOrganization, \
     IsOwnerOrIsAdministratorInOrganizationWorker
 from v1_1.serializers.worker import WorkerSerializer, CreateWorkerSerializer, DocumentsWorkerSerializer
-from rest_framework import mixins, viewsets
+from rest_framework import mixins, viewsets, status
+from rest_framework.response import Response
 
 
 @extend_schema(tags=['Worker'])
@@ -52,7 +55,8 @@ class ShowWorkersAPIViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, vi
         user = self.request.user
 
         # Получение организаций, в которых работает пользователь
-        organizations = OrganizationUser.objects.filter(user=user).values_list('organization', flat=True)
+        if not OrganizationUser.objects.filter(user=user, organization=self.kwargs.get('organization')).exists():
+            raise CustomValidationError({'organization': 'Вы не являетесь работником этой организации'})
 
         # Фильтрация работников по организации
         queryset = Worker.objects.filter(Q(organization=self.kwargs.get('organization')))
