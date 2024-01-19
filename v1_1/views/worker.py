@@ -48,7 +48,9 @@ class CreateAndUpdateWorkerAPIViewSet(mixins.CreateModelMixin, mixins.UpdateMode
 
 @extend_schema(tags=['Worker'])
 class ShowWorkersAPIViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+    filterset_fields = ['status']
     serializer_class = WorkerSerializer
+    permission_class = IsAuthenticated
 
     def get_queryset(self):
         # Получение авторизованного пользователя
@@ -62,15 +64,6 @@ class ShowWorkersAPIViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, vi
         queryset = Worker.objects.filter(Q(organization=self.kwargs.get('organization')))
 
         return queryset
-
-    def get_permissions(self):
-        # Определение разрешений в зависимости от типа запроса
-        if self.action in ['create', 'update', 'partial_update', 'destroy']:
-            permission_classes = [IsOwnerOrIsAdministratorInOrganization]
-        else:
-            permission_classes = [IsAuthenticated]
-
-        return [permission() for permission in permission_classes]
 
 
 @extend_schema(tags=['Documents worker'])

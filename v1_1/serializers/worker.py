@@ -14,6 +14,7 @@ class CreateWorkerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Worker
         fields = (
+            'avatar',
             'organization',
             'name',
             'surname',
@@ -100,7 +101,6 @@ class DocumentsWorkerSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
-        # print(self.context['request'].parser_context['kwargs'].get('worker'))
         validated_data['worker_id'] = Worker.objects.filter(pk=self.context['request'].parser_context['kwargs'].get('worker_id')).first()
         instance: DocumentsWorker = super(DocumentsWorkerSerializer, self).create(validated_data)
         instance.save()

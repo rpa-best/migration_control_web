@@ -15,6 +15,12 @@ class Worker(models.Model):
         ('temporary_residence', 'Разрешение на временное проживание')
     )
 
+    STATUS = (
+        ('vacancy', 'Вакансия'),
+        ('accepted', 'Принят'),
+        ('dismissed', 'Уволен'),
+    )
+
     name = models.CharField(max_length=150)
     surname = models.CharField(max_length=150)
     patronymic = models.CharField(max_length=150, blank=True, null=True)
@@ -24,6 +30,7 @@ class Worker(models.Model):
     place_birth = models.CharField(max_length=255, blank=True)
     identification_card = models.CharField(max_length=50, choices=IDENTIFICATION_CARD)
     organization = models.ForeignKey('Organization', on_delete=models.CASCADE)
+    status = models.CharField(max_length=50, choices=STATUS, default='vacancy')
     phone = models.CharField(max_length=28, unique=True, blank=True, null=True,
                              default=None)
     registration_address = models.CharField(max_length=255, blank=True)
