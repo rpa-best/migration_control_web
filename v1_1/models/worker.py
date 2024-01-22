@@ -37,6 +37,7 @@ class Worker(models.Model):
     email = models.EmailField(blank=True, null=True)
     avatar = models.ImageField(upload_to=UploadPath('image'), null=True)
     processing_personal_data = models.BooleanField(default=0)
+    date_dismissal = models.DateField(blank=True, null=True)
 
 
 class DocumentsWorker(models.Model):
