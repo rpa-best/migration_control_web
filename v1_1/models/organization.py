@@ -37,9 +37,9 @@ class Organization(models.Model):
 
 class OrganizationUser(models.Model):
     USER_ROLE_CHOICES = (
-        ('owner', 'Owner'),
-        ('admin', 'Administrator'),
-        ('observer', 'Observer'),
+        ('owner', 'Владелец'),
+        ('admin', 'Администратор'),
+        ('observer', 'Зритель'),
     )
     user = models.ForeignKey(User, on_delete=models.CASCADE, to_field='username')
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)

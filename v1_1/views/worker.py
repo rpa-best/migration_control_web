@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 
 from v1_1.common_utils.custom_handler import CustomValidationError
+from v1_1.filters.worker import WorkerFilter
 from v1_1.models.organization import OrganizationUser
 from v1_1.models.worker import Worker, DocumentsWorker
 from v1_1.permissions.owner_or_admin import IsOwnerOrIsAdministratorInOrganization, \
