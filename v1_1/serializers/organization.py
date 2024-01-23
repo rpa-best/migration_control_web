@@ -190,3 +190,7 @@ class ShowOrganizationUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrganizationUser
         fields = '__all__'
+
+
+class SearchOrganizationSerializer(serializers.Serializer):
+    inn_or_ogrn = serializers.CharField(write_only=True, required=True)

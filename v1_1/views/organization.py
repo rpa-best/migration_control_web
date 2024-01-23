@@ -1,16 +1,20 @@
 from django.db.models import Q
 from django.db.transaction import atomic
 from drf_spectacular.utils import extend_schema
-from rest_framework import status
+from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework.response import Response
+
+from api.bank_info import OrganizationSearch
+from v1_1.common_utils.custom_handler import CustomValidationError
 from v1_1.models.organization import Organization, MigrationAddress, OrganizationUser
 from v1_1.permissions.owner import IsOwner
 from v1_1.permissions.owner_or_admin import IsOwnerOrIsAdministratorInOrganization
 from v1_1.serializers.organization import OrganizationCreateSerializer, OrganizationShowSerializer, \
     OrganizationPutAndPatchSerializer, MigrationAddressSerializer, MigrationAddressShowSerializer, \
-    OrganizationCreateUserSerializer, ShowOrganizationUserSerializer
+    OrganizationCreateUserSerializer, ShowOrganizationUserSerializer, SearchOrganizationSerializer
+from rest_framework import mixins, viewsets, status
 
 
 @extend_schema(tags=['Organization'])
@@ -39,6 +43,65 @@ class OrganizationAPIViewSet(ModelViewSet):
             permission_classes = [IsAuthenticated]
 
         return [permission() for permission in permission_classes]
+
+
+@extend_schema(tags=['Organization'])
+class SearchOrganizationAPIViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    serializer_class = SearchOrganizationSerializer
+    permission_class = IsOwner
+
+    def list(self, request, **kwargs):
+        # Получение ИНН или ОРГН из пути url
+        inn_or_ogrn = self.kwargs.get('inn_or_ogrn')
+        if inn_or_ogrn.isdigit() and (len(inn_or_ogrn) == 13 or len(inn_or_ogrn) == 10):
+            info = OrganizationSearch(inn_or_ogrn)
+            if len(info) != 0:
+                try:
+                    organizational_form = info[0]['data']['opf']['short']
+                    name_organization = info[0]['value']
+                    inn = info[0]['data']['inn']
+                    legal_address = info[0]['data']['address']['unrestricted_value']
+                    actual_address = info[0]['data']['address']['unrestricted_value']
+                    management = info[0]['data']['management']['name'].split()
+                    name_director = ''
+                    surname_director = ''
+                    patronymic_director = ''
+
+                    # Проверка количества слов в строке
+                    if len(management) == 3:
+                        surname_director = management[0]
+                        name_director = management[1]
+                        patronymic_director = management[2]
+                    elif len(management) == 2:
+                        if '-' in management[1]:
+                            name_parts = management[1].split("-")
+                            name_director = name_parts[0]
+                            patronymic_director = name_parts[1]
+                        else:
+                            name_director = management[1]
+                            patronymic_director = ""
+                        surname_director = management[0]
+                    elif len(management) == 4:
+                        surname_director = management[0]
+                        name_director = management[1] + '-' + management[2]
+                        patronymic_director = management[3]
+
+                    return Response({
+                        'organizational_form': organizational_form,
+                        'name_organization': name_organization,
+                        'inn': inn,
+                        'legal_address': legal_address,
+                        'actual_address': actual_address,
+                        'surname_director': surname_director,
+                        'name_director': name_director,
+                        'patronymic_director': patronymic_director
+                    })
+                except Exception:
+                    raise CustomValidationError({'error': 'Компания не найдена'})
+            else:
+                raise CustomValidationError({'error': 'Компания не найдена'})
+        else:
+            raise CustomValidationError({'error': 'Некорректный ввод'})
 
 
 @extend_schema(tags=['Migration addresses of organizations'])
