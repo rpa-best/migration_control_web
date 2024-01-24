@@ -11,12 +11,11 @@ class Worker(models.Model):
 
     IDENTIFICATION_CARD = (
         ('passport', 'Паспорт'),
-        ('International_passport', 'Заграничный паспорт'),
-        ('temporary_residence', 'Разрешение на временное проживание')
+        ('residence_permit', 'Вид на жительство'),
+        ('certificate_asylum', 'Свидетельство о предоставлении убежища')
     )
 
     STATUS = (
-        ('vacancy', 'Вакансия'),
         ('accepted', 'Принят'),
         ('dismissed', 'Уволен'),
     )
@@ -30,7 +29,7 @@ class Worker(models.Model):
     place_birth = models.CharField(max_length=255, blank=True)
     identification_card = models.CharField(max_length=50, choices=IDENTIFICATION_CARD)
     organization = models.ForeignKey('Organization', on_delete=models.CASCADE)
-    status = models.CharField(max_length=50, choices=STATUS, default='vacancy')
+    status = models.CharField(max_length=50, choices=STATUS, default='accepted')
     phone = models.CharField(max_length=28, unique=True, blank=True, null=True,
                              default=None)
     registration_address = models.CharField(max_length=255, blank=True)
@@ -41,6 +40,11 @@ class Worker(models.Model):
 
 
 class DocumentsWorker(models.Model):
+    STATUS = (
+        ('active', 'Активный'),
+        ('in_archive', 'В архиве')
+    )
+
     TYPES_DOCUMENTS = (
         ('patent', 'Патент'),
         ('visa', 'Виза'),
@@ -57,5 +61,5 @@ class DocumentsWorker(models.Model):
     issued_whom = models.CharField(max_length=150)
     date_issue = models.DateField(blank=True, null=True)
     date_end = models.DateField(blank=True, null=True)
-
+    status = models.CharField(max_length=50, choices=STATUS)
 

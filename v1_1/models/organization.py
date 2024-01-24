@@ -14,6 +14,7 @@ class Organization(models.Model):
         ('2', 'ОАО'),
         ('3', 'НАО'),
         ('4', 'НАО'),
+        ('5', 'ЗАО')
     ]
 
     organizational_form = models.CharField(choices=ORGANIZATIONAL_FORM, default='1', max_length=1)

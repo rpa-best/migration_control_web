@@ -1,12 +1,11 @@
 from django.db.models import Q
 from django.db.transaction import atomic
 from drf_spectacular.utils import extend_schema
-from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
+from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 
-from api.bank_info import OrganizationSearch
+from v1_1.api.bank_info import OrganizationSearch
 from v1_1.common_utils.custom_handler import CustomValidationError
 from v1_1.models.organization import Organization, MigrationAddress, OrganizationUser
 from v1_1.permissions.owner import IsOwner
