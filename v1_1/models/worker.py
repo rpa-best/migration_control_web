@@ -40,26 +40,27 @@ class Worker(models.Model):
 
 
 class DocumentsWorker(models.Model):
-    STATUS = (
-        ('active', 'Активный'),
-        ('in_archive', 'В архиве')
-    )
-
     TYPES_DOCUMENTS = (
+        ('passport', 'Паспорт'),
+        ('migration_card', 'Миграционная карта'),
+        ('registration', 'Регистрация'),
         ('patent', 'Патент'),
-        ('visa', 'Виза'),
+        ('paycheck', 'Чеки'),
         ('temporary_residence', 'Разрешение на временное проживание'),
+        ('residence_permit', 'Вид на жительство'),
+        ('certificate_asylum', 'Свидетельство о предоставлении временного убежища'),
         ('SNILS', 'СНИЛС'),
         ('INN', 'ИНН')
     )
 
     worker_id = models.ForeignKey(Worker, models.CASCADE)
     type_document = models.CharField(max_length=50, choices=TYPES_DOCUMENTS)
-    file_document = models.ImageField(upload_to=UploadPath('image'), null=True)
+    file_document = models.ImageField(upload_to=UploadPath('documents'), null=True)
+    series = models.CharField(max_length=30, null=True, blank=True)
     number = models.CharField(max_length=30)
-    series = models.CharField(max_length=30)
-    issued_whom = models.CharField(max_length=150)
     date_issue = models.DateField(blank=True, null=True)
+    issued_whom = models.CharField(max_length=150)
+    territory_action = models.CharField(max_length=150, blank=True, null=True)
     date_end = models.DateField(blank=True, null=True)
-    status = models.CharField(max_length=50, choices=STATUS)
+    archive = models.BooleanField(default=0, null=True)
 
