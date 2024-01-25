@@ -88,3 +88,9 @@ class UserPvc(models.Model):
         self.pvc = generate_pvc()
         send_email(self.email, 'Код подтверждения для Миграскопа', self.pvc)
         self.save()
+
+
+class RegistrationLog(models.Model):
+    ip = models.CharField(max_length=255)
+    user_agent = models.TextField()
+    registration_time = models.DateTimeField(auto_now_add=True)

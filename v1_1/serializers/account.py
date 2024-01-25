@@ -1,11 +1,13 @@
 import re
 from django.contrib.auth.hashers import check_password
 from rest_framework import serializers
+from v1_1.common_utils import check_duplicate_registrations
 from v1_1.common_utils.custom_handler import CustomValidationError
 from v1_1.common_utils.token import get_token
 from v1_1.common_utils.validate_password import validate_password
 from v1_1.models import User
-from v1_1.models.user import UserPvc
+from v1_1.models.user import UserPvc, RegistrationLog
+from django.utils import timezone
 
 
 class AuthSerializer(serializers.Serializer):
@@ -94,6 +96,22 @@ class AccountCreateSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, data):
+        ip_address = self.context['request'].META.get('REMOTE_ADDR')
+        user_agent = self.context['request'].META.get('HTTP_USER_AGENT')
+
+        # Выборка записей, зарегистрированных с текущего IP и user agent'а за последние 24 часа
+        registrations_count = RegistrationLog.objects.filter(
+            ip=ip_address,
+            user_agent=user_agent,
+            registration_time__gte=timezone.now() - timezone.timedelta(days=1)
+        ).count()
+
+        print(registrations_count)
+
+        if registrations_count >= 6:
+            raise CustomValidationError({'error': 'Превышено максимальное количество регистраций с вашего устройства. '
+                                                  'Повторите попытку через 24 часа'})
+
         if not UserPvc.objects.filter(email=data['username'], pvc=data['pvc']).exists():
             raise CustomValidationError({'pvc':  'Неверный код'})
         return data
@@ -108,6 +126,15 @@ class AccountCreateSerializer(serializers.ModelSerializer):
         # хэш пароля устанавливается вместо самого пароля (для безопасности)
         instance.set_password(validated_data['password'])
         instance.save()
+
+        ip_address = self.context['request'].META.get('REMOTE_ADDR')
+        user_agent = self.context['request'].META.get('HTTP_USER_AGENT')
+
+        RegistrationLog.objects.create(
+            ip=ip_address,
+            user_agent=user_agent
+        )
+
         return instance
 
 
