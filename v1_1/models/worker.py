@@ -55,7 +55,6 @@ class DocumentsWorker(models.Model):
 
     worker_id = models.ForeignKey(Worker, models.CASCADE)
     type_document = models.CharField(max_length=50, choices=TYPES_DOCUMENTS)
-    file_document = models.ImageField(upload_to=UploadPath('documents'), null=True)
     series = models.CharField(max_length=30, null=True, blank=True)
     number = models.CharField(max_length=30)
     date_issue = models.DateField(blank=True, null=True)
@@ -64,3 +63,7 @@ class DocumentsWorker(models.Model):
     date_end = models.DateField(blank=True, null=True)
     archive = models.BooleanField(default=0, null=True)
 
+
+class FileDocuments(models.Model):
+    document_id = models.ForeignKey(DocumentsWorker, models.CASCADE)
+    file_document = models.ImageField(upload_to=UploadPath('documents'), null=True)
