@@ -78,7 +78,6 @@ class AccountCreateSerializer(serializers.ModelSerializer):
     @staticmethod
     def validate_password(value):
         if not validate_password(value)[0] == True:
-            print(validate_password(value)[1])
             raise CustomValidationError({'password': validate_password(value)[1]})
 
         return value

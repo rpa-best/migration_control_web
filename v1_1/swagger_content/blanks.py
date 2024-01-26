@@ -6,3 +6,9 @@ blanks = extend_schema_view(
         tags=['Blanks']
     )
 )
+
+organization_search = extend_schema_view(
+    post=extend_schema(
+        tags=['Blanks']
+    )
+)

@@ -4,7 +4,6 @@ from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
-
 from v1_1.api.bank_info import OrganizationSearch
 from v1_1.common_utils.custom_handler import CustomValidationError
 from v1_1.models.organization import Organization, MigrationAddress, OrganizationUser
@@ -44,7 +43,7 @@ class OrganizationAPIViewSet(ModelViewSet):
         return [permission() for permission in permission_classes]
 
 
-@extend_schema(tags=['Organization'])
+@extend_schema(tags=['Organization'], responses={'200': OrganizationCreateSerializer})
 class SearchOrganizationAPIViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = SearchOrganizationSerializer
     permission_class = IsOwner
@@ -85,7 +84,7 @@ class SearchOrganizationAPIViewSet(mixins.ListModelMixin, viewsets.GenericViewSe
                         name_director = management[1] + '-' + management[2]
                         patronymic_director = management[3]
 
-                    return Response({
+                    organization_data = {
                         'organizational_form': organizational_form,
                         'name_organization': name_organization,
                         'inn': inn,
@@ -94,7 +93,9 @@ class SearchOrganizationAPIViewSet(mixins.ListModelMixin, viewsets.GenericViewSe
                         'surname_director': surname_director,
                         'name_director': name_director,
                         'patronymic_director': patronymic_director
-                    })
+                    }
+                    return Response(organization_data)
+
                 except Exception:
                     raise CustomValidationError({'error': 'Компания не найдена'})
             else:
