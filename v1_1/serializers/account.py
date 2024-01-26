@@ -1,7 +1,6 @@
 import re
 from django.contrib.auth.hashers import check_password
 from rest_framework import serializers
-from v1_1.common_utils import check_duplicate_registrations
 from v1_1.common_utils.custom_handler import CustomValidationError
 from v1_1.common_utils.token import get_token
 from v1_1.common_utils.validate_password import validate_password
@@ -103,10 +102,9 @@ class AccountCreateSerializer(serializers.ModelSerializer):
         registrations_count = RegistrationLog.objects.filter(
             ip=ip_address,
             user_agent=user_agent,
+            # больше или равно текущему времени минус один день.
             registration_time__gte=timezone.now() - timezone.timedelta(days=1)
         ).count()
-
-        print(registrations_count)
 
         if registrations_count >= 6:
             raise CustomValidationError({'error': 'Превышено максимальное количество регистраций с вашего устройства. '
@@ -118,8 +116,10 @@ class AccountCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         UserPvc.objects.filter(email=validated_data.get('email'), pvc=validated_data.get('pvc')).delete()
+
         if validated_data['verified_password'] != validated_data['password']:
             raise CustomValidationError({'verified_password': 'Пароли не совпадают'})
+
         validated_data.pop('verified_password')
         validated_data.pop('pvc')
         instance: User = super(AccountCreateSerializer, self).create(validated_data)

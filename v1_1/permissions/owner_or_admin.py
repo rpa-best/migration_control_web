@@ -21,8 +21,8 @@ class IsOwnerOrIsAdministratorInOrganization(BasePermission):
 
         if request.user.is_authenticated:
             # Проверяем, является ли пользователь владельцем или администратором организации
-            if OrganizationUser.objects.filter(user=request.user, organization=organization, role='owner').exists() or\
-            OrganizationUser.objects.filter(user=request.user, organization=organization, role='admin').exists():
+            if (OrganizationUser.objects.filter(user=request.user, organization=organization, role='owner').exists() or
+                    OrganizationUser.objects.filter(user=request.user, organization=organization, role='admin').exists()):
                 # Получение владельца организации
                 owner = OrganizationUser.objects.filter(organization=organization, role='owner').first().user
                 # Проверка на активную подписку владельца
