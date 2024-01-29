@@ -11,10 +11,10 @@ class BankInfo(models.Model):
 class Organization(models.Model):
     ORGANIZATIONAL_FORM = [
         ('1', 'ООО'),
-        ('2', 'ОАО'),
-        ('3', 'НАО'),
+        ('3', 'ПАО'),
         ('4', 'НАО'),
-        ('5', 'ЗАО')
+        ('5', 'ЗАО'),
+        ('6', 'ИП'),
     ]
 
     organizational_form = models.CharField(choices=ORGANIZATIONAL_FORM, default='1', max_length=1)
