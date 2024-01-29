@@ -29,6 +29,7 @@ class Worker(models.Model):
     place_birth = models.CharField(max_length=255, blank=True)
     identification_card = models.CharField(max_length=50, choices=IDENTIFICATION_CARD)
     organization = models.ForeignKey('Organization', on_delete=models.CASCADE)
+    position = models.CharField(max_length=255, blank=True)
     status = models.CharField(max_length=50, choices=STATUS, default='accepted')
     phone = models.CharField(max_length=28, unique=True, blank=True, null=True,
                              default=None)
