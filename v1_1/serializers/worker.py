@@ -3,7 +3,8 @@ from rest_framework import serializers
 from v1_1.common_utils.custom_handler import CustomValidationError
 from v1_1.models.organization import OrganizationUser
 from v1_1.models.subscription import Subscription
-from v1_1.models.worker import Worker, DocumentsWorker
+from v1_1.models.worker import Worker, DocumentsWorker, FileDocuments
+import copy
 
 
 class CreateWorkerSerializer(serializers.ModelSerializer):
@@ -89,11 +90,28 @@ class WorkerSerializer(serializers.ModelSerializer):
 
 class DocumentsWorkerSerializer(serializers.ModelSerializer):
     type_document = serializers.ChoiceField(choices=DocumentsWorker.TYPES_DOCUMENTS)
+    file_document = serializers.FileField(required=False)
 
     class Meta:
         model = DocumentsWorker
-        fields = '__all__'
+        fields = (
+            'file_document',
+            'type_document',
+            'series',
+            'number',
+            'date_issue',
+            'issued_whom',
+            'territory_action',
+            'date_end',
+            'archive'
+        )
         read_only_fields = ('worker_id',)
+
+    def get_file_document(self, obj):
+        if obj.file_document:
+            print(self.context['request'].build_absolute_uri(obj.file_document.url))
+            return self.context['request'].build_absolute_uri(obj.file_document.url)
+        return None
 
     def validate(self, data):
         if not Worker.objects.filter(pk=self.context['request'].parser_context['kwargs'].get('worker_id')).exists():
@@ -102,6 +120,32 @@ class DocumentsWorkerSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data['worker_id'] = Worker.objects.filter(pk=self.context['request'].parser_context['kwargs'].get('worker_id')).first()
+        # независимое копирование словаря
+        file_document_data = copy.deepcopy(validated_data)
+        # Удаление ключа `file_documents` из словаря, поскольку он не содержится в модели `DocumentsWorker`,
+        # но есть в модели `FileDocuments`
+        validated_data.pop('file_document', None)
+
         instance: DocumentsWorker = super(DocumentsWorkerSerializer, self).create(validated_data)
         instance.save()
-        return instance
+
+        response_data = {
+            'id': instance.id,
+            'type_document': instance.type_document,
+            'series': instance.series,
+            'number': instance.number,
+            'date_issue': instance.date_issue,
+            'issued_whom': instance.issued_whom,
+            'territory_action': instance.territory_action,
+            'date_end': instance.date_end,
+            'archive': instance.archive
+        }
+
+        if file_document_data:
+            file_document = FileDocuments.objects.create(document_id=instance, file_document=file_document_data['file_document'])
+            response_data.update({
+                'file_document_id': file_document.id,
+                'file_document': self.context['request'].build_absolute_uri(file_document.file_document.url)
+            })
+
+        return response_data
