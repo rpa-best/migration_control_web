@@ -95,6 +95,7 @@ class DocumentsWorkerSerializer(serializers.ModelSerializer):
     class Meta:
         model = DocumentsWorker
         fields = (
+            'id',
             'file_document',
             'type_document',
             'series',
@@ -105,7 +106,7 @@ class DocumentsWorkerSerializer(serializers.ModelSerializer):
             'date_end',
             'archive'
         )
-        read_only_fields = ('worker_id',)
+        read_only_fields = ('id', 'worker_id',)
 
     def validate(self, data):
         if not Worker.objects.filter(pk=self.context['request'].parser_context['kwargs'].get('worker_id')).exists():
@@ -143,3 +144,37 @@ class DocumentsWorkerSerializer(serializers.ModelSerializer):
             })
 
         return response_data
+
+
+class FileDocumentsSerializer(serializers.ModelSerializer):
+    file_document = serializers.FileField(required=True)
+
+    class Meta:
+        model = FileDocuments
+        fields = '__all__'
+        read_only_fields = ('document_id',)
+
+    def validate(self, data):
+        document_id = self.context['request'].parser_context['kwargs'].get('document_id')
+        # Проверка на существование документа работника.
+        if not DocumentsWorker.objects.filter(pk=document_id).exists():
+            raise CustomValidationError({'document_id': 'Документ не найден'})
+
+        # Проверка на количество загруженных файлов для документа
+        if FileDocuments.objects.filter(document_id=document_id).count() >= 20:
+            raise CustomValidationError({'file_document': 'Превышено максимальное количество файлов для документа'})
+
+        return data
+
+    def create(self, validated_data):
+        document_id = self.context['request'].parser_context['kwargs'].get('document_id')
+        document_worker = DocumentsWorker.objects.get(pk=document_id)
+
+        file = FileDocuments.objects.create(document_id=document_worker, file_document=validated_data['file_document'])
+
+        response_date = {
+            'document_id': file.id,
+            'file_document': self.context['request'].build_absolute_uri(file.file_document.url)
+        }
+
+        return response_date

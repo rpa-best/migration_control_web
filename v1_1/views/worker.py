@@ -2,14 +2,14 @@ from django.db.models import Q
 from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
-
 from v1_1.common_utils.custom_handler import CustomValidationError
 from v1_1.filters.worker import WorkerFilter
 from v1_1.models.organization import OrganizationUser
-from v1_1.models.worker import Worker, DocumentsWorker
+from v1_1.models.worker import Worker, DocumentsWorker, FileDocuments
 from v1_1.permissions.owner_or_admin import IsOwnerOrIsAdministratorInOrganization, \
-    IsOwnerOrIsAdministratorInOrganizationWorker
-from v1_1.serializers.worker import WorkerSerializer, CreateWorkerSerializer, DocumentsWorkerSerializer
+    IsOwnerOrIsAdministratorInOrganizationWorker, IsOwnerOrIsAdministratorForFileDocument
+from v1_1.serializers.worker import WorkerSerializer, CreateWorkerSerializer, DocumentsWorkerSerializer, \
+    FileDocumentsSerializer
 from rest_framework import mixins, viewsets, status
 from rest_framework.response import Response
 
@@ -87,4 +87,27 @@ class DocumentsWorkerAPIViewSet(ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         response_data = serializer.create(serializer.validated_data)  # Используем метод create из сериализатора
+        return Response(response_data)
+
+
+@extend_schema(tags=['Documents worker'])
+class FileDocumentsAPIViewSet(ModelViewSet):
+    serializer_class = FileDocumentsSerializer
+
+    def get_queryset(self):
+        return FileDocuments.objects.filter(Q(document_id=self.kwargs.get('document_id')))
+
+    def get_permissions(self):
+        # Определение разрешений в зависимости от типа запроса
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            permission_classes = [IsOwnerOrIsAdministratorForFileDocument]
+        else:
+            permission_classes = [IsAuthenticated]
+
+        return [permission() for permission in permission_classes]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        response_data = serializer.create(serializer.validated_data)
         return Response(response_data)
