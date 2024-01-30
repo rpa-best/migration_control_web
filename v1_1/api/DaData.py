@@ -6,5 +6,9 @@ dadata = Dadata(token)
 def OrganizationSearch(value):
     return dadata.find_by_id('party', value)
 
+
 def AddressSearch(value):
-    return dadata.suggest('address', value)[0]['unrestricted_value']
+    try:
+        return dadata.suggest('address', value)[0]['unrestricted_value']
+    except ValueError:
+        return None

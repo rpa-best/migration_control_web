@@ -1,5 +1,7 @@
 from django.db.transaction import atomic
 from rest_framework import serializers
+
+from v1_1.api.DaData import AddressSearch
 from v1_1.common_utils.custom_handler import CustomValidationError
 from v1_1.models.organization import Organization, MigrationAddress, OrganizationUser
 from v1_1.models.subscription import Subscription
@@ -16,6 +18,8 @@ class OrganizationShowSerializer(serializers.ModelSerializer):
 
 class OrganizationCreateSerializer(serializers.ModelSerializer):
     organizational_form = serializers.ChoiceField(choices=Organization.ORGANIZATIONAL_FORM)
+    legal_address = serializers.CharField()
+    actual_address = serializers.CharField()
     patronymic_director = serializers.CharField(required=False)
     inn = serializers.CharField(max_length=20)
 
@@ -31,6 +35,16 @@ class OrganizationCreateSerializer(serializers.ModelSerializer):
             'legal_address',
             'actual_address'
         )
+
+    def validate_legal_address(self, value):
+        if AddressSearch(value) is not None:
+            return AddressSearch(value)
+        return value
+
+    def validate_actual_address(self, value):
+        if AddressSearch(value) is not None:
+            return AddressSearch(value)
+        return value
 
     def validate_inn(self, value):
         if Organization.objects.filter(inn=value).exists():
@@ -65,6 +79,9 @@ class OrganizationCreateSerializer(serializers.ModelSerializer):
 
 
 class OrganizationPutAndPatchSerializer(serializers.ModelSerializer):
+    organizational_form = serializers.ChoiceField(choices=Organization.ORGANIZATIONAL_FORM)
+    legal_address = serializers.CharField()
+    actual_address = serializers.CharField()
     patronymic_director = serializers.CharField(required=False)
 
     class Meta:
@@ -81,6 +98,16 @@ class OrganizationPutAndPatchSerializer(serializers.ModelSerializer):
             'legal_address',
             'actual_address'
         )
+
+    def validate_legal_address(self, value):
+        if AddressSearch(value) is not None:
+            return AddressSearch(value)
+        return value
+
+    def validate_actual_address(self, value):
+        if AddressSearch(value) is not None:
+            return AddressSearch(value)
+        return value
 
     def validate_inn(self, value):
         if Organization.objects.filter(inn=value).exists():

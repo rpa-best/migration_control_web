@@ -10,13 +10,12 @@ from v1_1.permissions.owner_or_admin import IsOwnerOrIsAdministratorInOrganizati
     IsOwnerOrIsAdministratorInOrganizationWorker, IsOwnerOrIsAdministratorForFileDocument
 from v1_1.serializers.worker import WorkerSerializer, CreateWorkerSerializer, DocumentsWorkerSerializer, \
     FileDocumentsSerializer
-from rest_framework import mixins, viewsets, status
+from rest_framework import mixins, viewsets
 from rest_framework.response import Response
 
 
 @extend_schema(tags=['Worker'])
-class CreateAndUpdateWorkerAPIViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,
-                       viewsets.GenericViewSet):
+class CreateWorkerAPIViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
     def get_serializer_class(self):
         if self.action in ['create']:
             serializer_class = CreateWorkerSerializer
@@ -45,6 +44,24 @@ class CreateAndUpdateWorkerAPIViewSet(mixins.CreateModelMixin, mixins.UpdateMode
             permission_classes = [IsAuthenticated]
 
         return [permission() for permission in permission_classes]
+
+
+@extend_schema(tags=['Worker'])
+class UpdateWorkerAPIViewSet(mixins.UpdateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
+    serializer_class = WorkerSerializer
+    permission_class = IsOwnerOrIsAdministratorInOrganizationWorker
+
+    def get_queryset(self):
+        # Получение авторизованного пользователя
+        user = self.request.user
+
+        # Получение организаций, в которых работает пользователь
+        organizations = OrganizationUser.objects.filter(user=user).values_list('organization', flat=True)
+
+        # Фильтрация работников по организации
+        queryset = Worker.objects.filter(organization__in=organizations)
+
+        return queryset
 
 
 @extend_schema(tags=['Worker'])

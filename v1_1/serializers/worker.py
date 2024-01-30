@@ -1,5 +1,7 @@
 import re
 from rest_framework import serializers
+
+from v1_1.api.DaData import AddressSearch
 from v1_1.common_utils.custom_handler import CustomValidationError
 from v1_1.models.organization import OrganizationUser
 from v1_1.models.subscription import Subscription
@@ -82,10 +84,16 @@ class CreateWorkerSerializer(serializers.ModelSerializer):
 
 
 class WorkerSerializer(serializers.ModelSerializer):
+    registration_address = serializers.CharField()
 
     class Meta:
         model = Worker
         fields = '__all__'
+
+    def validate_registration_address(self, value):
+        if AddressSearch(value) is not None:
+            return AddressSearch(value)
+        return value
 
 
 class DocumentsWorkerSerializer(serializers.ModelSerializer):

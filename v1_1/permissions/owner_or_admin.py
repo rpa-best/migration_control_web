@@ -37,9 +37,11 @@ class IsOwnerOrIsAdministratorInOrganization(BasePermission):
 # Разрешение для взаимодействия с работниками
 class IsOwnerOrIsAdministratorInOrganizationWorker(BasePermission):
     def has_permission(self, request, view):
+        print('ddf')
 
         if request.user.is_authenticated:
             if Worker.objects.filter(pk=view.kwargs.get('worker_id')).exists():
+                print('dfdfd')
                 # Получение id организации работника
                 organization = Worker.objects.filter(pk=view.kwargs.get('worker_id')).first().organization.id
                 # Проверяем, является ли пользователь владельцем или администратором организации
