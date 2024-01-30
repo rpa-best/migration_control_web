@@ -107,12 +107,6 @@ class DocumentsWorkerSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ('worker_id',)
 
-    def get_file_document(self, obj):
-        if obj.file_document:
-            print(self.context['request'].build_absolute_uri(obj.file_document.url))
-            return self.context['request'].build_absolute_uri(obj.file_document.url)
-        return None
-
     def validate(self, data):
         if not Worker.objects.filter(pk=self.context['request'].parser_context['kwargs'].get('worker_id')).exists():
             raise CustomValidationError({'worker_id':  'Сотрудник не найден'})
