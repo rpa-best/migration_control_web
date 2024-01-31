@@ -99,6 +99,7 @@ class WorkerSerializer(serializers.ModelSerializer):
 class DocumentsWorkerSerializer(serializers.ModelSerializer):
     type_document = serializers.ChoiceField(choices=DocumentsWorker.TYPES_DOCUMENTS)
     file_document = serializers.FileField(required=False)
+    archive = serializers.BooleanField()
 
     class Meta:
         model = DocumentsWorker
@@ -119,6 +120,12 @@ class DocumentsWorkerSerializer(serializers.ModelSerializer):
     def validate(self, data):
         if not Worker.objects.filter(pk=self.context['request'].parser_context['kwargs'].get('worker_id')).exists():
             raise CustomValidationError({'worker_id':  'Сотрудник не найден'})
+
+        if DocumentsWorkerSerializer.objects.filter(type_document=data['type_document']).exists() and data['archive'] is True:
+            raise CustomValidationError({'error':  'У сотрудника уже есть такой активный документ. Для добавления '
+                                                   'текущего документа необходимо один из документов '
+                                                   'записать в архив'})
+
         return data
 
     def create(self, validated_data):
