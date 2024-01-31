@@ -121,7 +121,8 @@ class DocumentsWorkerSerializer(serializers.ModelSerializer):
         if not Worker.objects.filter(pk=self.context['request'].parser_context['kwargs'].get('worker_id')).exists():
             raise CustomValidationError({'worker_id':  'Сотрудник не найден'})
 
-        if DocumentsWorkerSerializer.objects.filter(type_document=data['type_document']).exists() and data['archive'] is True:
+        if DocumentsWorkerSerializer.objects.filter(type_document=data['type_document'],
+                                                    worker_id=self.context['request'].parser_context['kwargs'].get('worker_id')).exists() and data['archive'] is True:
             raise CustomValidationError({'error':  'У сотрудника уже есть такой активный документ. Для добавления '
                                                    'текущего документа необходимо один из документов '
                                                    'записать в архив'})
