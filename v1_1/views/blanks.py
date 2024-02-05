@@ -1,6 +1,7 @@
 from rest_framework.generics import CreateAPIView
 from v1_1.common_utils.generation_employment_contract import GenerationEmploymentContractDocument
-from v1_1.serializers.blanks import SerializersNoticeConclusion, SerializersEmploymentContract
+from v1_1.serializers.blanks import SerializersNoticeConclusion, SerializersEmploymentContract, \
+    SerializersSuspensionOrder
 from rest_framework.response import Response
 from v1_1.swagger_content.blanks import blanks
 import openpyxl
@@ -11,11 +12,22 @@ from django.http import HttpResponse
 class EmploymentContractAPIView(CreateAPIView):
     serializer_class = SerializersEmploymentContract
 
-    def post(self, request,  **kwargs):
+    def post(self, request, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return GenerationEmploymentContractDocument(request.data)
+
+
+@blanks
+class SuspensionOrderAPIView(CreateAPIView):
+    serializer_class = SerializersSuspensionOrder
+
+    def post(self, request, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({serializer.data})
 
 
 @blanks
