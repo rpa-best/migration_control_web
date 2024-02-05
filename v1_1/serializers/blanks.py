@@ -31,7 +31,6 @@ class SerializersEmploymentContract(serializers.Serializer):
         for organization in OrganizationUser.objects.filter(user_id=user):
             list_organizations.append(organization.organization_id)
 
-        print(list_organizations)
         #Можно формировать бланки только для своих работников
         print(Worker.objects.get(pk=value).organization_id not in list_organizations)
         if Worker.objects.get(pk=value).organization_id not in list_organizations:

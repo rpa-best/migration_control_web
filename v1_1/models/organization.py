@@ -55,3 +55,16 @@ class OrganizationUser(models.Model):
 class MigrationAddress(models.Model):
     organization = models.ForeignKey(Organization, models.CASCADE)
     name = models.CharField(max_length=255, blank=True)
+
+
+class ResponsiblePersons(models.Model):
+    organization_id = models.ForeignKey(Organization, on_delete=models.CASCADE)
+    name = models.CharField(max_length=150)
+    surname = models.CharField(max_length=150)
+    patronymic = models.CharField(max_length=150, blank=True, null=True)
+    passport_series = models.CharField(max_length=20, blank=True, null=True)
+    passport_number = models.CharField(max_length=255, blank=True, null=True)
+    issued_whom = models.CharField(max_length=150)
+    date_issue_passport = models.DateField(blank=True, null=True)
+    date_end_passport = models.DateField(blank=True, null=True)
+
