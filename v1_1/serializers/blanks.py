@@ -40,6 +40,27 @@ class SerializersEmploymentContract(serializers.Serializer):
         return validated_data
 
 
+class SerializersSuspensionOrder(serializers.Serializer):
+    REASON_SUSPENSION = (
+        ('valid_residence_permit', 'действующего Вида на жительство'),
+        ('valid_patent', 'действующего патента'),
+        ('valid_temporary_residence_permit', 'действующего разрешения на временное проживание'),
+        ('getting_vaccinated', 'справки о прохождении вакцинации от кори или отказа от вакцинации, заверенного врачом'),
+        ('passing_medical_examination', 'справки о прохождении медосмотра'),
+        ('passing_analysis', 'справки о сдаче анализа крови на антитела'),
+        ('checks', 'чеков, подтверждающих авансовую оплату за патент'),
+    )
+
+    number = serializers.CharField(write_only=True, max_length=10)
+    start_date = serializers.DateField(write_only=True)
+    reason_suspension = serializers.ChoiceField(choices=REASON_SUSPENSION)
+    first_point_performer = serializers.IntegerField()
+    second_point_performer = serializers.IntegerField()
+
+    def create(self, validated_data):
+        return validated_data
+
+
 # Уведомление о заключении
 class SerializersNoticeConclusion(serializers.Serializer):
     BASE_TYPE_CHOICES = (
