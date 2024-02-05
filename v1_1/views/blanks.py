@@ -1,4 +1,5 @@
 from rest_framework.generics import CreateAPIView
+from v1_1.common_utils.generation_employment_contract import GenerationEmploymentContractDocument
 from v1_1.serializers.blanks import SerializersNoticeConclusion, SerializersEmploymentContract
 from rest_framework.response import Response
 from v1_1.swagger_content.blanks import blanks
@@ -14,7 +15,7 @@ class EmploymentContractAPIView(CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(serializer.data)
+        return GenerationEmploymentContractDocument(request.data)
 
 
 @blanks

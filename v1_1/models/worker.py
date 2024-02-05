@@ -66,5 +66,5 @@ class DocumentsWorker(models.Model):
 
 
 class FileDocuments(models.Model):
-    document_id = models.ForeignKey(DocumentsWorker, models.CASCADE)
+    document_id = models.ForeignKey(DocumentsWorker, on_delete=models.CASCADE)
     file_document = models.FileField(upload_to=UploadPath('documents'), null=True, blank=True)

@@ -2,12 +2,6 @@ from django.db import models
 from v1_1.models.user import User
 
 
-class BankInfo(models.Model):
-    bank_id = models.CharField(max_length=9)
-    correspondent_account = models.CharField(max_length=20)
-    payment_account = models.CharField(max_length=20)
-
-
 class Organization(models.Model):
     ORGANIZATIONAL_FORM = [
         ('1', 'ООО'),
@@ -22,11 +16,12 @@ class Organization(models.Model):
     inn = models.CharField(max_length=20, unique=True)
     kpp = models.CharField(max_length=9, blank=True, null=True)
     ogrn = models.CharField(max_length=13, blank=True, null=True)
+    bic = models.IntegerField(blank=True, null=True)
     name_director = models.CharField(max_length=150, blank=True, null=True)
     surname_director = models.CharField(max_length=150, blank=True, null=True)
     patronymic_director = models.CharField(max_length=150, blank=True, null=True)
+    phone = models.CharField(max_length=28, unique=True, blank=True, null=True, default=None)
     owner = models.ForeignKey(User, models.CASCADE, blank=True, null=True)
-    bank_info_id = models.ForeignKey(BankInfo, models.PROTECT, blank=True, null=True)
     legal_address = models.CharField(max_length=255, blank=True)
     actual_address = models.CharField(max_length=255, blank=True)
     create_at = models.DateTimeField(auto_now=True)
@@ -34,6 +29,13 @@ class Organization(models.Model):
 
     def __str__(self):
         return f"{self.get_organizational_form_display()}"
+
+
+class Bank(models.Model):
+    organization_id = models.ForeignKey(Organization, on_delete=models.CASCADE, unique=True)
+    name = models.CharField(max_length=255, blank=True)
+    correspondent_account = models.CharField(max_length=20)
+    payment_account = models.CharField(max_length=20)
 
 
 class OrganizationUser(models.Model):

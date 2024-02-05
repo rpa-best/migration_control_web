@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from v1_1.common_utils.custom_handler import CustomValidationError
+from v1_1.models import OrganizationUser
+from v1_1.models.worker import Worker
 
 
 # Трудовой договор
@@ -11,7 +13,7 @@ class SerializersEmploymentContract(serializers.Serializer):
 
     worker_id = serializers.IntegerField()
     number = serializers.CharField(write_only=True, max_length=10)
-    job_title = serializers.CharField(write_only=True, max_length=30)
+    position = serializers.CharField(write_only=True, max_length=30)
     salary = serializers.IntegerField(write_only=True)
     contract_type = serializers.ChoiceField(choices=CONTRACT_TYPE)
     start_date = serializers.DateField(write_only=True)
@@ -19,6 +21,21 @@ class SerializersEmploymentContract(serializers.Serializer):
     start_time = serializers.TimeField(write_only=True)
     end_time = serializers.TimeField(write_only=True)
     cause = serializers.CharField()
+
+    def validate_worker_id(self, value):
+        if not Worker.objects.filter(pk=value).exists():
+            raise CustomValidationError({'worker_id': 'Работника не существует'})
+
+        user = self.context['request'].user.username
+        list_organizations = []
+        for organization in OrganizationUser.objects.filter(user_id=user):
+            list_organizations.append(organization.organization_id)
+
+        print(list_organizations)
+        #Можно формировать бланки только для своих работников
+        print(Worker.objects.get(pk=value).organization_id not in list_organizations)
+        if Worker.objects.get(pk=value).organization_id not in list_organizations:
+            raise CustomValidationError({'worker_id': 'Работника не из вашей организации'})
 
     def create(self, validated_data):
         return validated_data

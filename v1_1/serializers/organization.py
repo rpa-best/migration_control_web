@@ -1,6 +1,6 @@
 from django.db.transaction import atomic
 from rest_framework import serializers
-from v1_1.api.DaData import AddressSearch
+from v1_1.apies.DaData import AddressSearch
 from v1_1.common_utils.custom_handler import CustomValidationError
 from v1_1.models.organization import Organization, MigrationAddress, OrganizationUser
 from v1_1.models.subscription import Subscription
@@ -91,9 +91,11 @@ class OrganizationPutAndPatchSerializer(serializers.ModelSerializer):
             'inn',
             'kpp',
             'ogrn',
+            'bic',
             'name_director',
             "surname_director",
             'patronymic_director',
+            'phone',
             'legal_address',
             'actual_address'
         )

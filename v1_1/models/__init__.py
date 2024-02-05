@@ -1,6 +1,6 @@
 from .user import User
-from .organization import BankInfo, OrganizationUser
+from .organization import Bank, OrganizationUser
 
 __all__ = [
-    'User', 'BankInfo', 'OrganizationUser'
+    'User', 'Bank', 'OrganizationUser'
 ]

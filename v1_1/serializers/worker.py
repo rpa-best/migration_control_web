@@ -1,6 +1,6 @@
 import re
 from rest_framework import serializers
-from v1_1.api.DaData import AddressSearch
+from v1_1.apies.DaData import AddressSearch
 from v1_1.common_utils.custom_handler import CustomValidationError
 from v1_1.models.organization import OrganizationUser
 from v1_1.models.subscription import Subscription
@@ -98,7 +98,7 @@ class WorkerSerializer(serializers.ModelSerializer):
 class DocumentsWorkerSerializer(serializers.ModelSerializer):
     type_document = serializers.ChoiceField(choices=DocumentsWorker.TYPES_DOCUMENTS)
     file_document = serializers.FileField(required=False)
-    archive = serializers.BooleanField()
+    archive = serializers.BooleanField(required=False)
 
     class Meta:
         model = DocumentsWorker
@@ -120,8 +120,12 @@ class DocumentsWorkerSerializer(serializers.ModelSerializer):
         if not Worker.objects.filter(pk=self.context['request'].parser_context['kwargs'].get('worker_id')).exists():
             raise CustomValidationError({'worker_id':  'Сотрудник не найден'})
 
-        if DocumentsWorkerSerializer.objects.filter(type_document=data['type_document'],
-                                                    worker_id=self.context['request'].parser_context['kwargs'].get('worker_id')).exists() and data['archive'] is True:
+        if 'archive' not in data:
+            data['archive'] = False
+
+        if DocumentsWorker.objects.filter(type_document=data['type_document'],
+                                          worker_id=self.context['request'].parser_context['kwargs'].get(
+                                                        'worker_id')).exists() and data['archive'] is False:
             raise CustomValidationError({'error':  'У сотрудника уже есть такой активный документ. Для добавления '
                                                    'текущего документа необходимо один из документов '
                                                    'записать в архив'})
