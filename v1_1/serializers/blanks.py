@@ -74,6 +74,14 @@ class SerializersSuspensionOrder(serializers.Serializer):
         return validated_data
 
 
+# Платёжное поручение
+class SerializersGenerationPaymentOrderForAdvancePayment(serializers.Serializer):
+    number_months = serializers.IntegerField(write_only=True, required=True)
+
+    def create(self, validated_data):
+        return validated_data
+
+
 # Уведомление о заключении
 class SerializersNoticeConclusion(serializers.Serializer):
     BASE_TYPE_CHOICES = (
