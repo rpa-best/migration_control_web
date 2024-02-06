@@ -32,7 +32,7 @@ class Organization(models.Model):
 
 
 class Bank(models.Model):
-    organization_id = models.ForeignKey(Organization, on_delete=models.CASCADE, unique=True)
+    organization_id = models.OneToOneField(Organization, on_delete=models.CASCADE, unique=True)
     name = models.CharField(max_length=255, blank=True)
     correspondent_account = models.CharField(max_length=20)
     payment_account = models.CharField(max_length=20)

@@ -32,7 +32,6 @@ class SerializersEmploymentContract(serializers.Serializer):
             list_organizations.append(organization.organization_id)
 
         #Можно формировать бланки только для своих работников
-        print(Worker.objects.get(pk=value).organization_id not in list_organizations)
         if Worker.objects.get(pk=value).organization_id not in list_organizations:
             raise CustomValidationError({'worker_id': 'Работника не из вашей организации'})
 
@@ -51,11 +50,25 @@ class SerializersSuspensionOrder(serializers.Serializer):
         ('checks', 'чеков, подтверждающих авансовую оплату за патент'),
     )
 
-    number = serializers.CharField(write_only=True, max_length=10)
-    start_date = serializers.DateField(write_only=True)
-    reason_suspension = serializers.ChoiceField(choices=REASON_SUSPENSION)
-    first_point_performer = serializers.IntegerField()
-    second_point_performer = serializers.IntegerField()
+    worker_id = serializers.IntegerField(required=True)
+    number = serializers.CharField(write_only=True, max_length=10, required=True)
+    start_date = serializers.DateField(write_only=True, required=True)
+    reason_suspension = serializers.ChoiceField(choices=REASON_SUSPENSION, required=True)
+    first_manager_id = serializers.IntegerField(required=True)
+    second_manager_id = serializers.IntegerField(required=True)
+
+    def validate_worker_id(self, value):
+        if not Worker.objects.filter(pk=value).exists():
+            raise CustomValidationError({'worker_id': 'Работника не существует'})
+
+        user = self.context['request'].user.username
+        list_organizations = []
+        for organization in OrganizationUser.objects.filter(user_id=user):
+            list_organizations.append(organization.organization_id)
+
+        #Можно формировать бланки только для своих работников
+        if Worker.objects.get(pk=value).organization_id not in list_organizations:
+            raise CustomValidationError({'worker_id': 'Работника не из вашей организации'})
 
     def create(self, validated_data):
         return validated_data

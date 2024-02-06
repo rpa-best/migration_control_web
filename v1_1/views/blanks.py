@@ -1,5 +1,6 @@
 from rest_framework.generics import CreateAPIView
 from v1_1.common_utils.generation_employment_contract import GenerationEmploymentContractDocument
+from v1_1.common_utils.generation_suspension_order import GenerationSuspensionOrder
 from v1_1.serializers.blanks import SerializersNoticeConclusion, SerializersEmploymentContract, \
     SerializersSuspensionOrder
 from rest_framework.response import Response
@@ -27,7 +28,7 @@ class SuspensionOrderAPIView(CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response({serializer.data})
+        return GenerationSuspensionOrder(request.data)
 
 
 @blanks
