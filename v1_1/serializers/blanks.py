@@ -79,6 +79,19 @@ class SerializersGenerationPaymentOrder(serializers.Serializer):
     worker_id = serializers.IntegerField(required=True)
     number_months = serializers.IntegerField(write_only=True, required=True)
 
+    def validate_worker_id(self, value):
+        if not Worker.objects.filter(pk=value).exists():
+            raise CustomValidationError({'worker_id': 'Работника не существует'})
+
+        user = self.context['request'].user.username
+        list_organizations = []
+        for organization in OrganizationUser.objects.filter(user_id=user):
+            list_organizations.append(organization.organization_id)
+
+        #Можно формировать бланки только для своих работников
+        if Worker.objects.get(pk=value).organization_id not in list_organizations:
+            raise CustomValidationError({'worker_id': 'Работника не из вашей организации'})
+
     def create(self, validated_data):
         return validated_data
 
