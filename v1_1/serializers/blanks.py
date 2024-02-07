@@ -5,7 +5,7 @@ from v1_1.models.worker import Worker
 
 
 # Трудовой договор
-class SerializersEmploymentContract(serializers.Serializer):
+class EmploymentContractSerializer(serializers.Serializer):
     CONTRACT_TYPE = (
         ('perpetual', 'Бессрочный договор'),
         ('urgent', 'Срочный договор')
@@ -39,7 +39,7 @@ class SerializersEmploymentContract(serializers.Serializer):
         return validated_data
 
 
-class SerializersSuspensionOrder(serializers.Serializer):
+class SuspensionOrderSerializer(serializers.Serializer):
     REASON_SUSPENSION = (
         ('valid_residence_permit', 'действующего Вида на жительство'),
         ('valid_patent', 'действующего патента'),
@@ -75,7 +75,7 @@ class SerializersSuspensionOrder(serializers.Serializer):
 
 
 # Платёжное поручение
-class SerializersGenerationPaymentOrder(serializers.Serializer):
+class GenerationPaymentOrderSerializer(serializers.Serializer):
     worker_id = serializers.IntegerField(required=True)
     number_months = serializers.IntegerField(write_only=True, required=True)
 
@@ -122,7 +122,7 @@ class ContractProvisionPaidServicesSerializer(serializers.Serializer):
 
 
 # Уведомление о заключении
-class SerializersNoticeConclusion(serializers.Serializer):
+class NoticeConclusionSerializer(serializers.Serializer):
     BASE_TYPE_CHOICES = (
         ('employment_contract', 'Трудовой договор'),
         ('civil_contract', 'Гражданско-правовой договор на выполнение работ (оказание услуг)')
