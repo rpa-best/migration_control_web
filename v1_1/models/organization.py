@@ -16,7 +16,6 @@ class Organization(models.Model):
     inn = models.CharField(max_length=20, unique=True)
     kpp = models.CharField(max_length=9, blank=True, null=True)
     ogrn = models.CharField(max_length=13, blank=True, null=True)
-    bic = models.IntegerField(blank=True, null=True)
     name_director = models.CharField(max_length=150, blank=True, null=True)
     surname_director = models.CharField(max_length=150, blank=True, null=True)
     patronymic_director = models.CharField(max_length=150, blank=True, null=True)
@@ -33,9 +32,12 @@ class Organization(models.Model):
 
 class Bank(models.Model):
     organization_id = models.OneToOneField(Organization, on_delete=models.CASCADE, unique=True)
-    name = models.CharField(max_length=255, blank=True)
+    bic = models.CharField(max_length=9, unique=True)
     correspondent_account = models.CharField(max_length=20)
     payment_account = models.CharField(max_length=20)
+
+    class Meta:
+        unique_together = ('organization_id', 'bic')
 
 
 class OrganizationUser(models.Model):

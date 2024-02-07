@@ -91,7 +91,6 @@ class OrganizationPutAndPatchSerializer(serializers.ModelSerializer):
             'inn',
             'kpp',
             'ogrn',
-            'bic',
             'name_director',
             "surname_director",
             'patronymic_director',

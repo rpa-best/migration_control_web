@@ -62,7 +62,7 @@ class DocumentsWorker(models.Model):
     issued_whom = models.CharField(max_length=150)
     territory_action = models.CharField(max_length=150, blank=True, null=True)
     date_end = models.DateField(blank=True, null=True)
-    archive = models.BooleanField(default=0, null=True)
+    archive = models.BooleanField(default=False, null=True)
 
 
 class FileDocuments(models.Model):

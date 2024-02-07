@@ -2,7 +2,7 @@ from datetime import datetime
 from docxtpl import DocxTemplate
 from number_to_string import get_string_by_number
 from django.http import HttpResponse
-from v1_1.apies.DaData import GetCity
+from v1_1.apies.DaData import GetCity, GetInfoBank
 from v1_1.common_utils.functions_blanks import ConvertDate, CountryDeclination, PatronymicDeclension, SurnameDeclension, \
     NameDeclension
 from v1_1.models.organization import Organization, Bank
@@ -47,10 +47,10 @@ def GenerationEmploymentContractDocument(data):
 
     inn = Organization.objects.get(pk=organization_id).inn
     kpp = Organization.objects.get(pk=organization_id).kpp
-    name_bank = Bank.objects.get(organization_id=organization_id).name
     payment_account = Bank.objects.get(organization_id=organization_id).payment_account
     correspondent_account = Bank.objects.get(organization_id=organization_id).correspondent_account
-    bic = Organization.objects.get(pk=organization_id).bic
+    bic = Bank.objects.get(organization_id=organization_id).bic
+    name_bank = GetInfoBank(bic)[0]['value']
     phone = Organization.objects.get(pk=organization_id).phone
 
     # Юридический/фактический адрес организации

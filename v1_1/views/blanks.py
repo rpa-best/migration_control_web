@@ -1,8 +1,9 @@
 from rest_framework.generics import CreateAPIView
 from v1_1.common_utils.generation_employment_contract import GenerationEmploymentContractDocument
+from v1_1.common_utils.generation_payment_order import GenerationPaymentOrder
 from v1_1.common_utils.generation_suspension_order import GenerationSuspensionOrder
 from v1_1.serializers.blanks import SerializersNoticeConclusion, SerializersEmploymentContract, \
-    SerializersSuspensionOrder, SerializersGenerationPaymentOrderForAdvancePayment
+    SerializersSuspensionOrder, SerializersGenerationPaymentOrder
 from rest_framework.response import Response
 from v1_1.swagger_content.blanks import blanks
 import openpyxl
@@ -32,14 +33,14 @@ class SuspensionOrderAPIView(CreateAPIView):
 
 
 @blanks
-class PaymentOrderForAdvancePaymentIView(CreateAPIView):
-    serializer_class = SerializersGenerationPaymentOrderForAdvancePayment
+class PaymentOrderAPIView(CreateAPIView):
+    serializer_class = SerializersGenerationPaymentOrder
 
     def post(self, request,  **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(serializer.data)
+        return GenerationPaymentOrder(request.data)
 
 
 @blanks

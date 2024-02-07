@@ -75,7 +75,8 @@ class SerializersSuspensionOrder(serializers.Serializer):
 
 
 # Платёжное поручение
-class SerializersGenerationPaymentOrderForAdvancePayment(serializers.Serializer):
+class SerializersGenerationPaymentOrder(serializers.Serializer):
+    worker_id = serializers.IntegerField(required=True)
     number_months = serializers.IntegerField(write_only=True, required=True)
 
     def create(self, validated_data):
