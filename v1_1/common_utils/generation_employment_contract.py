@@ -75,10 +75,6 @@ def GenerationEmploymentContractDocument(data):
     if patronymic_director_declension:
         full_name_declension += f' {patronymic_director_declension}'
 
-    full_name_director = f'{surname_director} {name_director}'
-    if patronymic_director:
-        full_name_director += f' {patronymic_director}'
-
     # Получение инициалов директора
     surname_initials_director = f'{surname_director_declension} {name_director[0]}.'
     if patronymic_director:

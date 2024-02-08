@@ -4,7 +4,7 @@ from v1_1.apies.DaData import GetCity
 from v1_1.common_utils.functions_blanks import ConvertDate
 from v1_1.models.organization import Organization, Bank, ResponsiblePersons
 from v1_1.models.worker import Worker
-from v1_1.serializers.blanks import SerializersSuspensionOrder
+from v1_1.serializers.blanks import SuspensionOrderSerializer
 
 
 def GenerationSuspensionOrder(data):
@@ -12,7 +12,7 @@ def GenerationSuspensionOrder(data):
     worker_id = data['worker_id']
     number = data['number']
     start_date = str(data['start_date'])
-    reason_suspension_mapping = dict(SerializersSuspensionOrder.REASON_SUSPENSION)
+    reason_suspension_mapping = dict(SuspensionOrderSerializer.REASON_SUSPENSION)
     reason_suspension = reason_suspension_mapping.get(data['reason_suspension'])
 
     first_manager_id = data['first_manager_id']

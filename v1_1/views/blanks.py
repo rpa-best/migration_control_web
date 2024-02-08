@@ -1,4 +1,6 @@
 from rest_framework.generics import CreateAPIView
+
+from v1_1.common_utils.generation_contract_provision_paid_services import GenerationContractProvisionPaidServices
 from v1_1.common_utils.generation_employment_contract import GenerationEmploymentContractDocument
 from v1_1.common_utils.generation_payment_order import GenerationPaymentOrder
 from v1_1.common_utils.generation_suspension_order import GenerationSuspensionOrder
@@ -51,7 +53,7 @@ class ContractProvisionPaidServicesAPIView(CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(serializer.data)
+        return GenerationContractProvisionPaidServices(request.data)
 
 
 @blanks
