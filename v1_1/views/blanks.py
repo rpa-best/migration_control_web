@@ -44,7 +44,7 @@ class PaymentOrderAPIView(CreateAPIView):
 
 
 @blanks
-class GPHContractAPIView(CreateAPIView):
+class ContractProvisionPaidServicesAPIView(CreateAPIView):
     serializer_class = ContractProvisionPaidServicesSerializer
 
     def post(self, request, **kwargs):
