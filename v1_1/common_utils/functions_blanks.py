@@ -28,6 +28,22 @@ def ConvertDate(date, type_date=None):
     return date
 
 
+def ConvertingDateToString(value):
+    if value.day < 9:
+        day = '0' + str(value.day)
+    else:
+        day = str(value.day)
+
+    if value.month < 9:
+        month = '0' + str(value.month)
+    else:
+        month = str(value.month)
+
+    year = str(value.year)
+
+    return day + '-' + month + '-' + year
+
+
 def CountryDeclination(country):
     ending = country[len(country) - 1]
 
