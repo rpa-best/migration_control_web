@@ -16,6 +16,7 @@ class Organization(models.Model):
     inn = models.CharField(max_length=20, unique=True)
     kpp = models.CharField(max_length=9, blank=True, null=True)
     ogrn = models.CharField(max_length=13, blank=True, null=True)
+    okved = models.CharField(max_length=10, blank=True, null=True)
     name_director = models.CharField(max_length=150, blank=True, null=True)
     surname_director = models.CharField(max_length=150, blank=True, null=True)
     patronymic_director = models.CharField(max_length=150, blank=True, null=True)
