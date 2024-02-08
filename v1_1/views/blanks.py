@@ -2,8 +2,8 @@ from rest_framework.generics import CreateAPIView
 from v1_1.common_utils.generation_employment_contract import GenerationEmploymentContractDocument
 from v1_1.common_utils.generation_payment_order import GenerationPaymentOrder
 from v1_1.common_utils.generation_suspension_order import GenerationSuspensionOrder
-from v1_1.serializers.blanks import SerializersNoticeConclusion, SerializersEmploymentContract, \
-    SerializersSuspensionOrder, SerializersGenerationPaymentOrder
+from v1_1.serializers.blanks import NoticeConclusionSerializer, EmploymentContractSerializer, \
+    SuspensionOrderSerializer, GenerationPaymentOrderSerializer, ContractProvisionPaidServicesSerializer
 from rest_framework.response import Response
 from v1_1.swagger_content.blanks import blanks
 import openpyxl
@@ -12,7 +12,7 @@ from django.http import HttpResponse
 
 @blanks
 class EmploymentContractAPIView(CreateAPIView):
-    serializer_class = SerializersEmploymentContract
+    serializer_class = EmploymentContractSerializer
 
     def post(self, request, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -23,7 +23,7 @@ class EmploymentContractAPIView(CreateAPIView):
 
 @blanks
 class SuspensionOrderAPIView(CreateAPIView):
-    serializer_class = SerializersSuspensionOrder
+    serializer_class = SuspensionOrderSerializer
 
     def post(self, request, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -34,7 +34,7 @@ class SuspensionOrderAPIView(CreateAPIView):
 
 @blanks
 class PaymentOrderAPIView(CreateAPIView):
-    serializer_class = SerializersGenerationPaymentOrder
+    serializer_class = GenerationPaymentOrderSerializer
 
     def post(self, request,  **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -44,8 +44,19 @@ class PaymentOrderAPIView(CreateAPIView):
 
 
 @blanks
+class GPHContractAPIView(CreateAPIView):
+    serializer_class = ContractProvisionPaidServicesSerializer
+
+    def post(self, request, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+
+@blanks
 class NoticeConclusionAPIView(CreateAPIView):
-    serializer_class = SerializersNoticeConclusion
+    serializer_class = NoticeConclusionSerializer
 
     def post(self, request, **kwargs):
         serializer = self.get_serializer(data=request.data)
