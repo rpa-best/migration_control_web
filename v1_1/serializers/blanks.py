@@ -97,6 +97,7 @@ class GenerationPaymentOrderSerializer(serializers.Serializer):
 
 
 class ContractProvisionPaidServicesSerializer(serializers.Serializer):
+    worker_id = serializers.IntegerField(required=True)
     number = serializers.CharField(write_only=True, max_length=10, required=True)
     start_date = serializers.DateField(write_only=True, required=True)
     end_date = serializers.DateField(write_only=True, required=True)
