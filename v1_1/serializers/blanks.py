@@ -124,26 +124,40 @@ class ContractProvisionPaidServicesSerializer(serializers.Serializer):
 
 # Уведомление о заключении
 class NoticeConclusionSerializer(serializers.Serializer):
-    BASE_TYPE_CHOICES = (
+    BASES = (
         ('employment_contract', 'Трудовой договор'),
         ('civil_contract', 'Гражданско-правовой договор на выполнение работ (оказание услуг)')
     )
-    BASE_TYPE_PERSON = (
+    TYPE_PERSON = (
         ('person_proxy', 'Человек, который подаёт документы по доверенности'),
         ('director', 'Директор')
     )
 
+    worker_id = serializers.IntegerField(required=True)
     name_territorial_body = serializers.CharField(max_length=100)
     job_title = serializers.CharField(max_length=100)
-    base = serializers.ChoiceField(choices=BASE_TYPE_CHOICES)
+    base = serializers.ChoiceField(choices=BASES)
     start_date = serializers.DateField(write_only=True)
     address = serializers.CharField(max_length=100)
-    person = serializers.ChoiceField(choices=BASE_TYPE_PERSON)
+    person = serializers.ChoiceField(choices=TYPE_PERSON)
     full_name = serializers.CharField(max_length=55, required=False)
     series = serializers.CharField(required=False)
     number = serializers.CharField(required=False)
     date_issue = serializers.DateField()
     issued_by = serializers.CharField(max_length=100)
+
+    def validate_worker_id(self, value):
+        if not Worker.objects.filter(pk=value).exists():
+            raise CustomValidationError({'worker_id': 'Работника не существует'})
+
+        user = self.context['request'].user.username
+        list_organizations = []
+        for organization in OrganizationUser.objects.filter(user_id=user):
+            list_organizations.append(organization.organization_id)
+
+        #Можно формировать бланки только для своих работников
+        if Worker.objects.get(pk=value).organization_id not in list_organizations:
+            raise CustomValidationError({'worker_id': 'Работника не из вашей организации'})
 
     def create(self, validated_data):
         return validated_data
