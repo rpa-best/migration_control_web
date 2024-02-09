@@ -17,9 +17,6 @@ class Organization(models.Model):
     kpp = models.CharField(max_length=9, blank=True, null=True)
     ogrn = models.CharField(max_length=13, blank=True, null=True)
     okved = models.CharField(max_length=10, blank=True, null=True)
-    name_director = models.CharField(max_length=150, blank=True, null=True)
-    surname_director = models.CharField(max_length=150, blank=True, null=True)
-    patronymic_director = models.CharField(max_length=150, blank=True, null=True)
     phone = models.CharField(max_length=28, unique=True, blank=True, null=True, default=None)
     owner = models.ForeignKey(User, models.CASCADE, blank=True, null=True)
     legal_address = models.CharField(max_length=255, blank=True)
@@ -29,6 +26,18 @@ class Organization(models.Model):
 
     def __str__(self):
         return f"{self.get_organizational_form_display()}"
+
+
+class DirectorOrganization(models.Model):
+    organization_id = models.OneToOneField(Organization, on_delete=models.CASCADE, unique=True)
+    name_director = models.CharField(max_length=150, blank=True, null=True)
+    surname_director = models.CharField(max_length=150, blank=True, null=True)
+    patronymic_director = models.CharField(max_length=150, blank=True, null=True)
+    passport_series = models.CharField(max_length=20, blank=True, null=True)
+    passport_number = models.CharField(max_length=255, blank=True, null=True)
+    issued_whom = models.CharField(max_length=150)
+    date_issue_passport = models.DateField(blank=True, null=True)
+    date_end_passport = models.DateField(blank=True, null=True)
 
 
 class Bank(models.Model):
