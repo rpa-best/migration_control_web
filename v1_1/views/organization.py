@@ -90,7 +90,7 @@ class SearchOrganizationAPIViewSet(mixins.ListModelMixin, viewsets.GenericViewSe
                         'name_organization': name_organization,
                         'inn': inn,
                         'legal_address': legal_address,
-                        'actual_address': actual_address,
+                        'actual_addresses': [actual_address],
                         'surname_director': surname_director,
                         'name_director': name_director,
                         'patronymic_director': patronymic_director

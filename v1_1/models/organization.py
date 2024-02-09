@@ -20,7 +20,6 @@ class Organization(models.Model):
     phone = models.CharField(max_length=28, unique=True, blank=True, null=True, default=None)
     owner = models.ForeignKey(User, models.CASCADE, blank=True, null=True)
     legal_address = models.CharField(max_length=255, blank=True)
-    actual_address = models.CharField(max_length=255, blank=True)
     create_at = models.DateTimeField(auto_now=True)
     balance = models.FloatField(default=0)
 
@@ -30,8 +29,8 @@ class Organization(models.Model):
 
 class DirectorOrganization(models.Model):
     organization_id = models.OneToOneField(Organization, on_delete=models.CASCADE, unique=True)
-    name_director = models.CharField(max_length=150, blank=True, null=True)
-    surname_director = models.CharField(max_length=150, blank=True, null=True)
+    name_director = models.CharField(max_length=150)
+    surname_director = models.CharField(max_length=150)
     patronymic_director = models.CharField(max_length=150, blank=True, null=True)
     passport_series = models.CharField(max_length=20, blank=True, null=True)
     passport_number = models.CharField(max_length=255, blank=True, null=True)

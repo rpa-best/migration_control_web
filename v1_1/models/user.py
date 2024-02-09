@@ -20,7 +20,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     patronymic = models.CharField(max_length=150, blank=True, null=True)
     avatar = models.ImageField(upload_to=UploadPath('image'), null=True)
     birthday = models.DateField(blank=True, null=True)
-    is_owner = models.BooleanField(default=False, null=True)
     is_staff = models.BooleanField(default=False, null=True)
     date_joined = models.DateTimeField(default=timezone.now, null=True)
     is_superuser = models.BooleanField(default=0, null=True)

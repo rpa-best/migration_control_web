@@ -135,7 +135,7 @@ class NoticeConclusionSerializer(serializers.Serializer):
 
     worker_id = serializers.IntegerField(required=True)
     name_territorial_body = serializers.CharField(max_length=100)
-    job_title = serializers.CharField(max_length=100)
+    position = serializers.CharField(max_length=100)
     base = serializers.ChoiceField(choices=BASES)
     start_date = serializers.DateField(write_only=True)
     address = serializers.CharField(max_length=100)

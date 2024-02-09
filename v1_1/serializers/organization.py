@@ -1,8 +1,9 @@
+import copy
 from django.db.transaction import atomic
 from rest_framework import serializers
 from v1_1.apies.DaData import AddressSearch
 from v1_1.common_utils.custom_handler import CustomValidationError
-from v1_1.models.organization import Organization, MigrationAddress, OrganizationUser
+from v1_1.models.organization import Organization, MigrationAddress, OrganizationUser, DirectorOrganization
 from v1_1.models.subscription import Subscription
 from v1_1.models.user import User
 
@@ -15,32 +16,41 @@ class OrganizationShowSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+# class DirectorOrganizationSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = DirectorOrganization
+#         fields = (
+#             'name_director',
+#             'surname_director',
+#             'patronymic_director'
+#         )
+
+
 class OrganizationCreateSerializer(serializers.ModelSerializer):
     organizational_form = serializers.ChoiceField(choices=Organization.ORGANIZATIONAL_FORM)
-    legal_address = serializers.CharField()
-    actual_address = serializers.CharField()
-    patronymic_director = serializers.CharField(required=False)
     inn = serializers.CharField(max_length=20)
+    legal_address = serializers.CharField()
+    actual_addresses = serializers.ListField(child=serializers.CharField())
+    name_director = serializers.CharField()
+    surname_director = serializers.CharField()
+    patronymic_director = serializers.CharField(required=False)
 
     class Meta:
         model = Organization
         fields = (
+            'id',
             'organizational_form',
             'name',
             'inn',
-            'name_director',
-            "surname_director",
-            'patronymic_director',
             'legal_address',
-            'actual_address'
+            'actual_addresses',
+            'name_director',
+            'surname_director',
+            'patronymic_director',
         )
+        read_only_fields = ('id',)
 
     def validate_legal_address(self, value):
-        if AddressSearch(value) is not None:
-            return AddressSearch(value)
-        return value
-
-    def validate_actual_address(self, value):
         if AddressSearch(value) is not None:
             return AddressSearch(value)
         return value
@@ -63,10 +73,21 @@ class OrganizationCreateSerializer(serializers.ModelSerializer):
         if current_organizations >= max_organizations:
             raise CustomValidationError({'message': 'Вы достигли максимального предела для создания организаций.'})
 
+        director = copy.deepcopy(validated_data)
+        # Удаление директора из словаря, поскольку он не содержится в модели `DocumentsWorker`,
+        # но есть в модели `DirectorOrganization`
+        validated_data.pop('name_director', None)
+        validated_data.pop('surname_director', None)
+        validated_data.pop('patronymic_director', None)
+
+        # Создание записей для модели MigrationAddress
+        # actual_addresses = validated_data.pop('actual_address', [])  # Получаем массив фактических адресов
+        actual_addresses = validated_data.pop('actual_addresses')
+
         instance: Organization = super(OrganizationCreateSerializer, self).create(validated_data)
         instance.owner_id = self.context['request'].user
         instance.save()
-        User.objects.filter(id=self.context['request'].user.id).update(is_owner=True)
+        # User.objects.filter(id=self.context['request'].user.id).update(is_owner=True)
         # При создании организации пользователь с подпиской заносится в список пользователей организации с правами
         # владельца
         OrganizationUser.objects.create(
@@ -74,37 +95,50 @@ class OrganizationCreateSerializer(serializers.ModelSerializer):
             organization=instance,
             role='owner'
         )
-        return instance
+
+        # Добавление фактических адресов
+        for address in actual_addresses:
+            MigrationAddress.objects.create(organization=instance, name=address)
+
+        DirectorOrganization.objects.create(
+            organization_id=instance,
+            name_director=director['name_director'],
+            surname_director=director['surname_director'],
+            patronymic_director=director['patronymic_director']
+        )
+
+        response_data = {
+            'id': instance.id,
+            'organizational_form': instance.organizational_form,
+            'name': instance.name,
+            'inn': instance.inn,
+            'name_director': director['name_director'],
+            'surname_director': director['surname_director'],
+            'patronymic_director': director['patronymic_director'],
+            'legal_address': instance.legal_address,
+            'actual_addresses': actual_addresses
+        }
+
+        return response_data
 
 
 class OrganizationPutAndPatchSerializer(serializers.ModelSerializer):
     organizational_form = serializers.ChoiceField(choices=Organization.ORGANIZATIONAL_FORM)
     legal_address = serializers.CharField()
-    actual_address = serializers.CharField()
-    patronymic_director = serializers.CharField(required=False)
 
     class Meta:
         model = Organization
         fields = (
-            'name',
             'organizational_form',
+            'name',
             'inn',
             'kpp',
             'ogrn',
-            'name_director',
-            "surname_director",
-            'patronymic_director',
             'phone',
             'legal_address',
-            'actual_address'
         )
 
     def validate_legal_address(self, value):
-        if AddressSearch(value) is not None:
-            return AddressSearch(value)
-        return value
-
-    def validate_actual_address(self, value):
         if AddressSearch(value) is not None:
             return AddressSearch(value)
         return value
