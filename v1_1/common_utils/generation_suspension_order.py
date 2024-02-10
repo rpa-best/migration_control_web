@@ -2,7 +2,7 @@ from docxtpl import DocxTemplate
 from django.http import HttpResponse
 from v1_1.apies.DaData import GetCity
 from v1_1.common_utils.functions_blanks import ConvertDate
-from v1_1.models.organization import Organization, Bank, ResponsiblePersons
+from v1_1.models.organization import Organization, Bank, ResponsiblePersons, DirectorOrganization
 from v1_1.models.worker import Worker
 from v1_1.serializers.blanks import SuspensionOrderSerializer
 
@@ -55,9 +55,9 @@ def GenerationSuspensionOrder(data):
     city = GetCity(organization_address)
 
     # ФИО директора организации
-    name_director = Organization.objects.get(pk=organization_id).name_director
-    surname_director = Organization.objects.get(pk=organization_id).surname_director
-    patronymic_director = Organization.objects.get(pk=organization_id).patronymic_director
+    name_director = DirectorOrganization.objects.get(organization_id=organization_id).name_director
+    surname_director = DirectorOrganization.objects.get(organization_id=organization_id).surname_director
+    patronymic_director = DirectorOrganization.objects.get(organization_id=organization_id).patronymic_director
 
     full_name_director = f'{surname_director} {name_director}'
     if patronymic_director:

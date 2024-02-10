@@ -5,7 +5,7 @@ from django.http import HttpResponse
 from v1_1.apies.DaData import GetCity, GetInfoBank
 from v1_1.common_utils.functions_blanks import ConvertDate, CountryDeclination, PatronymicDeclension, SurnameDeclension, \
     NameDeclension
-from v1_1.models.organization import Organization, Bank
+from v1_1.models.organization import Organization, Bank, DirectorOrganization
 from v1_1.models.worker import Worker, DocumentsWorker
 
 
@@ -58,9 +58,9 @@ def GenerationEmploymentContractDocument(data):
     city = GetCity(organization_address)
 
     # ФИО директора организации
-    name_director = Organization.objects.get(pk=organization_id).name_director
-    surname_director = Organization.objects.get(pk=organization_id).surname_director
-    patronymic_director = Organization.objects.get(pk=organization_id).patronymic_director
+    name_director = DirectorOrganization.objects.get(organization_id=organization_id).name_director
+    surname_director = DirectorOrganization.objects.get(organization_id=organization_id).surname_director
+    patronymic_director = DirectorOrganization.objects.get(organization_id=organization_id).patronymic_director
 
     # ФИО директора организации в родительном падеже
     name_director_declension = NameDeclension(name_director)
