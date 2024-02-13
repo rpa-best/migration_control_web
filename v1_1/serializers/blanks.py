@@ -101,8 +101,8 @@ class ContractProvisionPaidServicesSerializer(serializers.Serializer):
     number = serializers.CharField(write_only=True, max_length=10, required=True)
     start_date = serializers.DateField(write_only=True, required=True)
     end_date = serializers.DateField(write_only=True, required=True)
-    address = serializers.CharField(write_only=True, max_length=50, required=True)
-    name_service = serializers.CharField(write_only=True, max_length=50, required=True)
+    address = serializers.CharField(write_only=True, max_length=250, required=True)
+    name_service = serializers.CharField(write_only=True, max_length=250, required=True)
     price = serializers.IntegerField(write_only=True, required=True)
 
     def validate_worker_id(self, value):
