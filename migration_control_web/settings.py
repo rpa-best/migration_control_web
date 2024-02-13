@@ -225,6 +225,17 @@ SPECTACULAR_BLANKS_SETTINGS = {
     'COMPONENT_SPLIT_REQUEST': True,
 }
 
+SPECTACULAR_TASKS_SETTINGS = {
+    'TITLE': 'Migration control Tasks',
+    'DESCRIPTION': 'Migration control Tasks',
+    'VERSION': '1.1',
+    'PREPROCESSING_HOOKS': ['v1_1.swagger_content.hooks.preprocessing_filter_tasks'],
+    'SWAGGER_UI_SETTINGS': {
+        'filter': True,
+    },
+    'COMPONENT_SPLIT_REQUEST': True,
+}
+
 ROOT_URLCONF = 'migration_control_web.urls'
 
 TEMPLATES = [
