@@ -16,16 +16,6 @@ class OrganizationShowSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-# class DirectorOrganizationSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = DirectorOrganization
-#         fields = (
-#             'name_director',
-#             'surname_director',
-#             'patronymic_director'
-#         )
-
-
 class OrganizationCreateSerializer(serializers.ModelSerializer):
     organizational_form = serializers.ChoiceField(choices=Organization.ORGANIZATIONAL_FORM)
     inn = serializers.CharField(max_length=20)
@@ -81,13 +71,12 @@ class OrganizationCreateSerializer(serializers.ModelSerializer):
         validated_data.pop('patronymic_director', None)
 
         # Создание записей для модели MigrationAddress
-        # actual_addresses = validated_data.pop('actual_address', [])  # Получаем массив фактических адресов
         actual_addresses = validated_data.pop('actual_addresses')
 
         instance: Organization = super(OrganizationCreateSerializer, self).create(validated_data)
         instance.owner_id = self.context['request'].user
         instance.save()
-        # User.objects.filter(id=self.context['request'].user.id).update(is_owner=True)
+
         # При создании организации пользователь с подпиской заносится в список пользователей организации с правами
         # владельца
         OrganizationUser.objects.create(

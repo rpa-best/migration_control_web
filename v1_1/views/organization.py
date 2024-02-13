@@ -51,7 +51,7 @@ class SearchOrganizationAPIViewSet(mixins.ListModelMixin, viewsets.GenericViewSe
     def list(self, request, **kwargs):
         # Получение ИНН или ОРГН из пути url
         inn_or_ogrn = self.kwargs.get('inn_or_ogrn')
-        print(len(inn_or_ogrn))
+
         if inn_or_ogrn.isdigit():
             info = OrganizationSearch(inn_or_ogrn)
             if len(info) != 0:
