@@ -19,3 +19,4 @@ pytz==2023.3
 openpyxl==3.1.2
 docxtpl==0.16.7
 python-dateutil==2.8.2
+django-filter==23.5

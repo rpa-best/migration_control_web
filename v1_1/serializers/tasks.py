@@ -4,7 +4,7 @@ from v1_1.models.worker import DocumentsWorker
 
 class DocumentsWorkerSerializer(serializers.ModelSerializer):
     document_id = serializers.IntegerField()
-    document_type = serializers.CharField()
+    type_document = serializers.CharField()
     worker_id = serializers.IntegerField()
     worker = serializers.CharField()
     organization_id = serializers.IntegerField()
@@ -17,7 +17,7 @@ class DocumentsWorkerSerializer(serializers.ModelSerializer):
         model = DocumentsWorker
         fields = (
             'document_id',
-            'document_type',
+            'type_document',
             'worker_id',
             'worker',
             'organization_id',
