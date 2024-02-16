@@ -5,12 +5,9 @@ from rest_framework.response import Response
 from datetime import datetime, timedelta
 from v1_1.common_utils.custom_handler import CustomValidationError
 from v1_1.models import OrganizationUser
-from v1_1.models.organization import Organization
 from v1_1.models.worker import DocumentsWorker, Worker
 from django.db.models import Q
 from v1_1.serializers.tasks import TaskDocuments, TaskInfo
-from django.db.models import F, Value, CharField, IntegerField, ExpressionWrapper
-from django.db.models.functions import Now
 
 
 class ExpiringDocumentsView(mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -28,13 +25,18 @@ class ExpiringDocumentsView(mixins.ListModelMixin, viewsets.GenericViewSet):
         except OrganizationUser.DoesNotExist:
             raise CustomValidationError({'error': 'Вы не связаны ни с какой организацией'}, status=400)
 
+        # Текущая дата
         today = datetime.now().date()
 
+        # Необходимо, чтобы возвращались документы, которым остаётся 30 дней до окончания срока или которые уже
+        #     # просрочены
         filter_conditions = Q(date_end__lte=today) | Q(date_end__gte=today, date_end__lte=today + timedelta(days=30))
 
+        # Получение значений полей фильтрации из запроса GET
         type_document = self.request.query_params.get('type_document')
         worker_organization_id = self.request.query_params.get('worker_id__organization_id')
 
+        # Получение значений полей фильтрации из запроса GET
         if type_document:
             filter_conditions &= Q(type_document=type_document)
         else:
@@ -49,13 +51,6 @@ class ExpiringDocumentsView(mixins.ListModelMixin, viewsets.GenericViewSet):
             filter_conditions &= Q(worker_id__organization_id__in=[org for org in organizations])
 
         queryset = DocumentsWorker.objects.filter(filter_conditions)
-
-        for doc in queryset:
-            if doc.date_end <= today:
-                doc.days_until_expiration = 'Просрочено'
-            else:
-                doc.days_until_expiration = (doc.date_end - today).days
-            doc.recommended_start_date = doc.date_end - timedelta(days=7)
 
         return queryset
 
@@ -125,6 +120,34 @@ class ExpiringDocumentsView(mixins.ListModelMixin, viewsets.GenericViewSet):
     #     return Response(data)
 
 
+class WorkerExpiringDocumentsView(mixins.ListModelMixin, viewsets.GenericViewSet):
+    serializer_class = TaskDocuments
+    permission_class = IsAuthenticated
+
+    def get_queryset(self):
+        user = self.request.user
+
+        worker_id = self.kwargs.get('worker_id')
+
+        organization_id = Worker.objects.get(pk=worker_id).organization.id
+
+        if not OrganizationUser.objects.filter(organization=organization_id, user=user).exists():
+            raise CustomValidationError({'error': 'Данный сотрудник не из вашей компании'})
+
+        filter_conditions = Q(worker_id=worker_id)
+
+        today = datetime.now().date()
+
+        filter_conditions &= Q(date_end__lte=today) | Q(date_end__gte=today, date_end__lte=today + timedelta(days=30))
+
+        filter_conditions &= Q(
+            type_document__in=['migration_card', 'patent', 'paycheck', 'temporary_residence', 'certificate_asylum'])
+
+        queryset = DocumentsWorker.objects.filter(filter_conditions)
+
+        return queryset
+
+
 class TaskInfoView(mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = TaskInfo
     permission_class = IsAuthenticated
@@ -137,7 +160,7 @@ class TaskInfoView(mixins.ListModelMixin, viewsets.GenericViewSet):
         organization_id = Worker.objects.get(pk=worker_id).organization.id
 
         if not OrganizationUser.objects.filter(organization=organization_id, user=user).exists():
-            raise CustomValidationError({'document': 'Данный документ не принадлежит вашему сотруднику'})
+            raise CustomValidationError({'error': 'Данный документ не принадлежит вашему сотруднику'})
 
         document = DocumentsWorker.objects.filter(pk=self.kwargs.get('document_id'))[0]
 

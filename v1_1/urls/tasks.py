@@ -1,10 +1,11 @@
 from django.urls import include, path
 from rest_framework import routers
-from v1_1.views.tasks import ExpiringDocumentsView, TaskInfoView
+from v1_1.views.tasks import ExpiringDocumentsView, TaskInfoView, WorkerExpiringDocumentsView
 
 
 router = routers.DefaultRouter()
 router.register('list', ExpiringDocumentsView, 'list-task')
+router.register(r'(?P<worker_id>\d+)/list', WorkerExpiringDocumentsView, 'worker-tasks'),
 router.register(r'info/(?P<document_id>\d+)', TaskInfoView, 'task-info')
 
 urlpatterns = [
