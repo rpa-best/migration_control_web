@@ -1,5 +1,4 @@
 from rest_framework.generics import CreateAPIView
-
 from v1_1.common_utils.generation_contract_provision_paid_services import GenerationContractProvisionPaidServices
 from v1_1.common_utils.generation_employment_contract import GenerationEmploymentContractDocument
 from v1_1.common_utils.generation_notice_conclusion import GenerationNoticeConclusion
