@@ -15,9 +15,6 @@ class ServiceRate(models.Model):
     cost_workers = models.FloatField(default=0)
     cost_all_documents = models.FloatField(default=0)
 
-    def __str__(self) -> str:
-        return self.model_name
-
 
 class Subscription(models.Model):
     STATUS = (
@@ -28,9 +25,11 @@ class Subscription(models.Model):
     )
 
     status = models.CharField(max_length=50, default='process', choices=STATUS)
-    user = models.ForeignKey('User', models.CASCADE, to_field='username', unique=True)
+    user = models.ForeignKey('User', on_delete=models.CASCADE, to_field='username', unique=True)
     service_rate = models.ForeignKey(ServiceRate, models.CASCADE, to_field='type_tariff')
     number_organizations = models.IntegerField(default=0)
     number_workers = models.IntegerField(default=0)
-    expiration_date = models.DateField()
     all_documents = models.BooleanField(default=False, null=True)
+    default_cost = models.FloatField(blank=True, null=True)
+    start_date = models.DateField(blank=True, null=True)
+    expiration_date = models.DateField(blank=True, null=True)

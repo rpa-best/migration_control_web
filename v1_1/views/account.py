@@ -12,7 +12,7 @@ from v1_1.common_utils.token import get_token, RefreshToken
 from v1_1.models.user import User, UserPvc
 from v1_1.serializers.account import AccountCreateSerializer, AuthSerializer, AccountDetailSerializer, \
     AccountPatchSerializer, UserAvatarsSerializer, ChangePasswordSerializer, CheckEmailSerializer, \
-    ValidationPasswordAndPhoneSerializer
+    ValidationPasswordAndPhoneSerializer, CreatingSubscriptionSerializer
 from ..common_utils.serializers import TokenRefreshSerializer
 from ..swagger_content import account
 
@@ -181,7 +181,6 @@ class MyAvatarViewSet(generics.UpdateAPIView):
     serializer_class = UserAvatarsSerializer
 
     def get_object(self):
-        print(self.request.user.avatar)
         return self.request.user
 
     def perform_update(self, serializer):
@@ -197,3 +196,10 @@ class MyAvatarViewSet(generics.UpdateAPIView):
 
         # сохранение нового аватара
         serializer.save()
+
+
+@account.subscription
+class CreatingSubscriptionView(CreateAPIView):
+    serializer_class = CreatingSubscriptionSerializer
+    permission_class = IsAuthenticated
+

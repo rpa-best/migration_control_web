@@ -7,7 +7,8 @@ from v1_1.common_utils.validate_password import validate_password
 from v1_1.models import User
 from v1_1.models.user import UserPvc, RegistrationLog
 from django.utils import timezone
-
+from rest_framework import serializers
+from v1_1.models.subscription import Subscription, ServiceRate
 
 class AuthSerializer(serializers.Serializer):
     username = serializers.CharField(write_only=True)
@@ -311,3 +312,34 @@ class UserAvatarsSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('avatar',)
+
+class ServiceRateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServiceRate
+        fields = (
+            'type_tariff',
+            'name',
+            'cost_organizations',
+            'cost_workers',
+            'cost_all_documents'
+        )
+
+class CreatingSubscriptionSerializer(serializers.ModelSerializer):
+    service_rate = serializers.ChoiceField(choices=ServiceRate.TYPES_TARIFFS)
+
+    class Meta:
+        model = Subscription
+        fields = (
+            'service_rate',
+            'number_organizations',
+            'number_workers',
+            'all_documents'
+        )
+
+    def create(self, validated_data):
+        validated_data['user'] = self.context['request'].user
+        validated_data['service_rate'] = ServiceRate.objects.filter(type_tariff=validated_data['service_rate']).first()
+        instance: Subscription = super().create(validated_data)
+        instance.save()
+        validated_data['service_rate'] = validated_data['service_rate'].type_tariff
+        return validated_data
