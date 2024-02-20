@@ -29,7 +29,6 @@ class Subscription(models.Model):
     service_rate = models.ForeignKey(ServiceRate, models.CASCADE, to_field='type_tariff')
     number_organizations = models.IntegerField(default=0)
     number_workers = models.IntegerField(default=0)
-    all_documents = models.BooleanField(default=False, null=True)
     default_cost = models.FloatField(blank=True, null=True)
     start_date = models.DateField(blank=True, null=True)
     expiration_date = models.DateField(blank=True, null=True)
