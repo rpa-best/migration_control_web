@@ -8,9 +8,11 @@ from django.utils import timezone
 from rest_framework_simplejwt.token_blacklist.models import OutstandingToken
 from v1_1.common_utils.file_paths import UploadPath
 from v1_1.common_utils.pvc import get_random_integer, send_email, send_sms
+from v1_1.common_utils.managers import get_manager
+from django.contrib.auth.models import BaseUserManager
 
 
-class User(AbstractBaseUser, PermissionsMixin):
+class User(AbstractBaseUser, PermissionsMixin, BaseUserManager):
     email = models.EmailField(blank=True, null=True)
     username = models.EmailField(max_length=150, unique=True)
     password = models.CharField(max_length=150)
@@ -27,8 +29,17 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=1, null=True)
     is_official = models.BooleanField(default=False, null=True)
     pvc = models.CharField(max_length=150, null=True, blank=True)
-
     USERNAME_FIELD = 'username'
+
+    objects = get_manager('user')
+
+    def create_superuser(self, email, username, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        return self.create_user(email, username, password, **extra_fields)
+
+    def get_by_natural_key(self, username):
+        return self.get(username=username)
 
     def regenerate_pvc(self, is_send=True):
         new_pvc = get_random_integer(6)
