@@ -12,6 +12,7 @@ class CreateWorkerSerializer(serializers.ModelSerializer):
     patronymic = serializers.CharField(required=False)
     phone = serializers.CharField(required=False)
     email = serializers.CharField(required=False)
+    identification_card = serializers.CharField(source='get_identification_card_display')
 
     class Meta:
         model = Worker
@@ -84,6 +85,7 @@ class CreateWorkerSerializer(serializers.ModelSerializer):
 
 class WorkerSerializer(serializers.ModelSerializer):
     registration_address = serializers.CharField()
+    identification_card = serializers.CharField(source='get_identification_card_display')
 
     class Meta:
         model = Worker
