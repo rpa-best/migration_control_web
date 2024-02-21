@@ -108,15 +108,27 @@ class RegistrationLog(models.Model):
 
 class BalanceTransfer(models.Model):
     TYPE = (
-        ('service', 'Service'),
         ('+', 'Пополнение'),
         ('-', 'Снятие')
     )
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    cost = models.FloatField()
-    date = models.DateTimeField(auto_now_add=True)
-    type = models.CharField(max_length=20, choices=TYPE)
+    user = models.ForeignKey(User, verbose_name='Пользователь', on_delete=models.CASCADE)
+    cost = models.FloatField(verbose_name='Сумма')
+    date = models.DateTimeField('Дата и время', auto_now_add=True)
+    type = models.CharField(verbose_name='Тип операции', max_length=20, choices=TYPE)
+
+    class Meta:
+        verbose_name = 'Балансовый перевод'
+        verbose_name_plural = 'Балансовые переводы'
 
     def __str__(self) -> str:
         return str(self.id)
+
+    def save(self, *args, **kwargs):
+        user = self.user
+        if self.type == '+':
+            user.balance += self.cost
+        elif self.type == '-':
+            user.balance -= self.cost
+        user.save()
+        super(BalanceTransfer, self).save(*args, **kwargs)
