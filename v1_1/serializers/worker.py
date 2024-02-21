@@ -151,8 +151,6 @@ class DocumentsWorkerSerializer(serializers.ModelSerializer):
         for file_document in file_documents:
             FileDocuments.objects.create(document_id=instance, file_document=file_document)
 
-        print(file_documents)
-
         response_data = {
             'id': instance.id,
             'type_document': instance.type_document,

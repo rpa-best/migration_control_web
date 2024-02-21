@@ -8,8 +8,10 @@ from v1_1.models import OrganizationUser
 from v1_1.models.worker import DocumentsWorker, Worker
 from django.db.models import Q
 from v1_1.serializers.tasks import TaskDocuments, TaskInfo
+from drf_spectacular.utils import extend_schema
 
 
+@extend_schema(tags=['Tasks'])
 class ExpiringDocumentsView(mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = TaskDocuments
     permission_class = IsAuthenticated
@@ -120,6 +122,7 @@ class ExpiringDocumentsView(mixins.ListModelMixin, viewsets.GenericViewSet):
     #     return Response(data)
 
 
+@extend_schema(tags=['Tasks'])
 class WorkerExpiringDocumentsView(mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = TaskDocuments
     permission_class = IsAuthenticated
@@ -148,6 +151,7 @@ class WorkerExpiringDocumentsView(mixins.ListModelMixin, viewsets.GenericViewSet
         return queryset
 
 
+@extend_schema(tags=['Tasks'])
 class TaskInfoView(mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = TaskInfo
     permission_class = IsAuthenticated

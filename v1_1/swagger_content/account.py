@@ -78,13 +78,7 @@ email_check = extend_schema_view(
 
 
 subscription = extend_schema_view(
-    get=extend_schema(
+    post=extend_schema(
         tags=['Subscription']
     ),
-    patch=extend_schema(
-        tags=['Subscription']
-    ),
-    put=extend_schema(
-        tags=['Subscription']
-    )
 )
