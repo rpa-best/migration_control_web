@@ -1,6 +1,7 @@
 from datetime import datetime
 from django.db import models
 from v1_1.models.user import User
+from datetime import datetime, timedelta
 
 
 class ServiceRate(models.Model):
@@ -56,15 +57,12 @@ class Subscription(models.Model):
             self.cost = (self.number_organizations * self.service_rate.cost_organizations) + (
                         self.number_workers * self.service_rate.cost_workers) + self.service_rate.cost_all_documents
 
-        super(Subscription, self).save(*args, **kwargs)
-
-    # Вычисление цены при изменении заявки за подписку с указанными параметрами и тарифом
-    def update(self, *args, **kwargs):
-        if self.service_rate.type_tariff == 'standard':
-            self.cost = (self.number_organizations * self.service_rate.cost_organizations) + (
-                        self.number_workers * self.service_rate.cost_workers)
-        elif self.service_rate.type_tariff == 'pro':
-            self.cost = (self.number_organizations * self.service_rate.cost_organizations) + (
-                        self.number_workers * self.service_rate.cost_workers) + self.service_rate.cost_all_documents
+        # Если пользователь поменял другие данные, допустим кол-во работников, но при этом у него поле status и так уже
+        # имеет значение "active", то не должно быть повторного вычисления этих дат, они должны остаться без изменения
+        if self.status == 'active' and not self.start_date:
+            # Если в подписке пользователя выбирается статус `active`, то вычисляется текущая дата для поля start_date
+            # и вычисляется дата (текущая дата + 30 дней) для поля expiration_date.
+            self.start_date = datetime.now().date()
+            self.expiration_date = self.start_date + timedelta(days=30)
 
         super(Subscription, self).save(*args, **kwargs)
