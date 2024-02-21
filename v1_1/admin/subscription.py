@@ -23,3 +23,8 @@ class SubscriptionAdmin(admin.ModelAdmin):
             kwargs['queryset'] = ServiceRate.objects.all()
             kwargs['empty_label'] = 'Выберите тариф'
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+
+@admin.register(ServiceRate)
+class ServiceRateAdmin(admin.ModelAdmin):
+    list_display = ['type_tariff', 'name', 'cost_organizations', 'cost_workers', 'cost_all_documents']

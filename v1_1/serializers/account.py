@@ -10,6 +10,7 @@ from django.utils import timezone
 from rest_framework import serializers
 from v1_1.models.subscription import Subscription, ServiceRate
 
+
 class AuthSerializer(serializers.Serializer):
     username = serializers.CharField(write_only=True)
     password = serializers.CharField(write_only=True)
@@ -287,7 +288,8 @@ class CheckEmailSerializer(serializers.ModelSerializer):
     def validate_email(self, value):
         place = self.context['request'].query_params.get('place')
         if not place:
-            raise CustomValidationError({'place': 'Не заданы параметры запроса: Выберите один - регистрация, изменения пароля'})
+            raise CustomValidationError({'place': 'Не заданы параметры запроса: Выберите один - регистрация, '
+                                                  'изменения пароля'})
         if not place in ('register', 'change_password'):
             raise CustomValidationError({'place': 'Ошибка в параметрах запроса'})
         if User.objects.filter(username=value).exists() and place == 'register':
@@ -313,6 +315,7 @@ class UserAvatarsSerializer(serializers.ModelSerializer):
         model = User
         fields = ('avatar',)
 
+
 class ServiceRateSerializer(serializers.ModelSerializer):
     class Meta:
         model = ServiceRate
@@ -323,6 +326,7 @@ class ServiceRateSerializer(serializers.ModelSerializer):
             'cost_workers',
             'cost_all_documents'
         )
+
 
 class CreatingSubscriptionSerializer(serializers.ModelSerializer):
     service_rate = serializers.ChoiceField(choices=ServiceRate.TYPES_TARIFFS)

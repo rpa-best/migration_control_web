@@ -9,11 +9,15 @@ class ServiceRate(models.Model):
         ('pro', 'Про'),
     )
 
-    type_tariff = models.SlugField(choices=TYPES_TARIFFS, unique=True)
-    name = models.CharField(max_length=255)
-    cost_organizations = models.FloatField(default=0)
-    cost_workers = models.FloatField(default=0)
-    cost_all_documents = models.FloatField(default=0)
+    type_tariff = models.SlugField('Тип тарифа', choices=TYPES_TARIFFS, unique=True)
+    name = models.CharField('Название', max_length=255)
+    cost_organizations = models.FloatField('Цена за организацию', default=0)
+    cost_workers = models.FloatField('Цена за сотрудника', default=0)
+    cost_all_documents = models.FloatField('Цена за расширенный пакет', default=0)
+
+    class Meta:
+        verbose_name = 'Тарифная ставка'
+        verbose_name_plural = 'Тарифные ставки'
 
     def __str__(self):
         return self.get_type_tariff_display()
