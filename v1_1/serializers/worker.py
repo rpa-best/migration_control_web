@@ -155,7 +155,6 @@ class DocumentsWorkerSerializer(serializers.ModelSerializer):
 
         response_data = {
             'id': instance.id,
-            # 'file_documents': file_documents,
             'type_document': instance.type_document,
             'series': instance.series,
             'number': instance.number,
