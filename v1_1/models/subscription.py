@@ -28,12 +28,11 @@ class Subscription(models.Model):
     )
 
     status = models.CharField('Статус', max_length=50, default='process', choices=STATUS)
-    user = models.ForeignKey('User', verbose_name='Пользователь', on_delete=models.CASCADE, to_field='username',
-                             unique=True)
+    user = models.OneToOneField('User', verbose_name='Пользователь', on_delete=models.CASCADE, to_field='username')
     service_rate = models.ForeignKey(ServiceRate, verbose_name='Тариф', on_delete=models.CASCADE,
                                      to_field='type_tariff')
-    number_organizations = models.IntegerField('Количество организаций', default=0)
-    number_workers = models.IntegerField('Количество работников', default=0)
+    number_organizations = models.IntegerField('Количество организаций', default=1)
+    number_workers = models.IntegerField('Количество работников', default=10)
     default_cost = models.FloatField('Стоимость по умолчанию', blank=True, null=True)
     start_date = models.DateField('Дата начала', blank=True, null=True)
     expiration_date = models.DateField('Дата окончания', blank=True, null=True)
