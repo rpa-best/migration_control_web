@@ -99,14 +99,14 @@ class WorkerSerializer(serializers.ModelSerializer):
 
 class DocumentsWorkerSerializer(serializers.ModelSerializer):
     type_document = serializers.ChoiceField(choices=DocumentsWorker.TYPES_DOCUMENTS)
-    file_document = serializers.FileField(required=False)
+    file_documents = serializers.ListField(child=serializers.FileField(required=False), write_only=True)
     archive = serializers.BooleanField(required=False)
 
     class Meta:
         model = DocumentsWorker
         fields = (
             'id',
-            'file_document',
+            'file_documents',
             'type_document',
             'series',
             'number',
@@ -135,18 +135,27 @@ class DocumentsWorkerSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
-        validated_data['worker_id'] = Worker.objects.filter(pk=self.context['request'].parser_context['kwargs'].get('worker_id')).first()
-        # независимое копирование словаря
-        file_document_data = copy.deepcopy(validated_data)
+        # Получение id работника из url пути
+        validated_data['worker_id'] = Worker.objects.filter(pk=self.context['request'].parser_context['kwargs'].
+                                                            get('worker_id')).first()
+
         # Удаление ключа `file_documents` из словаря, поскольку он не содержится в модели `DocumentsWorker`,
         # но есть в модели `FileDocuments`
-        validated_data.pop('file_document', None)
+        # Создание записей для модели MigrationAddress
+        file_documents = validated_data.pop('file_documents')
 
         instance: DocumentsWorker = super(DocumentsWorkerSerializer, self).create(validated_data)
         instance.save()
 
+        # Добавление файлов документов
+        for file_document in file_documents:
+            FileDocuments.objects.create(document_id=instance, file_document=file_document)
+
+        print(file_documents)
+
         response_data = {
             'id': instance.id,
+            # 'file_documents': file_documents,
             'type_document': instance.type_document,
             'series': instance.series,
             'number': instance.number,
@@ -156,13 +165,6 @@ class DocumentsWorkerSerializer(serializers.ModelSerializer):
             'date_end': instance.date_end,
             'archive': instance.archive
         }
-
-        if file_document_data:
-            file_document = FileDocuments.objects.create(document_id=instance, file_document=file_document_data['file_document'])
-            response_data.update({
-                'file_document_id': file_document.id,
-                'file_document': self.context['request'].build_absolute_uri(file_document.file_document.url)
-            })
 
         return response_data
 

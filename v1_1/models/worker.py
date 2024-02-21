@@ -5,8 +5,8 @@ from v1_1.models.organization import Organization
 
 class Worker(models.Model):
     GENDERS = (
-        ('male', 'Male'),
-        ('female', 'Female'),
+        ('male', 'Мужчина'),
+        ('female', 'Женщина'),
     )
 
     IDENTIFICATION_CARD = (
