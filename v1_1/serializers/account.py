@@ -338,11 +338,13 @@ class CreatingSubscriptionSerializer(serializers.ModelSerializer):
     def validate(self, data):
         user = self.context['request'].user
 
-        if not Subscription.objects.filter(user=user, status='active').exists():
+        if Subscription.objects.filter(user=user, status='active').exists():
             raise CustomValidationError({'error': 'У вас уже есть активная подписка'})
 
-        if not Subscription.objects.filter(user=user, status='process').exists():
+        if Subscription.objects.filter(user=user, status='process').exists():
             raise CustomValidationError({'error': 'Вы уже подавали заявку на подписку. Ожидайте одобрения'})
+
+        return data
 
     def create(self, validated_data):
         validated_data['user'] = self.context['request'].user

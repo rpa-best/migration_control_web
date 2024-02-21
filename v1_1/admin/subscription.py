@@ -4,7 +4,7 @@ from ..models.subscription import Subscription, ServiceRate
 
 @admin.register(Subscription)
 class SubscriptionAdmin(admin.ModelAdmin):
-    list_display = ['user', 'get_service_rate_type', 'number_organizations', 'number_workers', 'default_cost', 'status',
+    list_display = ['user', 'get_service_rate_type', 'number_organizations', 'number_workers', 'cost', 'status',
                     'start_date', 'expiration_date']
     inlines = []
 

@@ -33,10 +33,34 @@ class Subscription(models.Model):
                                      to_field='type_tariff')
     number_organizations = models.IntegerField('Количество организаций', default=1)
     number_workers = models.IntegerField('Количество работников', default=10)
-    default_cost = models.FloatField('Стоимость по умолчанию', blank=True, null=True)
+    cost = models.FloatField('Стоимость', blank=True, null=True)
     start_date = models.DateField('Дата начала', blank=True, null=True)
     expiration_date = models.DateField('Дата окончания', blank=True, null=True)
 
     class Meta:
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
+
+    def save(self, *args, **kwargs):
+        # Вычисление цены при подачах заявки за подписку с указанными параметрами и тарифом
+        # Если пользователь в подписке выбрал тариф 'standard', то поле cost_all_documents для вычисления не
+        # используется, поскольку только при тарифе pro(Про) указывается сумма для поля cost_all_documents
+        if self.service_rate.type_tariff == 'standard':
+            self.cost = (self.number_organizations * self.service_rate.cost_organizations) + (
+                        self.number_workers * self.service_rate.cost_workers)
+        elif self.service_rate.type_tariff == 'pro':
+            self.cost = (self.number_organizations * self.service_rate.cost_organizations) + (
+                        self.number_workers * self.service_rate.cost_workers) + self.service_rate.cost_all_documents
+
+        super(Subscription, self).save(*args, **kwargs)
+
+    # Вычисление цены при изменении заявки за подписку с указанными параметрами и тарифом
+    def update(self, *args, **kwargs):
+        if self.service_rate.type_tariff == 'standard':
+            self.cost = (self.number_organizations * self.service_rate.cost_organizations) + (
+                        self.number_workers * self.service_rate.cost_workers)
+        elif self.service_rate.type_tariff == 'pro':
+            self.cost = (self.number_organizations * self.service_rate.cost_organizations) + (
+                        self.number_workers * self.service_rate.cost_workers) + self.service_rate.cost_all_documents
+
+        super(Subscription, self).save(*args, **kwargs)
