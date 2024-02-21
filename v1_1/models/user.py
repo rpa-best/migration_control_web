@@ -104,3 +104,19 @@ class RegistrationLog(models.Model):
     ip = models.CharField(max_length=255)
     user_agent = models.TextField()
     registration_time = models.DateTimeField(auto_now_add=True)
+
+
+class BalanceTransfer(models.Model):
+    TYPE = (
+        ('service', 'Service'),
+        ('+', 'Пополнение'),
+        ('-', 'Снятие')
+    )
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    cost = models.FloatField()
+    date = models.DateTimeField(auto_now_add=True)
+    type = models.CharField(max_length=20, choices=TYPE)
+
+    def __str__(self) -> str:
+        return str(self.id)
