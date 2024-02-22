@@ -64,5 +64,10 @@ class Subscription(models.Model):
             # и вычисляется дата (текущая дата + 30 дней) для поля expiration_date.
             self.start_date = datetime.now().date()
             self.expiration_date = self.start_date + timedelta(days=30)
+        elif self.status == 'not_active' and self.start_date:
+            # Если в подписке пользователя выбирается статус `not_active`, то обнуляется дата для поля start_date и
+            # expiration_date.
+            self.start_date = None
+            self.expiration_date = None
 
         super(Subscription, self).save(*args, **kwargs)
