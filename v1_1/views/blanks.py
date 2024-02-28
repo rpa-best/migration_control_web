@@ -10,11 +10,13 @@ from rest_framework.response import Response
 from v1_1.swagger_content.blanks import blanks
 import openpyxl
 from django.http import HttpResponse
+from ..permissions.owner_or_admin import IsOwnerOrIsAdministratorInOrganizationWorker
 
 
 @blanks
 class EmploymentContractAPIView(CreateAPIView):
     serializer_class = EmploymentContractSerializer
+    permission_class = IsOwnerOrIsAdministratorInOrganizationWorker
 
     def post(self, request, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -26,6 +28,7 @@ class EmploymentContractAPIView(CreateAPIView):
 @blanks
 class SuspensionOrderAPIView(CreateAPIView):
     serializer_class = SuspensionOrderSerializer
+    permission_class = IsOwnerOrIsAdministratorInOrganizationWorker
 
     def post(self, request, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -37,6 +40,7 @@ class SuspensionOrderAPIView(CreateAPIView):
 @blanks
 class PaymentOrderAPIView(CreateAPIView):
     serializer_class = GenerationPaymentOrderSerializer
+    permission_class = IsOwnerOrIsAdministratorInOrganizationWorker
 
     def post(self, request,  **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -48,6 +52,7 @@ class PaymentOrderAPIView(CreateAPIView):
 @blanks
 class ContractProvisionPaidServicesAPIView(CreateAPIView):
     serializer_class = ContractProvisionPaidServicesSerializer
+    permission_class = IsOwnerOrIsAdministratorInOrganizationWorker
 
     def post(self, request, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -59,6 +64,7 @@ class ContractProvisionPaidServicesAPIView(CreateAPIView):
 @blanks
 class NoticeConclusionAPIView(CreateAPIView):
     serializer_class = NoticeConclusionSerializer
+    permission_class = IsOwnerOrIsAdministratorInOrganizationWorker
 
     def post(self, request, **kwargs):
         serializer = self.get_serializer(data=request.data)

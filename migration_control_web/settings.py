@@ -19,7 +19,6 @@ load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
@@ -30,7 +29,6 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
-
 
 # Application definition
 
@@ -48,6 +46,7 @@ INSTALLED_APPS = [
     'djoser',
     'corsheaders',
     'drf_spectacular',
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
@@ -144,7 +143,6 @@ SIMPLE_JWT = {
     # 'AUTH_COOKIE_PATH': '/',        # The path of the auth cookie.
     # 'AUTH_COOKIE_SAMESITE': 'Lax',  # Whether to set the flag restricting cookie leaks on cross-site requests. This can be 'Lax', 'Strict', or None to disable the flag.
 }
-
 
 # SIMPLE_JWT = {
 #   'ACCESS_TOKEN_LIFETIME': datetime.timedelta(days=1),
@@ -258,7 +256,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'migration_control_web.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
@@ -293,7 +290,6 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
@@ -330,3 +326,12 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 
+CELERY_BEAT_SCHEDULE = {
+    'checking_subscription_relevance': {
+        'task': 'v1_1.models.subscription.checking_subscription_relevance',
+        'schedule': 1,  # каждую секунду
+    },
+}
+CELERY_TIMEZONE = 'Europe/Moscow'
+CELERY_BROKER_URL = "redis://migration_control_redis:6379"
+CELERY_RESULT_BACKEND = "redis://migration_control_redis:6379"

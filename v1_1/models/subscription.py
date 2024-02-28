@@ -1,7 +1,11 @@
-from datetime import datetime
 from django.db import models
-from v1_1.models.user import User
-from datetime import datetime, timedelta
+from datetime import timedelta
+from django.utils import timezone
+from datetime import datetime, time
+from celery import shared_task
+from celery.schedules import crontab
+from migration_control_web.celery import app
+from celery import Celery
 
 
 class ServiceRate(models.Model):
@@ -71,3 +75,17 @@ class Subscription(models.Model):
             self.expiration_date = None
 
         super(Subscription, self).save(*args, **kwargs)
+
+
+@shared_task
+def checking_subscription_relevance():
+    subscriptions = Subscription.objects.all()
+    for subscription in subscriptions:
+        if subscription.status == 'active':
+            current_datetime = timezone.now()
+            expiration_date = timezone.make_aware(datetime.combine(subscription.expiration_date, time(hour=23)))
+
+            if subscription.status == 'active' and (current_datetime >= expiration_date):
+                subscription.status = 'not_active'
+                subscription.save()
+
