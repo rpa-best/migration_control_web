@@ -12,6 +12,10 @@ class Tags(models.Model):
 class News(models.Model):
     title = models.CharField(max_length=255, blank=True)
     content = models.TextField()
-    tag = models.ForeignKey(Tags, on_delete=models.CASCADE)
     date_publication = models.DateTimeField(default=timezone.now, null=True)
     author = models.ForeignKey(User, models.CASCADE, blank=True, null=True)
+
+
+class TagsNew(models.Model):
+    new = models.ForeignKey(News, on_delete=models.CASCADE)
+    tag = models.ForeignKey(Tags, on_delete=models.CASCADE)
