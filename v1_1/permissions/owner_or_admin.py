@@ -2,13 +2,11 @@ from rest_framework.permissions import BasePermission
 from v1_1.models.organization import OrganizationUser
 from v1_1.models.subscription import Subscription
 from v1_1.models.worker import Worker, FileDocuments, DocumentsWorker
+from django.db.models import Q
 
 
 class IsOwnerOrIsAdministratorInOrganization(BasePermission):
     def has_permission(self, request, view):
-
-        organization = None
-
         if request.data.get('organization') is not None:
             # Получение id организации из поля запроса
             organization = request.data.get('organization')
@@ -36,11 +34,8 @@ class IsOwnerOrIsAdministratorInOrganization(BasePermission):
 
 # Разрешение для взаимодействия с работниками
 class IsOwnerOrIsAdministratorInOrganizationWorker(BasePermission):
-    print('dsd')
-
     def has_permission(self, request, view):
         if request.user.is_authenticated:
-
             if request.data.get('worker_id') is not None:
                 # Получение id работника из поля запроса
                 worker_id = request.data.get('worker_id')
@@ -53,7 +48,7 @@ class IsOwnerOrIsAdministratorInOrganizationWorker(BasePermission):
 
             if Worker.objects.filter(pk=worker_id).exists():
                 # Получение id организации работника
-                organization = Worker.objects.filter(pk=view.kwargs.get('worker_id')).first().organization.id
+                organization = Worker.objects.filter(pk=worker_id).first().organization.id
                 # Проверяем, является ли пользователь владельцем или администратором организации
                 if OrganizationUser.objects.filter(user=request.user, organization=organization,
                                                    role='owner').exists() or \
@@ -62,7 +57,9 @@ class IsOwnerOrIsAdministratorInOrganizationWorker(BasePermission):
                     # Получение владельца организации
                     owner = OrganizationUser.objects.filter(organization=organization, role='owner').first().user
                     # Проверка на активную подписку владельца
-                    if Subscription.objects.filter(user=owner, status='active').exists():
+                    if Subscription.objects.filter(
+                            Q(user=owner) & Q(status='active') & (Q(service_rate='standard') | Q(service_rate='pro'))
+                    ).exists():
                         return True
             else:
                 return False
@@ -103,4 +100,37 @@ class IsOwnerOrIsAdministratorForFileDocument(BasePermission):
         return self.has_permission(request, view)
 
 
-# class isPro(BasePermission):
+# Разрешение Про подписки
+class isPro(BasePermission):
+    def has_permission(self, request, view):
+        if request.user.is_authenticated:
+            if request.data.get('worker_id') is not None:
+                # Получение id работника из поля запроса
+                worker_id = request.data.get('worker_id')
+            elif request.query_params.get('worker_id') is not None:
+                # Получение id работника из параметров запроса
+                worker_id = request.query_params.get('worker_id')
+            else:
+                # Получение id работника из url пути
+                worker_id = view.kwargs.get('worker_id')
+
+            if Worker.objects.filter(pk=worker_id).exists():
+                # Получение id организации работника
+                organization = Worker.objects.filter(pk=worker_id).first().organization.id
+                # Проверяем, является ли пользователь владельцем или администратором организации
+                if OrganizationUser.objects.filter(user=request.user, organization=organization,
+                                                   role='owner').exists() or \
+                        OrganizationUser.objects.filter(user=request.user, organization=organization,
+                                                        role='admin').exists():
+                    # Получение владельца организации
+                    owner = OrganizationUser.objects.filter(organization=organization, role='owner').first().user
+                    # Проверка на активную подписку владельца
+                    if Subscription.objects.filter(user=owner, status='active', service_rate='pro').exists():
+                        return True
+            else:
+                return False
+        else:
+            return False
+
+    def has_object_permission(self, request, view, obj):
+        return self.has_permission(request, view)

@@ -310,8 +310,8 @@ AUTH_USER_MODEL = 'v1_1.User'
 STATIC_ROOT = BASE_DIR / 'static'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-STATIC_URL = 'static/'
-MEDIA_URL = "/media/"
+STATIC_URL = 'api/v1.1/static/'
+MEDIA_URL = 'api/v1.1/media/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
