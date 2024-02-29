@@ -17,7 +17,7 @@ class User(AbstractBaseUser, PermissionsMixin, BaseUserManager):
     username = models.EmailField(max_length=150, unique=True)
     password = models.CharField(max_length=150)
     phone = models.CharField(max_length=28, unique=True, blank=True, null=True, default=None)
-    name = models.CharField(max_length=150, blank=True, null=True)
+    first_name = models.CharField(max_length=150, blank=True, null=True)
     surname = models.CharField(max_length=150, blank=True, null=True)
     patronymic = models.CharField(max_length=150, blank=True, null=True)
     avatar = models.ImageField(upload_to=UploadPath('image'), null=True)

@@ -171,12 +171,12 @@ class MigrationAddressSerializer(serializers.ModelSerializer):
 
 class OrganizationCreateUserSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source='user.username')
-    name = serializers.CharField(source='user.name')
+    first_name = serializers.CharField(source='user.first_name')
     role = serializers.ChoiceField(choices=OrganizationUser.USER_ROLE_CHOICES)
 
     class Meta:
         model = OrganizationUser
-        fields = ('username', 'name', 'organization', 'role')
+        fields = ('username', 'first_name', 'organization', 'role')
         read_only_fields = ('organization', )
 
     def validate_username(self, value):
@@ -211,13 +211,13 @@ class OrganizationCreateUserSerializer(serializers.ModelSerializer):
     @atomic
     def create(self, validated_data):
         username = validated_data['user']['username']
-        name = validated_data['user']['name']
+        first_name = validated_data['user']['first_name']
         role = validated_data['role']
         organization = self.context['request'].parser_context['kwargs'].get('organization')
 
         if not User.objects.filter(username=username).exists():
             #Создание пользователя
-            user = User.objects.create(username=username, name=name)
+            user = User.objects.create(username=username, name=first_name)
             try:
                 user.regenerate_and_send_password()
             except Exception:

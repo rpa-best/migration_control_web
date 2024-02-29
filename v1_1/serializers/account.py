@@ -51,7 +51,7 @@ class AccountCreateSerializer(serializers.ModelSerializer):
     username = serializers.CharField(required=True)
     password = serializers.CharField(write_only=True, required=True)
     verified_password = serializers.CharField(write_only=True, required=True)
-    name = serializers.CharField(required=True)
+    first_name = serializers.CharField(required=True)
     surname = serializers.CharField(required=True)
     patronymic = serializers.CharField(required=False)
     phone = serializers.CharField(required=False)
@@ -63,7 +63,7 @@ class AccountCreateSerializer(serializers.ModelSerializer):
             'username',
             'password',
             'verified_password',
-            'name',
+            'first_name',
             'surname',
             'patronymic',
             'phone',
@@ -175,7 +175,7 @@ class PasswordAndPhoneValidationCreateSerializer(serializers.ModelSerializer):
             'username',
             'password',
             'verified_password',
-            'name',
+            'first_name',
             'surname',
             'patronymic',
             'phone',
@@ -193,7 +193,7 @@ class AccountPatchSerializer(serializers.ModelSerializer):
         model = User
         fields = (
             'username',
-            'name',
+            'first_name',
             'surname',
             'patronymic',
             'phone',
@@ -242,7 +242,7 @@ class AccountDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            'username', 'name', 'surname', 'patronymic', 'phone', 'avatar', 'birthday'
+            'username', 'first_name', 'surname', 'patronymic', 'phone', 'avatar', 'birthday'
         )
 
 

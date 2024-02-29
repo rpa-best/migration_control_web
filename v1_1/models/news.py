@@ -26,6 +26,7 @@ class News(models.Model):
         verbose_name = 'Новость'
         verbose_name_plural = 'Новости'
 
+
 class TagsNew(models.Model):
     new = models.ForeignKey(News, on_delete=models.CASCADE, verbose_name='Новость')
     tag = models.ForeignKey(Tags, on_delete=models.CASCADE, verbose_name='Тег')
