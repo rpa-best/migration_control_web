@@ -11,6 +11,7 @@ SERVIES_SCHEMA_URLS = {
     'Migration control Worker': '/api/v1.1/schema-worker/',
     'Migration control Blanks': '/api/v1.1/schema-blanks/',
     'Migration control Tasks': '/api/v1.1/schema-tasks/',
+    'Migration control News': '/api/v1.1/schema-news/',
 }
 
 

@@ -3,6 +3,7 @@ from rest_framework import routers
 from v1_1.views.worker import CreateWorkerAPIViewSet, DocumentsWorkerAPIViewSet, ShowWorkersAPIViewSet, \
     FileDocumentsAPIViewSet, UpdateWorkerAPIViewSet
 
+
 router = routers.DefaultRouter()
 router.register('create', CreateWorkerAPIViewSet, 'create-worker')
 router.register('update', UpdateWorkerAPIViewSet, 'update-worker')

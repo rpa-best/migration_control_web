@@ -236,6 +236,17 @@ SPECTACULAR_TASKS_SETTINGS = {
     'COMPONENT_SPLIT_REQUEST': True,
 }
 
+SPECTACULAR_NEWS_SETTINGS = {
+    'TITLE': 'Migration control News',
+    'DESCRIPTION': 'Migration control News',
+    'VERSION': '1.1',
+    'PREPROCESSING_HOOKS': ['v1_1.swagger_content.hooks.preprocessing_filter_news'],
+    'SWAGGER_UI_SETTINGS': {
+        'filter': True,
+    },
+    'COMPONENT_SPLIT_REQUEST': True,
+}
+
 ROOT_URLCONF = 'migration_control_web.urls'
 
 TEMPLATES = [

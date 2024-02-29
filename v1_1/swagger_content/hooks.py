@@ -41,3 +41,12 @@ def preprocessing_filter_tasks(endpoints):
         if 'api/v1.1/tasks' in path:
             filtered.append((path, path_regex, method, callback))
     return filtered
+
+
+def preprocessing_filter_news(endpoints):
+    filtered = []
+    for (path, path_regex, method, callback) in endpoints:
+        # Remove all but DRF API endpoints
+        if 'api/v1.1/news' in path:
+            filtered.append((path, path_regex, method, callback))
+    return filtered
