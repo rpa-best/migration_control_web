@@ -57,12 +57,12 @@ class DocumentsWorker(models.Model):
     worker_id = models.ForeignKey(Worker, models.CASCADE)
     type_document = models.CharField(max_length=50, choices=TYPES_DOCUMENTS)
     series = models.CharField(max_length=30, null=True, blank=True)
-    number = models.CharField(max_length=30)
+    number = models.CharField(max_length=30, null=True, blank=True)
     date_issue = models.DateField(blank=True, null=True)
-    issued_whom = models.CharField(max_length=150)
+    issued_whom = models.CharField(max_length=150, null=True, blank=True)
     territory_action = models.CharField(max_length=150, blank=True, null=True)
-    date_end = models.DateField(blank=True, null=True)
-    archive = models.BooleanField(default=False, null=True)
+    date_end = models.DateField(null=True, blank=True)
+    archive = models.BooleanField(default=False, null=True, blank=True)
 
 
 class FileDocuments(models.Model):
