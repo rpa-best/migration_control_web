@@ -98,8 +98,22 @@ class WorkerSerializer(serializers.ModelSerializer):
 
 
 class DocumentsWorkerSerializer(serializers.ModelSerializer):
+    # Параметр для определения обязательных полей для каждого типа документа
+    REQUIRED_FIELDS = {
+        'passport': ['series', 'number', 'issued_whom', 'date_issue', 'date_end'],
+        'migration_card': ['number', 'date_issue', 'date_end'],
+        'registration': ['date_issue', 'date_end'],
+        'patent': ['date_issue', 'date_end'],
+        'paycheck': ['date_end'],
+        'temporary_residence': ['series', 'number', 'issued_whom', 'date_issue', 'date_end'],
+        'residence_permit': ['series', 'number', 'issued_whom', 'date_issue', 'date_end'],
+        'certificate_asylum': ['series', 'number', 'issued_whom', 'date_issue', 'date_end'],
+        'SNILS': ['number'],
+        'INN': ['number']
+    }
+
     type_document = serializers.ChoiceField(choices=DocumentsWorker.TYPES_DOCUMENTS)
-    file_documents = serializers.ListField(child=serializers.FileField(required=False), write_only=True)
+    file_documents = serializers.ListField(child=serializers.FileField(required=False), write_only=True, required=False)
     archive = serializers.BooleanField(required=False)
 
     class Meta:
@@ -119,6 +133,13 @@ class DocumentsWorkerSerializer(serializers.ModelSerializer):
         read_only_fields = ('id', 'worker_id',)
 
     def validate(self, data):
+        type_document = data['type_document']
+
+        # Проверка, что все обязательные поля для выбранного типа документа заполнены
+        for field in self.REQUIRED_FIELDS[type_document]:
+            if field not in data:
+                raise CustomValidationError({field: 'Это поле обязательно для заполнения'})
+
         if not Worker.objects.filter(pk=self.context['request'].parser_context['kwargs'].get('worker_id')).exists():
             raise CustomValidationError({'worker_id':  'Сотрудник не найден'})
 
