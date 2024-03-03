@@ -158,7 +158,7 @@ class DocumentsWorkerSerializer(serializers.ModelSerializer):
 
         # Проверка, что все обязательные поля для выбранного типа документа заполнены
         for field in self.REQUIRED_FIELDS[type_document]:
-            if field not in data:
+            if field not in validated_data:
                 raise CustomValidationError({field: 'Это поле обязательно для заполнения'})
 
         # Получение id работника из url пути
