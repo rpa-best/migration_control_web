@@ -1,7 +1,8 @@
 from django.db.models import Q
 from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
+from rest_framework.views import APIView
 from v1_1.common_utils.custom_handler import CustomValidationError
 from v1_1.filters.worker import WorkerFilter
 from v1_1.models.organization import OrganizationUser
@@ -12,7 +13,11 @@ from v1_1.serializers.worker import WorkerSerializer, CreateWorkerSerializer, Do
     FileDocumentsSerializer
 from rest_framework import mixins, viewsets
 from rest_framework.response import Response
-
+from rest_framework.parsers import FileUploadParser
+from io import BytesIO
+from django.http import HttpResponse
+# import zipfile
+# import os
 
 @extend_schema(tags=['Worker'])
 class CreateWorkerAPIViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
