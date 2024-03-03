@@ -357,3 +357,28 @@ class CreatingSubscriptionSerializer(serializers.ModelSerializer):
         instance.save()
         validated_data['service_rate'] = validated_data['service_rate'].type_tariff
         return validated_data
+
+
+class ChangingSubscriptionSerializer(serializers.ModelSerializer):
+    service_rate = serializers.ChoiceField(choices=ServiceRate.TYPES_TARIFFS)
+
+    class Meta:
+        model = Subscription
+        fields = (
+            'service_rate',
+            'number_organizations',
+            'number_workers',
+        )
+
+    def validate(self, data):
+        pass
+
+    def update(self, instance, validated_data):
+        validated_data['user'] = self.context['request'].user
+        validated_data['service_rate'] = ServiceRate.objects.filter(type_tariff=validated_data['service_rate']).first()
+        instance: Subscription = super().update(instance, validated_data)
+        instance.save()
+        validated_data['service_rate'] = validated_data['service_rate'].type_tariff
+        return validated_data
+
+

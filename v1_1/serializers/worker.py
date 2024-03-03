@@ -133,29 +133,34 @@ class DocumentsWorkerSerializer(serializers.ModelSerializer):
         read_only_fields = ('id', 'worker_id',)
 
     def validate(self, data):
-        type_document = data['type_document']
-
-        # Проверка, что все обязательные поля для выбранного типа документа заполнены
-        for field in self.REQUIRED_FIELDS[type_document]:
-            if field not in data:
-                raise CustomValidationError({field: 'Это поле обязательно для заполнения'})
-
         if not Worker.objects.filter(pk=self.context['request'].parser_context['kwargs'].get('worker_id')).exists():
             raise CustomValidationError({'worker_id':  'Сотрудник не найден'})
 
         if 'archive' not in data:
             data['archive'] = False
 
-        if DocumentsWorker.objects.filter(type_document=data['type_document'],
-                                          worker_id=self.context['request'].parser_context['kwargs'].get(
-                                                        'worker_id')).exists() and data['archive'] is False:
-            raise CustomValidationError({'error':  'У сотрудника уже есть такой активный документ. Для добавления '
-                                                   'текущего документа необходимо один из документов '
-                                                   'записать в архив'})
+        if 'type_document' in data:
+            worker_id = self.context['request'].parser_context['kwargs'].get('worker_id')
+
+            if DocumentsWorker.objects.filter(type_document=data['type_document'], worker_id=worker_id).exists():
+                if data['archive'] is False:
+                    if (DocumentsWorker.objects.get(type_document=data['type_document'], worker_id=worker_id).archive
+                            is False):
+
+                        raise CustomValidationError({'error':  'У сотрудника уже есть такой активный документ. '
+                                                               'Для добавления текущего документа необходимо один '
+                                                               'из документов записать в архив'})
 
         return data
 
     def create(self, validated_data):
+        type_document = validated_data['type_document']
+
+        # Проверка, что все обязательные поля для выбранного типа документа заполнены
+        for field in self.REQUIRED_FIELDS[type_document]:
+            if field not in data:
+                raise CustomValidationError({field: 'Это поле обязательно для заполнения'})
+
         # Получение id работника из url пути
         validated_data['worker_id'] = Worker.objects.filter(pk=self.context['request'].parser_context['kwargs'].
                                                             get('worker_id')).first()
@@ -163,7 +168,7 @@ class DocumentsWorkerSerializer(serializers.ModelSerializer):
         # Удаление ключа `file_documents` из словаря, поскольку он не содержится в модели `DocumentsWorker`,
         # но есть в модели `FileDocuments`
         # Создание записей для модели MigrationAddress
-        file_documents = validated_data.pop('file_documents')
+        file_documents = validated_data.pop('file_documents') if 'file_documents' in validated_data else []
 
         instance: DocumentsWorker = super(DocumentsWorkerSerializer, self).create(validated_data)
         instance.save()
