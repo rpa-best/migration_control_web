@@ -92,6 +92,7 @@ class ShowWorkersAPIViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, vi
 @extend_schema(tags=['Documents worker'])
 class DocumentsWorkerAPIViewSet(ModelViewSet):
     serializer_class = DocumentsWorkerSerializer
+    filterset_fields = ['archive']
 
     def get_queryset(self):
         return DocumentsWorker.objects.filter(Q(worker_id=self.kwargs.get('worker_id')))
