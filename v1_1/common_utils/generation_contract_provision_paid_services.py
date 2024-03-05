@@ -7,7 +7,7 @@ from v1_1.models.organization import Organization, Bank, DirectorOrganization
 from v1_1.models.worker import Worker, DocumentsWorker
 
 
-# Договор возмездного оказания услуг
+# Договор возмездного оказания услуг (ГПХ)
 def GenerationContractProvisionPaidServices(data):
     # =========== Входные данные, которые вводятся пользователем вручную ===========
     worker_id = data['worker_id']

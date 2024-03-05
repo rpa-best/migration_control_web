@@ -13,4 +13,5 @@ router.register(r'(?P<document_id>\d+)/file-document', FileDocumentsAPIViewSet, 
 
 urlpatterns = [
     path('', include(router.urls)),
+    # path('file-document/<int:pk>/', FileDocumentsAPIViewSet.as_view())
 ]

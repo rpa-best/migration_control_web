@@ -7,6 +7,7 @@ from v1_1.models.worker import Worker
 from v1_1.serializers.blanks import SuspensionOrderSerializer
 
 
+# Приказ об отстранении
 def GenerationSuspensionOrder(data):
     # =========== Входные данные, которые вводятся пользователем вручную ===========
     worker_id = data['worker_id']

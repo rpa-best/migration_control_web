@@ -9,6 +9,7 @@ from v1_1.models.organization import Organization, Bank, DirectorOrganization
 from v1_1.models.worker import Worker, DocumentsWorker
 
 
+# Трудовой договор
 def GenerationEmploymentContractDocument(data):
     # =========== Входные данные, которые вводятся пользователем вручную ===========
     worker_id = data['worker_id']

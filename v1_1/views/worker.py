@@ -16,8 +16,14 @@ from rest_framework.response import Response
 from rest_framework.parsers import FileUploadParser
 from io import BytesIO
 from django.http import HttpResponse
-# import zipfile
-# import os
+import zipfile
+import os
+import requests
+from ..common_utils.renderers import FileRenderer
+from rest_framework.renderers import JSONRenderer
+import io
+from rest_framework.decorators import action
+
 
 @extend_schema(tags=['Worker'])
 class CreateWorkerAPIViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
@@ -116,6 +122,7 @@ class DocumentsWorkerAPIViewSet(ModelViewSet):
 @extend_schema(tags=['Documents worker'])
 class FileDocumentsAPIViewSet(ModelViewSet):
     serializer_class = FileDocumentsSerializer
+    renderer_classes = (JSONRenderer, FileRenderer)
 
     def get_queryset(self):
         return FileDocuments.objects.filter(Q(document_id=self.kwargs.get('document_id')))
@@ -134,3 +141,60 @@ class FileDocumentsAPIViewSet(ModelViewSet):
         serializer.is_valid(raise_exception=True)
         response_data = serializer.create(serializer.validated_data)
         return Response(response_data)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        # Проверяем, запрашивается ли ZIP архив
+        if request.query_params.get("format") == "zip":
+            files = [self.request.build_absolute_uri(file.file_document.url) for file in queryset]
+            return Response(files)
+
+        # Если не запрашивается ZIP архив, возвращаем JSON
+        return super().list(request, *args, **kwargs)
+
+
+# @extend_schema(tags=['Documents worker'])
+# class FileDocumentsAPIViewSet(APIView):
+#     serializer_class = FileDocumentsSerializer
+#     renderer_classes = [JSONRenderer, FileRenderer]
+#
+#     def get_queryset(self):
+#         return FileDocuments.objects.filter(Q(document_id=self.kwargs.get('document_id')))
+#
+#     def get_permissions(self):
+#         # Определение разрешений в зависимости от типа запроса
+#         if self.action in ['create', 'update', 'partial_update', 'destroy']:
+#             permission_classes = [IsOwnerOrIsAdministratorForFileDocument]
+#         else:
+#             permission_classes = [IsAuthenticated]
+#
+#         return [permission() for permission in permission_classes]
+#
+#     def create(self, request, *args, **kwargs):
+#         serializer = self.get_serializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
+#         response_data = serializer.create(serializer.validated_data)
+#         return Response(response_data)
+#
+#     def list_files(self, request, *args, **kwargs):
+#         document_id = self.kwargs.get('document_id')
+#         file_documents = FileDocuments.objects.filter(document_id=document_id)
+#         if not file_documents:
+#             return Response({"message": "No files found for this document"}, status=404)
+#
+#         file_paths = [self.request.build_absolute_uri(file.file_document.url) for file in file_documents]
+#         response = HttpResponse(content_type='application/octet-stream')
+#         response['Content-Disposition'] = f'attachment; filename="files_{document_id}.zip'  # Имя архива с файлами
+#
+#         with zipfile.ZipFile(response, 'w') as zip_file:
+#             for file_path in file_paths:
+#                 file_name = file_path.split('/')[-1]
+#                 file_name = file_name.replace(':', '_')  # Заменяем ":" на "_"
+#                 file_content = requests.get(file_path).content
+#                 zip_file.writestr(file_name, file_content)
+#
+#         return Response(response)
+#
+#     def list(self, request, *args, **kwargs):
+#         return self.list_files(request, *args, **kwargs)

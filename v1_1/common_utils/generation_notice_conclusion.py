@@ -6,6 +6,7 @@ from v1_1.models.organization import Organization, DirectorOrganization
 from v1_1.models.worker import DocumentsWorker, Worker
 
 
+# Уведомление о заключении
 def GenerationNoticeConclusion(data):
     # =========== Входные данные, которые вводятся пользователем вручную ===========
     worker_id = data['worker_id']
