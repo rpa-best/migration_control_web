@@ -17,7 +17,9 @@ class FileRenderer(BaseRenderer):
         # Создаем zip-архив
         with zipfile.ZipFile(response, 'w') as zip_file:
             for result in data:
+                file_name = result.split('/')[-1]
+                file_name = file_name.replace(':', '_')  # Заменяем ":" на "_"
                 file_content = requests.get(result).content
-                zip_file.writestr(result, file_content)
+                zip_file.writestr(file_name, file_content)
 
         return response

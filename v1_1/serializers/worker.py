@@ -144,12 +144,18 @@ class DocumentsWorkerSerializer(serializers.ModelSerializer):
 
             if DocumentsWorker.objects.filter(type_document=data['type_document'], worker_id=worker_id).exists():
                 if data['archive'] is False:
-                    if (DocumentsWorker.objects.get(type_document=data['type_document'], worker_id=worker_id).archive
-                            is False):
+                    try:
+                        if (DocumentsWorker.objects.get(type_document=data['type_document'], worker_id=worker_id,
+                                                        archive=False).archive
+                                is False):
 
-                        raise CustomValidationError({'error':  'У сотрудника уже есть такой активный документ. '
-                                                               'Для добавления текущего документа необходимо один '
-                                                               'из документов записать в архив'})
+                            raise CustomValidationError({'error':  'У сотрудника уже есть такой активный документ. '
+                                                                   'Для добавления текущего документа необходимо один '
+                                                                   'из документов пометить в архив'})
+                    except Exception:
+                        raise CustomValidationError({'error': 'У сотрудника уже есть такой активный документ. '
+                                                              'Для добавления текущего документа необходимо один '
+                                                              'из документов пометить в архив'})
 
         return data
 
