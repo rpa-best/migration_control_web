@@ -1,16 +1,52 @@
 from rest_framework.generics import CreateAPIView
+from rest_framework.views import APIView
 from v1_1.common_utils.generation_contract_provision_paid_services import GenerationContractProvisionPaidServices
 from v1_1.common_utils.generation_employment_contract import GenerationEmploymentContractDocument
 from v1_1.common_utils.generation_notice_conclusion import GenerationNoticeConclusion
 from v1_1.common_utils.generation_payment_order import GenerationPaymentOrder
 from v1_1.common_utils.generation_suspension_order import GenerationSuspensionOrder
-from v1_1.serializers.blanks import NoticeConclusionSerializer, EmploymentContractSerializer, \
-    SuspensionOrderSerializer, GenerationPaymentOrderSerializer, ContractProvisionPaidServicesSerializer
+from v1_1.serializers.blanks import (NoticeConclusionSerializer, EmploymentContractSerializer,
+                                     SuspensionOrderSerializer, GenerationPaymentOrderSerializer,
+                                     ContractProvisionPaidServicesSerializer, SearchWorkerSerializer)
 from rest_framework.response import Response
 from v1_1.swagger_content.blanks import blanks
 import openpyxl
 from django.http import HttpResponse
 from v1_1.permissions.owner_or_admin import IsOwnerOrIsAdministratorInOrganizationWorker, isPro
+from rest_framework import mixins, viewsets
+from ..models.worker import Worker, DocumentsWorker
+from rest_framework import serializers, generics
+
+from django.db.models import Q
+from ..models.organization import Organization
+
+
+class SearchWorkers(mixins.ListModelMixin, viewsets.GenericViewSet):
+    serializer_class = SearchWorkerSerializer
+
+    def list(self, request, *args, **kwargs):
+        search = request.query_params.get('search', '')
+        search_parts = search.split()
+
+        q_objects = Q()
+        for search_part in search_parts:
+            q_objects &= (Q(name__icontains=search_part) |
+                          Q(surname__icontains=search_part) |
+                          Q(patronymic__icontains=search_part))
+
+        workers = Worker.objects.filter(q_objects)
+        results = []
+        for worker in workers:
+            documents = DocumentsWorker.objects.filter(worker_id=worker)
+            organization = Organization.objects.get(pk=worker.organization_id)
+            inn = documents.filter(type_document='INN').first().number if documents.filter(
+                type_document='INN').exists() else ''
+
+            result_str = (f'{worker.surname} {worker.name} {worker.patronymic} (ИНН: {inn}) '
+                          f'{organization.get_organizational_form_display()} "{organization.name}"')
+            results.append({'worker': result_str})
+
+        return Response(results)
 
 
 @blanks
