@@ -44,7 +44,7 @@ class SearchWorkers(mixins.ListModelMixin, viewsets.GenericViewSet):
 
             result_str = (f'{worker.surname} {worker.name} {worker.patronymic} (ИНН: {inn}) '
                           f'{organization.get_organizational_form_display()} "{organization.name}"')
-            results.append({'worker': result_str})
+            results.append({'worker_id': worker.id, 'worker': result_str})
 
         return Response(results)
 
