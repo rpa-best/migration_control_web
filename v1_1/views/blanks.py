@@ -9,18 +9,18 @@ from v1_1.serializers.blanks import (NoticeConclusionSerializer, EmploymentContr
                                      SuspensionOrderSerializer, GenerationPaymentOrderSerializer,
                                      ContractProvisionPaidServicesSerializer, SearchWorkerSerializer)
 from rest_framework.response import Response
-from v1_1.swagger_content.blanks import blanks
+from v1_1.swagger_content.blanks import blanks, search_worker
 import openpyxl
 from django.http import HttpResponse
 from v1_1.permissions.owner_or_admin import IsOwnerOrIsAdministratorInOrganizationWorker, isPro
 from rest_framework import mixins, viewsets
 from ..models.worker import Worker, DocumentsWorker
 from rest_framework import serializers, generics
-
 from django.db.models import Q
 from ..models.organization import Organization
 
 
+@search_worker
 class SearchWorkers(mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = SearchWorkerSerializer
 

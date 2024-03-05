@@ -12,3 +12,9 @@ organization_search = extend_schema_view(
         tags=['Blanks']
     )
 )
+
+search_worker = extend_schema_view(
+    list=extend_schema(
+        tags=['Search worker']
+    )
+)
