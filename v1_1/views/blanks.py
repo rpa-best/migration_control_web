@@ -112,7 +112,7 @@ class ContractProvisionPaidServicesAPIView(CreateAPIView):
 @blanks
 class NoticeConclusionAPIView(CreateAPIView):
     serializer_class = NoticeConclusionSerializer
-    permission_classes = (isPro,)
+    permission_classes = (IsOwnerOrIsAdministratorInOrganizationWorker,)
 
     def post(self, request, **kwargs):
         serializer = self.get_serializer(data=request.data)

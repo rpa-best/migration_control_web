@@ -56,18 +56,18 @@ def GenerationNoticeConclusion(data):
     passport_series = DocumentsWorker.objects.get(worker_id=worker_id, type_document='passport', archive=False).series.upper()
     passport_number = DocumentsWorker.objects.get(worker_id=worker_id, type_document='passport', archive=False).number.upper()
     date_issue_passport = str(DocumentsWorker.objects.get(worker_id=worker_id, type_document='passport', archive=False).date_issue)
-    issued_whom = str(DocumentsWorker.objects.get(worker_id=worker_id, type_document='passport', archive=False).issued_whom)
+    issued_whom = str(DocumentsWorker.objects.get(worker_id=worker_id, type_document='passport', archive=False).issued_whom).upper()
     date_issue_passport = datetime.strptime(date_issue_passport, '%Y-%m-%d')
     date_issue_passport = date_issue_passport.strftime('%d.%m.%Y')
 
-    path_file_doc = 'v1_1/document_templates/notice_conclusion.xlsx'
+    path_file_doc = 'v1_1/document_templates/1b0e0fd1a3e9fdc5.xlsx'
     doc = load_workbook(path_file_doc)
     sheet = doc.active
 
     list_columns = ['A', 'C', 'E', 'G', 'I', 'K', 'M', 'O', 'Q', 'S', 'U', 'W', 'Y', 'AA', 'AC', 'AE', 'AG', 'AI', 'AK',
                     'AM', 'AO', 'AQ', 'AS', 'AU', 'AW', 'AY', 'BA', 'BC', 'BE', 'BG', 'BI', 'BK', 'BM', 'BO', 'BQ']
 
-    row = 11
+    row = 13
     index = 0
     for symbol in name_territorial_body:
         for col in range(index, len(list_columns)):
@@ -82,7 +82,7 @@ def GenerationNoticeConclusion(data):
             break
 
     list_columns_for_okved = ['AU', 'AW', 'AY', 'BA', 'BC', 'BE', 'BG', 'BI', 'BK', 'BM', 'BO', 'BQ']
-    row = 36
+    row = 38
     index = 0
     stop = False
     for symbol in okved:
@@ -96,7 +96,7 @@ def GenerationNoticeConclusion(data):
         if stop == True:
             break
 
-    row = 41
+    row = 43
     index = 0
     for symbol in organization:
         for col in range(index, len(list_columns)):
@@ -110,7 +110,7 @@ def GenerationNoticeConclusion(data):
             index += 1
             break
 
-    row = 58
+    row = 60
     index = 0
     for symbol in ogrn:
         for col in range(index, len(list_columns)):
@@ -119,16 +119,16 @@ def GenerationNoticeConclusion(data):
             index += 1
             break
 
-    row = 73
+    row = 75
     index = 0
-    for symbol in inn_kpp:
+    for symbol in inn:
         for col in range(index, len(list_columns)):
             cell = list_columns[index] + str(row)
             sheet[f'{cell}'] = symbol
             index += 1
             break
 
-    row = 76
+    row = 78
     index = 0
     for symbol in legal_address:
         for col in range(index, len(list_columns)):
@@ -142,7 +142,7 @@ def GenerationNoticeConclusion(data):
             index += 1
             break
 
-    row = 85
+    row = 87
     index = 0
     list_columns_phone = ['U', 'W', 'Y', 'AA', 'AC', 'AE', 'AG', 'AI', 'AK', 'AM', 'AO', 'AQ', 'AS', 'AU', 'AW', 'AY',
                           'BA', 'BC', 'BE', 'BG', 'BI', 'BK', 'BM', 'BO', 'BQ']
@@ -155,19 +155,6 @@ def GenerationNoticeConclusion(data):
 
     list_columns_for_full_name = ['O', 'Q', 'S', 'U', 'W', 'Y', 'AA', 'AC', 'AE', 'AG', 'AI', 'AK', 'AM', 'AO', 'AQ',
                                   'AS', 'AU', 'AW', 'AY', 'BA', 'BC', 'BE', 'BG', 'BI', 'BK', 'BM', 'BO', 'BQ']
-    row = 91
-    index = 0
-    stop = False
-    for symbol in name_worker:
-        for col in range(index, len(list_columns_for_full_name)):
-            cell = list_columns_for_full_name[index] + str(row)
-            sheet[f'{cell}'] = symbol
-            index += 1
-            if col == 'BQ':
-                stop = True
-            break
-        if stop == True:
-            break
 
     row = 93
     index = 0
@@ -183,8 +170,22 @@ def GenerationNoticeConclusion(data):
         if stop == True:
             break
 
+    row = 95
+    index = 0
+    stop = False
+    for symbol in name_worker:
+        for col in range(index, len(list_columns_for_full_name)):
+            cell = list_columns_for_full_name[index] + str(row)
+            sheet[f'{cell}'] = symbol
+            index += 1
+            if col == 'BQ':
+                stop = True
+            break
+        if stop == True:
+            break
+
     if patronymic_worker != None and patronymic_worker != '':
-        row = 95
+        row = 97
         index = 0
         stop = False
         for symbol in patronymic_worker:
@@ -200,7 +201,7 @@ def GenerationNoticeConclusion(data):
 
     list_columns_for_citizenship = ['Q', 'S', 'U', 'W', 'Y', 'AA', 'AC', 'AE', 'AG', 'AI', 'AK', 'AM', 'AO', 'AQ',
                                     'AS', 'AU', 'AW', 'AY', 'BA', 'BC', 'BE', 'BG', 'BI', 'BK', 'BM', 'BO', 'BQ']
-    row = 98
+    row = 100
     index = 0
     stop = False
     for symbol in citizenship:
@@ -214,46 +215,46 @@ def GenerationNoticeConclusion(data):
         if stop == True:
             break
 
-    list_columns_for_citizenship = ['W', 'Y', 'AA', 'AC', 'AE', 'AG', 'AI', 'AK', 'AM', 'AO', 'AQ', 'AS', 'AU', 'AW',
-                                    'AY', 'BA', 'BC', 'BE', 'BG', 'BI', 'BK', 'BM', 'BO', 'BQ']
-    row = 100
-    index = 0
-    index_citizenship_last = 0
-    stop = False
-    for symbol in place_birth:
-        if row == 103:
-            for col in range(index_citizenship_last, len(list_columns)):
-                cell = list_columns[index_citizenship_last] + str(row)
-                sheet[f'{cell}'] = symbol
-                index_citizenship_last += 1
-                if col == 'BQ':
-                    stop = True
-                break
-            if stop == True:
-                break
-        else:
-            for col in range(index, len(list_columns_for_citizenship)):
-                cell = list_columns_for_citizenship[index] + str(row)
-                if list_columns_for_citizenship[index] == 'BQ':
-                    sheet[f'{cell}'] = symbol
-                    row += 3
-                    index = 0
-                    break
-                sheet[f'{cell}'] = symbol
-                index += 1
-                break
+    # list_columns_for_citizenship = ['W', 'Y', 'AA', 'AC', 'AE', 'AG', 'AI', 'AK', 'AM', 'AO', 'AQ', 'AS', 'AU', 'AW',
+    #                                 'AY', 'BA', 'BC', 'BE', 'BG', 'BI', 'BK', 'BM', 'BO', 'BQ']
+    # row = 100
+    # index = 0
+    # index_citizenship_last = 0
+    # stop = False
+    # for symbol in place_birth:
+    #     if row == 103:
+    #         for col in range(index_citizenship_last, len(list_columns)):
+    #             cell = list_columns[index_citizenship_last] + str(row)
+    #             sheet[f'{cell}'] = symbol
+    #             index_citizenship_last += 1
+    #             if col == 'BQ':
+    #                 stop = True
+    #             break
+    #         if stop == True:
+    #             break
+    #     else:
+    #         for col in range(index, len(list_columns_for_citizenship)):
+    #             cell = list_columns_for_citizenship[index] + str(row)
+    #             if list_columns_for_citizenship[index] == 'BQ':
+    #                 sheet[f'{cell}'] = symbol
+    #                 row += 3
+    #                 index = 0
+    #                 break
+    #             sheet[f'{cell}'] = symbol
+    #             index += 1
+    #             break
 
     list_birthday = birthday.split('-')
     #День
-    sheet['R105'],  sheet['T105'] = list_birthday[2][0], list_birthday[2][1]
+    sheet['R104'],  sheet['T104'] = list_birthday[2][0], list_birthday[2][1]
     #Месяц
-    sheet['W105'], sheet['Y105'] = list_birthday[1][0], list_birthday[1][1]
+    sheet['W104'], sheet['Y104'] = list_birthday[1][0], list_birthday[1][1]
     #Год
-    sheet['AB105'], sheet['AD105'] = list_birthday[0][0], list_birthday[0][1]
-    sheet['AF105'], sheet['AH105'] = list_birthday[0][2], list_birthday[0][3]
+    sheet['AB104'], sheet['AD104'] = list_birthday[0][0], list_birthday[0][1]
+    sheet['AF104'], sheet['AH104'] = list_birthday[0][2], list_birthday[0][3]
 
     list_columns_for_passport_series = ['G', 'I', 'K', 'M', 'O', 'Q', 'S']
-    row = 111
+    row = 110
     index = 0
     stop = False
     for symbol in passport_series:
@@ -268,7 +269,7 @@ def GenerationNoticeConclusion(data):
             break
 
     list_columns_for_passport_number = ['Z', 'AB', 'AD', 'AF', 'AH', 'AJ', 'AL', 'AN', 'AP']
-    row = 111
+    row = 110
     index = 0
     stop = False
     for symbol in passport_number:
@@ -284,18 +285,18 @@ def GenerationNoticeConclusion(data):
 
     list_date_issue_passport = date_issue_passport.split('.')
     #День
-    sheet['BA111'],  sheet['BC111'] = list_date_issue_passport[0][0], list_date_issue_passport[0][1]
+    sheet['BA110'],  sheet['BC110'] = list_date_issue_passport[0][0], list_date_issue_passport[0][1]
     #Месяц
-    sheet['BF111'], sheet['BH111'] = list_date_issue_passport[1][0], list_date_issue_passport[1][1]
+    sheet['BF110'], sheet['BH110'] = list_date_issue_passport[1][0], list_date_issue_passport[1][1]
     #Год
-    sheet['BK111'], sheet['BM111'] = list_date_issue_passport[2][0], list_date_issue_passport[2][1]
-    sheet['BO111'], sheet['BQ111'] = list_date_issue_passport[2][2], list_date_issue_passport[2][3]
+    sheet['BK110'], sheet['BM110'] = list_date_issue_passport[2][0], list_date_issue_passport[2][1]
+    sheet['BO110'], sheet['BQ110'] = list_date_issue_passport[2][2], list_date_issue_passport[2][3]
 
     list_columns_for_issued_whom = ['O', 'Q', 'S', 'U', 'W', 'Y', 'AA', 'AC', 'AE', 'AG', 'AI', 'AK', 'AM', 'AO',
                                     'AQ', 'AS', 'AU', 'AW', 'AY', 'BA', 'BC', 'BE', 'BG', 'BI', 'BK', 'BM', 'BO', 'BQ']
     list_columns_for_list_columns_for_issued_whom_last = ['AD', 'AF', 'AH', 'AJ', 'AL', 'AN', 'AP', 'AR', 'AT', 'AV',
                                                           'AX', 'AZ', 'BB']
-    row = 114
+    row = 113
     index = 0
     index_publisher_last = 0
     stop = False
@@ -338,7 +339,7 @@ def GenerationNoticeConclusion(data):
             DocumentsWorker.objects.get(worker_id=worker_id, type_document='patent', archive=False).date_end)
 
         list_columns_for_patent_series = ['G', 'I', 'K', 'M', 'O', 'Q', 'S']
-        row = 131
+        row = 130
         index = 0
         stop = False
         for symbol in series_patent:
@@ -353,7 +354,7 @@ def GenerationNoticeConclusion(data):
                 break
 
         list_columns_for_patent_number = ['X', 'Z', 'AB', 'AD', 'AF', 'AH', 'AJ', 'AL', 'AN', 'AP']
-        row = 131
+        row = 130
         index = 0
         stop = False
         for symbol in number_patent:
@@ -369,19 +370,19 @@ def GenerationNoticeConclusion(data):
 
         list_date_issue_patent = date_issue_patent.split('-')
         # День
-        sheet['BA131'], sheet['BC131'] = list_date_issue_patent[2][0], list_date_issue_patent[2][1]
+        sheet['BA130'], sheet['BC130'] = list_date_issue_patent[2][0], list_date_issue_patent[2][1]
         # Месяц
-        sheet['BF131'], sheet['BH131'] = list_date_issue_patent[1][0], list_date_issue_patent[1][1]
+        sheet['BF130'], sheet['BH130'] = list_date_issue_patent[1][0], list_date_issue_patent[1][1]
         # Год
-        sheet['BK131'], sheet['BM131'] = list_date_issue_patent[0][0], list_date_issue_patent[0][1]
-        sheet['BO131'], sheet['BQ131'] = list_date_issue_patent[0][2], list_date_issue_patent[0][3]
+        sheet['BK130'], sheet['BM130'] = list_date_issue_patent[0][0], list_date_issue_patent[0][1]
+        sheet['BO130'], sheet['BQ130'] = list_date_issue_patent[0][2], list_date_issue_patent[0][3]
 
         list_columns_for_publisher = ['Q', 'S', 'U', 'W', 'Y', 'AA', 'AC', 'AE', 'AG', 'AI', 'AK', 'AM', 'AO', 'AQ',
                                       'AS', 'AU', 'AW', 'AY', 'BA', 'BC', 'BE', 'BG', 'BI', 'BK', 'BM', 'BO', 'BQ']
         list_columns_for_publisher_last = ['A', 'C', 'E', 'G', 'I', 'K', 'M', 'O', 'Q', 'S', 'U', 'W', 'Y', 'AA', 'AC',
                                            'AE', 'AG', 'AI', 'AK', 'AM', 'AO', 'AQ', 'AS', 'AU', 'AW', 'AY', 'BA', 'BC',
                                            'BE', 'BG', 'BI', 'BK', 'BM', 'BO', 'BQ']
-        row = 133
+        row = 132
         index_publisher_last = 0
         stop = False
         for symbol in issued_whom:
@@ -408,27 +409,27 @@ def GenerationNoticeConclusion(data):
                     break
 
         # День
-        sheet['P137'], sheet['R137'] = list_date_issue_patent[2][0], list_date_issue_patent[2][1]
+        sheet['P136'], sheet['R136'] = list_date_issue_patent[2][0], list_date_issue_patent[2][1]
         # Месяц
-        sheet['U137'], sheet['W137'] = list_date_issue_patent[1][0], list_date_issue_patent[1][1]
+        sheet['U136'], sheet['W136'] = list_date_issue_patent[1][0], list_date_issue_patent[1][1]
         # Год
-        sheet['Z137'], sheet['AB137'] = list_date_issue_patent[0][0], list_date_issue_patent[0][1]
-        sheet['AD137'], sheet['AF137'] = list_date_issue_patent[0][2], list_date_issue_patent[0][3]
+        sheet['Z136'], sheet['AB136'] = list_date_issue_patent[0][0], list_date_issue_patent[0][1]
+        sheet['AD136'], sheet['AF136'] = list_date_issue_patent[0][2], list_date_issue_patent[0][3]
 
         date_end_patent = date_end_patent.split('-')
         # День
-        sheet['AL137'], sheet['AN137'] = date_end_patent[2][0], date_end_patent[2][1]
+        sheet['AL136'], sheet['AN136'] = date_end_patent[2][0], date_end_patent[2][1]
         # Месяц
-        sheet['AQ137'], sheet['AS137'] = date_end_patent[1][0], date_end_patent[1][1]
+        sheet['AQ136'], sheet['AS136'] = date_end_patent[1][0], date_end_patent[1][1]
         # Город
-        sheet['AV137'], sheet['AX137'] = date_end_patent[0][0], date_end_patent[0][1]
-        sheet['AZ137'], sheet['BB137'] = date_end_patent[0][2], date_end_patent[0][3]
+        sheet['AV136'], sheet['AX136'] = date_end_patent[0][0], date_end_patent[0][1]
+        sheet['AZ136'], sheet['BB136'] = date_end_patent[0][2], date_end_patent[0][3]
     # ===========================================
     else:
         if (citizenship == 'Киргизия' or citizenship == 'Армения' or citizenship == 'Казахстан' or
                 citizenship == 'Беларусь' or citizenship == 'Республика Беларусь'):
             name_international_agreement = "П. 1, СТАТЬИ 97, ДОГОВОРА О ЕВРАЗИЙСКОМ ЭКОНОМИЧЕСКОМ СОЮЗЕ ОТ 29.05.2014 (В РЕД. ОТ 08.05.2015)"
-            row = 146
+            row = 145
             index = 0
             for symbol in name_international_agreement:
                 for col in range(index, len(list_columns)):
@@ -442,7 +443,7 @@ def GenerationNoticeConclusion(data):
                     index += 1
                     break
 
-    row = 157
+    row = 156
     index = 0
     for symbol in position:
         for col in range(index, len(list_columns)):
@@ -457,24 +458,24 @@ def GenerationNoticeConclusion(data):
             break
 
     if 'employment_contract' in base:
-        sheet['A167'] = 'X'
+        sheet['A166'] = 'X'
     else:
-        sheet['W167'] = 'X'
+        sheet['W166'] = 'X'
 
     arr_date = start_date.split('-')[::-1]
     # День
-    sheet['AX172'] = arr_date[0][0]
-    sheet['AZ172'] = arr_date[0][1]
+    sheet['AX171'] = arr_date[0][0]
+    sheet['AZ171'] = arr_date[0][1]
     # Месяц
-    sheet['BC172'] = arr_date[1][0]
-    sheet['BE172'] = arr_date[1][1]
+    sheet['BC171'] = arr_date[1][0]
+    sheet['BE171'] = arr_date[1][1]
     # Год
-    sheet['BH172'] = arr_date[2][0]
-    sheet['BJ172'] = arr_date[2][1]
-    sheet['BL172'] = arr_date[2][2]
-    sheet['BN172'] = arr_date[2][3]
+    sheet['BH171'] = arr_date[2][0]
+    sheet['BJ171'] = arr_date[2][1]
+    sheet['BL171'] = arr_date[2][2]
+    sheet['BN171'] = arr_date[2][3]
 
-    row = 178
+    row = 177
     index = 0
     for symbol in address:
         for col in range(index, len(list_columns)):
@@ -491,7 +492,7 @@ def GenerationNoticeConclusion(data):
             index += 1
             break
 
-    sheet['AK191'] = full_name_director
+    sheet['AK190'] = full_name_director
     if person == 'person_proxy':
         try:
             full_name = data['full_name']
@@ -500,20 +501,20 @@ def GenerationNoticeConclusion(data):
             date_issue = data['date_issue']
             issued_by = data['issued_by']
 
-            sheet['AE201'] = full_name
+            sheet['AE200'] = full_name
 
             if len(passport_series) == 4:
                 passport_series = passport_series[0] + passport_series[1] + ' ' + passport_series[2] + passport_series[3]
-            sheet['G203'] = passport_series
-            sheet['X203'] = passport_number
+            sheet['G202'] = passport_series
+            sheet['X202'] = passport_number
             date_issue = '.'.join(str(date_issue).split('-')[::-1])
-            sheet['AR203'] = date_issue
-            sheet['J205'] = issued_by
+            sheet['AR202'] = date_issue
+            sheet['J204'] = issued_by
         except:
             pass
 
     else:
-        sheet["AE201"] = full_name_director
+        sheet["AE200"] = full_name_director
         passport_series = DirectorOrganization.objects.get(organization_id=organization_id).passport_series
         passport_number = DirectorOrganization.objects.get(organization_id=organization_id).passport_number
         date_issue = DirectorOrganization.objects.get(organization_id=organization_id).date_issue_passport
@@ -521,13 +522,13 @@ def GenerationNoticeConclusion(data):
 
         if len(passport_series) == 4:
             passport_series = passport_series[0] + passport_series[1] + ' ' + passport_series[2] + passport_series[3]
-        sheet["G203"] = passport_series
-        sheet["X203"] = passport_number
+        sheet["G202"] = passport_series
+        sheet["X202"] = passport_number
         date_issue = '.'.join(str(date_issue).split('-')[::-1])
-        sheet["AR203"] = date_issue
-        sheet["J205"] = issued_whom
+        sheet["AR202"] = date_issue
+        sheet["J204"] = issued_whom
 
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    response['Content-Disposition'] = 'attachment; filename="notice_conclusion_data.xlsx"'
+    response['Content-Disposition'] = 'attachment; filename="notice_conclusion.xlsx"'
     doc.save(response)
     return response
