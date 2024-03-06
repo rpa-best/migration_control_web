@@ -69,7 +69,7 @@ class MigrationAddress(models.Model):
 
 
 class ResponsiblePersons(models.Model):
-    organization_id = models.ForeignKey(Organization, on_delete=models.CASCADE)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
     name = models.CharField(max_length=150)
     surname = models.CharField(max_length=150)
     patronymic = models.CharField(max_length=150, blank=True, null=True)

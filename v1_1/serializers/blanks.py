@@ -1,7 +1,27 @@
 from rest_framework import serializers
 from v1_1.common_utils.custom_handler import CustomValidationError
-from v1_1.models import OrganizationUser
+from v1_1.models.organization import OrganizationUser, Organization, ResponsiblePersons
 from v1_1.models.worker import Worker
+
+
+class SearchWorkerSerializer(serializers.ModelSerializer):
+    inn = serializers.SerializerMethodField()
+    organization = serializers.SerializerMethodField()
+
+    def get_inn(self, obj):
+        try:
+            worker_documents = DocumentsWorker.objects.filter(worker_id=obj.id, type_document='INN').first()
+            if worker_documents:
+                return worker_documents.number
+        except Exception:
+            return ""
+
+    def get_organization(self, obj):
+        return obj.organization.name
+
+    class Meta:
+        model = Worker
+        fields = ['id', 'surname', 'name', 'patronymic', 'inn', 'organization']
 
 
 # Трудовой договор
@@ -161,3 +181,9 @@ class NoticeConclusionSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         return validated_data
+
+
+class ShowManagersSerializer(serializers.Serializer):
+    class Meta:
+        model = ResponsiblePersons
+        fields = '__all__'
