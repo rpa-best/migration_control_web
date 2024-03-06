@@ -18,3 +18,9 @@ search_worker = extend_schema_view(
         tags=['Search worker']
     )
 )
+
+managers = extend_schema_view(
+    get=extend_schema(
+        tags=['Managers']
+    )
+)

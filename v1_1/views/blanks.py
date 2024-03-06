@@ -10,7 +10,7 @@ from v1_1.serializers.blanks import (NoticeConclusionSerializer, EmploymentContr
                                      ContractProvisionPaidServicesSerializer, SearchWorkerSerializer,
                                      ShowManagersSerializer)
 from rest_framework.response import Response
-from v1_1.swagger_content.blanks import blanks, search_worker
+from v1_1.swagger_content.blanks import blanks, search_worker, managers
 import openpyxl
 from django.http import HttpResponse
 from v1_1.permissions.owner_or_admin import IsOwnerOrIsAdministratorInOrganizationWorker, isPro
@@ -121,6 +121,7 @@ class NoticeConclusionAPIView(CreateAPIView):
         return GenerationNoticeConclusion(request.data)
 
 
+@managers
 class ShowManagersAPIView(ListAPIView):
     serializer_class = ShowManagersSerializer
 

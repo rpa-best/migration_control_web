@@ -5,7 +5,7 @@ from v1_1.views.blanks import NoticeConclusionAPIView, EmploymentContractAPIView
 
 
 router = routers.DefaultRouter()
-router.register('search-workers/', SearchWorkers, 'search_workers')
+router.register('search-workers', SearchWorkers, 'search_workers')
 
 urlpatterns = [
     path('', include(router.urls)),
