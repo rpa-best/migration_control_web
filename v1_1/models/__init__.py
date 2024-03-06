@@ -1,8 +1,8 @@
 from .user import User
-from .organization import Bank, OrganizationUser
+from .organization import Bank, OrganizationUser, Organization
 from .subscription import Subscription, checking_subscription_relevance
 from .news import News
 
 __all__ = [
-    'User', 'Bank', 'OrganizationUser', 'Subscription', 'News'
+    'User', 'Bank', 'Organization', 'OrganizationUser', 'Subscription', 'News'
 ]

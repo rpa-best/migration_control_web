@@ -237,6 +237,8 @@ class OrganizationCreateUserSerializer(serializers.ModelSerializer):
 
 
 class ShowOrganizationUserSerializer(serializers.ModelSerializer):
+    phone = serializers.CharField(source='user.phone')
+
     class Meta:
         model = OrganizationUser
         fields = '__all__'

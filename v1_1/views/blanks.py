@@ -19,6 +19,7 @@ from ..models.worker import Worker, DocumentsWorker
 from rest_framework import serializers, generics
 from django.db.models import Q
 from ..models.organization import Organization, OrganizationUser, ResponsiblePersons
+from ..common_utils.renderers import WordRenderer
 
 
 @search_worker
@@ -38,11 +39,11 @@ class SearchWorkers(mixins.ListModelMixin, viewsets.GenericViewSet):
 
         q_objects = Q()
         for search_part in search_parts:
-            q_objects &= (Q(name__icontains=search_part, organization__in=organizations) |
-                          Q(surname__icontains=search_part, organization__in=organizations) |
-                          Q(patronymic__icontains=search_part, organization__in=organizations))
+            q_objects &= (Q(name__icontains=search_part) |
+                          Q(surname__icontains=search_part) |
+                          Q(patronymic__icontains=search_part))
 
-        workers = Worker.objects.filter(q_objects)
+        workers = Worker.objects.filter(q_objects,  organization__in=organizations)
         results = []
         for worker in workers:
             documents = DocumentsWorker.objects.filter(worker_id=worker)
