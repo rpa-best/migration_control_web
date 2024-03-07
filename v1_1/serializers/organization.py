@@ -4,7 +4,7 @@ from rest_framework import serializers
 from v1_1.apies.DaData import AddressSearch
 from v1_1.common_utils.custom_handler import CustomValidationError
 from v1_1.models.organization import Organization, MigrationAddress, OrganizationUser, DirectorOrganization
-from v1_1.models.subscription import Subscription
+from v1_1.models.subscription import Subscription, ServiceRate
 from v1_1.models.user import User
 
 
@@ -58,10 +58,10 @@ class OrganizationCreateSerializer(serializers.ModelSerializer):
             raise CustomValidationError({'message': 'У вас нет активной подписки.'})
 
         # Проверка на превышение лимита по количеству создаваемых организаций
-        max_organizations = subscription.service_rate.number_companies
+        max_organizations = subscription.number_organizations
         current_organizations = Organization.objects.filter(owner=user).count()
         if current_organizations >= max_organizations:
-            raise CustomValidationError({'message': 'Вы достигли максимального предела для создания организаций.'})
+            raise CustomValidationError({'message': 'Вы достигли максимального предела для создания организаций'})
 
         director = copy.deepcopy(validated_data)
         # Удаление директора из словаря, поскольку он не содержится в модели `DocumentsWorker`,
@@ -95,6 +95,19 @@ class OrganizationCreateSerializer(serializers.ModelSerializer):
             surname_director=director['surname_director'],
             patronymic_director=director['patronymic_director']
         )
+
+        # Цена за создание организации
+        price = subscription.service_rate.cost_organizations
+
+        # Получение объекта пользователя
+        user_obj = User.objects.get(username=user)
+
+        if price > user_obj.balance:
+            raise CustomValidationError({'message': 'Недостаточно средств на балансе'})
+
+        # Обновление баланса пользователя
+        user_obj.balance -= price
+        user_obj.save()
 
         response_data = {
             'id': instance.id,
