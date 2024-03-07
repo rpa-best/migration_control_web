@@ -116,14 +116,18 @@ class GenerationPaymentOrderSerializer(serializers.Serializer):
         return validated_data
 
 
+class ServiceSerializer(serializers.Serializer):
+    name = serializers.CharField()
+    price = serializers.IntegerField()
+
+
 class ContractProvisionPaidServicesSerializer(serializers.Serializer):
     worker_id = serializers.IntegerField(required=True)
     number = serializers.CharField(write_only=True, max_length=10, required=True)
     start_date = serializers.DateField(write_only=True, required=True)
     end_date = serializers.DateField(write_only=True, required=True)
     address = serializers.CharField(write_only=True, max_length=250, required=True)
-    name_service = serializers.CharField(write_only=True, max_length=250, required=True)
-    price = serializers.IntegerField(write_only=True, required=True)
+    services = ServiceSerializer(many=True)
 
     def validate_worker_id(self, value):
         if not Worker.objects.filter(pk=value).exists():

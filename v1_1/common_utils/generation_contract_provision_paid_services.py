@@ -19,8 +19,7 @@ def GenerationContractProvisionPaidServices(data):
     address = data['address']
 
     # data table
-    name_service = data['name_service']
-    price = data['price']
+    services = data['services']
 
     # ============ Данные, которые подтягиваются из базы данных ============
     organization_id = Worker.objects.get(pk=worker_id).organization_id
@@ -100,9 +99,25 @@ def GenerationContractProvisionPaidServices(data):
         'passportSeries': passport_series,
         'passportNumber': passport_number,
         'registrationAddress': registration_address,
-        'nameService': name_service,
-        'price': price,
     }
+
+    count = 0
+    list_number = []
+    list_name = []
+    list_price = []
+    for service in services:
+        count += 1
+        list_number.append(str(count))
+        list_name.append(service['name'])
+        list_price.append(str(service['price']))
+
+    list_number = '\n\n'.join(list_number)
+    list_name = '\n\n'.join(list_name)
+    list_price = '\n\n'.join(list_price)
+
+    context['count'] = list_number
+    context['nameService'] = list_name
+    context['price'] = list_price
 
     path_file_doc = 'v1_1/document_templates/contract_provision_paid_services.docx'
     doc = DocxTemplate(path_file_doc)
