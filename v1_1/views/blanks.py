@@ -19,7 +19,6 @@ from ..models.worker import Worker, DocumentsWorker
 from rest_framework import serializers, generics
 from django.db.models import Q
 from ..models.organization import Organization, OrganizationUser, ResponsiblePersons
-from ..common_utils.renderers import WordRenderer
 
 
 @search_worker
