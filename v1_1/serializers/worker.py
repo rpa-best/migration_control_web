@@ -112,7 +112,7 @@ class DocumentsWorkerSerializer(serializers.ModelSerializer):
         'INN': ['number']
     }
 
-    type_document = serializers.ChoiceField(choices=DocumentsWorker.TYPES_DOCUMENTS)
+    type_document = serializers.ChoiceField(choices=DocumentsWorker.TYPES_DOCUMENTS, required=False)
     file_documents = serializers.ListField(child=serializers.FileField(required=False), write_only=True, required=False)
     archive = serializers.BooleanField(required=False)
 
@@ -157,6 +157,9 @@ class DocumentsWorkerSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         type_document = validated_data['type_document']
+
+        if type_document == '' or type_document is None:
+            raise CustomValidationError({'type_document': 'Выберите тип документа'})
 
         if 'type_document' in validated_data:
             worker_id = self.context['request'].parser_context['kwargs'].get('worker_id')
