@@ -139,28 +139,34 @@ class DocumentsWorkerSerializer(serializers.ModelSerializer):
         if 'archive' not in data:
             data['archive'] = False
 
-        if 'type_document' in data:
-            worker_id = self.context['request'].parser_context['kwargs'].get('worker_id')
-
-            if DocumentsWorker.objects.filter(type_document=data['type_document'], worker_id=worker_id).exists():
-                if data['archive'] is False:
-                    try:
-                        if (DocumentsWorker.objects.get(type_document=data['type_document'], worker_id=worker_id,
-                                                        archive=False).archive
-                                is False):
-
-                            raise CustomValidationError({'error':  'У сотрудника уже есть такой активный документ. '
-                                                                   'Для добавления текущего документа необходимо один '
-                                                                   'из документов пометить в архив'})
-                    except Exception:
-                        raise CustomValidationError({'error': 'У сотрудника уже есть такой активный документ. '
-                                                              'Для добавления текущего документа необходимо один '
-                                                              'из документов пометить в архив'})
-
         return data
+
+    def update(self, instance, validated_data):
+        if 'type_document' in validated_data:
+            worker_id = self.context['request'].parser_context['kwargs'].get('worker_id')
+            if not DocumentsWorker.objects.filter(pk=instance.id, type_document=validated_data['type_document'],
+                                                  worker_id=worker_id, archive=False).exists():
+                if validated_data['archive'] is False:
+                    raise CustomValidationError({'error':  'У сотрудника уже есть такой активный документ. '
+                                                           'Для добавления текущего документа необходимо один '
+                                                           'из документов пометить в архив'})
+
+        instance: DocumentsWorker = super().update(instance, validated_data)
+        instance.save()
+        return validated_data
 
     def create(self, validated_data):
         type_document = validated_data['type_document']
+
+        if 'type_document' in validated_data:
+            worker_id = self.context['request'].parser_context['kwargs'].get('worker_id')
+
+            if DocumentsWorker.objects.filter(type_document=validated_data['type_document'], worker_id=worker_id,
+                                              archive=False).exists():
+                if validated_data['archive'] is False:
+                    raise CustomValidationError({'error':  'У сотрудника уже есть такой активный документ. '
+                                                           'Для добавления текущего документа необходимо один '
+                                                           'из документов пометить в архив'})
 
         # Проверка, что все обязательные поля для выбранного типа документа заполнены
         for field in self.REQUIRED_FIELDS[type_document]:
