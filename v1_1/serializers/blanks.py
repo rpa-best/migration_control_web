@@ -167,8 +167,8 @@ class NoticeConclusionSerializer(serializers.Serializer):
     full_name = serializers.CharField(max_length=55, required=False)
     series = serializers.CharField(required=False)
     number = serializers.CharField(required=False)
-    date_issue = serializers.DateField()
-    issued_by = serializers.CharField(max_length=100)
+    date_issue = serializers.DateField(required=False)
+    issued_by = serializers.CharField(max_length=100, required=False)
 
     def validate_worker_id(self, value):
         if not Worker.objects.filter(pk=value).exists():
