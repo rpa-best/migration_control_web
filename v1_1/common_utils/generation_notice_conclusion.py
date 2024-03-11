@@ -75,7 +75,7 @@ def GenerationNoticeConclusion(data):
 
     issued_whom = str(DocumentsWorker.objects.get(worker_id=worker_id, type_document='passport', archive=False).issued_whom).upper()
 
-    path_file_doc = 'v1_1/document_templates/1b0e0fd1a3e9fdc5.xlsx'
+    path_file_doc = 'v1_1/document_templates/notice_conclusion.xlsx'
     doc = load_workbook(path_file_doc)
     sheet = doc.active
 

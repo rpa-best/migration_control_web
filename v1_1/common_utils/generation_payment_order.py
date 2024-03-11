@@ -8,6 +8,7 @@ from v1_1.apies.DaData import GetInfoBank
 from v1_1.common_utils.functions_blanks import ConvertDate
 from v1_1.models.organization import Organization, Bank
 from v1_1.models.worker import Worker, DocumentsWorker
+from .custom_handler import *
 
 
 # цены за патент в каждом регионе
@@ -124,8 +125,6 @@ def GenerationPaymentOrder(data):
     number_months = int(data['number_months'])
 
     # ============ Данные, которые подтягиваются из базы данных ============
-    worker_inn = DocumentsWorker.objects.get(worker_id=worker_id, type_document='INN').archive
-
     organization_id = Worker.objects.get(pk=worker_id).organization_id
     # Наименование организации
     organization = Organization.objects.get(pk=organization_id)
@@ -134,6 +133,11 @@ def GenerationPaymentOrder(data):
 
     organization_inn = Organization.objects.get(pk=organization_id).inn
     organization_kpp = Organization.objects.get(pk=organization_id).kpp
+
+    if not Bank.objects.filter(organization_id=organization_id).exists():
+        raise CustomValidationError({'error': 'Нет банковских данных компании (расчетный счет, кредитный счет, '
+                                              'БИК)'})
+
     payment_account = Bank.objects.get(organization_id=organization_id).payment_account
     correspondent_account = Bank.objects.get(organization_id=organization_id).correspondent_account
     bic = Bank.objects.get(organization_id=organization_id).bic
@@ -149,12 +153,21 @@ def GenerationPaymentOrder(data):
     if patronymic_worker:
         full_name_worker += f' {patronymic_worker}'
 
+    if not DocumentsWorker.objects.filter(worker_id=worker_id, type_document='INN', archive=False).exists():
+        raise CustomValidationError({'error': 'У работника нет ИНН'})
+
     # ИНН работника
-    worker_inn = f'ИНН: {DocumentsWorker.objects.get(worker_id=worker_id, type_document='INN').number}'
+    worker_inn = f'ИНН: {DocumentsWorker.objects.get(worker_id=worker_id, type_document='INN', archive=False).number}'
+
+    if not DocumentsWorker.objects.filter(worker_id=worker_id, type_document='patent', archive=False).exists():
+        raise CustomValidationError({'error': 'У работника нет актуального патента'})
 
     territory_action = DocumentsWorker.objects.get(worker_id=worker_id, type_document='patent', archive=False).territory_action
     expiration_date = str(DocumentsWorker.objects.get(worker_id=worker_id, type_document='patent', archive=False).date_end)
-    expiration_date = datetime.strptime(expiration_date, '%Y-%m-%d')
+    if expiration_date:
+        expiration_date = datetime.strptime(expiration_date, '%Y-%m-%d')
+    else:
+        raise CustomValidationError({'error': 'Не заполнена дата окончания срока патента'})
 
     total_sum = 0
     # Итерация цен за патент в каждом регионе
