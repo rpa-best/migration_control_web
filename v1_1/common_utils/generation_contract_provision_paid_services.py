@@ -32,14 +32,14 @@ def GenerationContractProvisionPaidServices(data):
     ogrn = Organization.objects.get(pk=organization_id).ogrn
     kpp = Organization.objects.get(pk=organization_id).kpp
 
-    if Bank.objects.filter(organization_id=organization_id).exists():
-        payment_account = Bank.objects.get(organization_id=organization_id).payment_account
-        correspondent_account = Bank.objects.get(organization_id=organization_id).correspondent_account
-        bic = Bank.objects.get(organization_id=organization_id).bic
-        name_bank = GetInfoBank(bic)[0]['value']
-    else:
+    if not Bank.objects.filter(organization_id=organization_id).exists():
         raise CustomValidationError({'error': 'Нет банковских данных компании (расчетный счет, кредитный счет, '
                                               'БИК)'})
+
+    payment_account = Bank.objects.get(organization_id=organization_id).payment_account
+    correspondent_account = Bank.objects.get(organization_id=organization_id).correspondent_account
+    bic = Bank.objects.get(organization_id=organization_id).bic
+    name_bank = GetInfoBank(bic)[0]['value']
 
     # Юридический/фактический адрес организации
     organization_address = Organization.objects.get(pk=organization_id).legal_address

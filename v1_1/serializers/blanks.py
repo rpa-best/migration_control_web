@@ -44,7 +44,7 @@ class EmploymentContractSerializer(serializers.Serializer):
 
     def validate_worker_id(self, value):
         if not Worker.objects.filter(pk=value).exists():
-            raise CustomValidationError({'worker_id': 'Работника не существует'})
+            raise CustomValidationError({'worker_id': 'Сотрудника не существует'})
 
         user = self.context['request'].user.username
         list_organizations = []
@@ -53,7 +53,7 @@ class EmploymentContractSerializer(serializers.Serializer):
 
         #Можно формировать бланки только для своих работников
         if Worker.objects.get(pk=value).organization_id not in list_organizations:
-            raise CustomValidationError({'worker_id': 'Работника не из вашей организации'})
+            raise CustomValidationError({'worker_id': 'Сотрудник не из вашей компании'})
 
     def create(self, validated_data):
         return validated_data
@@ -79,7 +79,7 @@ class SuspensionOrderSerializer(serializers.Serializer):
 
     def validate_worker_id(self, value):
         if not Worker.objects.filter(pk=value).exists():
-            raise CustomValidationError({'worker_id': 'Работника не существует'})
+            raise CustomValidationError({'worker_id': 'Сотрудник не существует'})
 
         user = self.context['request'].user.username
         list_organizations = []
@@ -88,7 +88,35 @@ class SuspensionOrderSerializer(serializers.Serializer):
 
         #Можно формировать бланки только для своих работников
         if Worker.objects.get(pk=value).organization_id not in list_organizations:
-            raise CustomValidationError({'worker_id': 'Работника не из вашей организации'})
+            raise CustomValidationError({'worker_id': 'Сотрудник не из вашей компании'})
+
+    def validate_first_manager_id(self, value):
+        if not ResponsiblePersons.objects.filter(pk=value).exists():
+            raise CustomValidationError({'first_manager_id': 'Менеджера не существует'})
+
+        user = self.context['request'].user.username
+        list_organizations = []
+        for organization in OrganizationUser.objects.filter(user_id=user):
+            list_organizations.append(organization.organization_id)
+
+        if ResponsiblePersons.objects.get(pk=value).organization not in list_organizations:
+            raise CustomValidationError({'first_manager_id': 'Менеджер не из вашей компании'})
+
+        return value
+
+    def validate_second_manager_id(self, value):
+        if not ResponsiblePersons.objects.filter(pk=value).exists():
+            raise CustomValidationError({'second_manager_id': 'Менеджера не существует'})
+
+        user = self.context['request'].user.username
+        list_organizations = []
+        for organization in OrganizationUser.objects.filter(user_id=user):
+            list_organizations.append(organization.organization_id)
+
+        if ResponsiblePersons.objects.get(pk=value).organization not in list_organizations:
+            raise CustomValidationError({'second_manager_id': 'Менеджер не из вашей компании'})
+
+        return value
 
     def create(self, validated_data):
         return validated_data
@@ -101,7 +129,7 @@ class GenerationPaymentOrderSerializer(serializers.Serializer):
 
     def validate_worker_id(self, value):
         if not Worker.objects.filter(pk=value).exists():
-            raise CustomValidationError({'worker_id': 'Работника не существует'})
+            raise CustomValidationError({'worker_id': 'Сотрудника не существует'})
 
         user = self.context['request'].user.username
         list_organizations = []
@@ -110,7 +138,7 @@ class GenerationPaymentOrderSerializer(serializers.Serializer):
 
         #Можно формировать бланки только для своих работников
         if Worker.objects.get(pk=value).organization_id not in list_organizations:
-            raise CustomValidationError({'worker_id': 'Работника не из вашей организации'})
+            raise CustomValidationError({'worker_id': 'Сотрудник не из вашей компании'})
 
     def create(self, validated_data):
         return validated_data
@@ -131,7 +159,7 @@ class ContractProvisionPaidServicesSerializer(serializers.Serializer):
 
     def validate_worker_id(self, value):
         if not Worker.objects.filter(pk=value).exists():
-            raise CustomValidationError({'worker_id': 'Работника не существует'})
+            raise CustomValidationError({'worker_id': 'Сотрудника не существует'})
 
         user = self.context['request'].user.username
         list_organizations = []
@@ -140,7 +168,7 @@ class ContractProvisionPaidServicesSerializer(serializers.Serializer):
 
         #Можно формировать бланки только для своих работников
         if Worker.objects.get(pk=value).organization_id not in list_organizations:
-            raise CustomValidationError({'worker_id': 'Работника не из вашей организации'})
+            raise CustomValidationError({'worker_id': 'Сотрудник не из вашей компании'})
 
     def create(self, validated_data):
         return validated_data

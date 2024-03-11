@@ -5,6 +5,7 @@ from v1_1.common_utils.functions_blanks import ConvertDate
 from v1_1.models.organization import Organization, Bank, ResponsiblePersons, DirectorOrganization
 from v1_1.models.worker import Worker
 from v1_1.serializers.blanks import SuspensionOrderSerializer
+from .custom_handler import *
 
 
 # Приказ об отстранении
@@ -47,6 +48,11 @@ def GenerationSuspensionOrder(data):
 
     inn = Organization.objects.get(pk=organization_id).inn
     kpp = Organization.objects.get(pk=organization_id).kpp
+
+    if not Bank.objects.filter(organization_id=organization_id).exists():
+        raise CustomValidationError({'error': 'Нет банковских данных компании (расчетный счет, кредитный счет, '
+                                              'БИК)'})
+
     payment_account = Bank.objects.get(organization_id=organization_id).payment_account
     correspondent_account = Bank.objects.get(organization_id=organization_id).correspondent_account
     phone = Organization.objects.get(pk=organization_id).phone
@@ -54,6 +60,9 @@ def GenerationSuspensionOrder(data):
     # Юридический/фактический адрес организации
     organization_address = Organization.objects.get(pk=organization_id).legal_address
     city = GetCity(organization_address)
+
+    if not DirectorOrganization.objects.filter(organization_id=organization_id).exists():
+        raise CustomValidationError({'error': 'Нет данных о директоре компании'})
 
     # ФИО директора организации
     name_director = DirectorOrganization.objects.get(organization_id=organization_id).name_director
