@@ -7,6 +7,7 @@ from v1_1.common_utils.functions_blanks import ConvertDate, CountryDeclination, 
     NameDeclension
 from v1_1.models.organization import Organization, Bank, DirectorOrganization
 from v1_1.models.worker import Worker, DocumentsWorker
+from .custom_handler import *
 
 
 # Трудовой договор
@@ -48,6 +49,11 @@ def GenerationEmploymentContractDocument(data):
 
     inn = Organization.objects.get(pk=organization_id).inn
     kpp = Organization.objects.get(pk=organization_id).kpp
+
+    if not Bank.objects.filter(organization_id=organization_id).exists():
+        raise CustomValidationError({'error': 'Нет банковских данных компании (расчетный счет, кредитный счет, '
+                                              'БИК)'})
+
     payment_account = Bank.objects.get(organization_id=organization_id).payment_account
     correspondent_account = Bank.objects.get(organization_id=organization_id).correspondent_account
     bic = Bank.objects.get(organization_id=organization_id).bic
@@ -57,6 +63,9 @@ def GenerationEmploymentContractDocument(data):
     # Юридический/фактический адрес организации
     organization_address = Organization.objects.get(pk=organization_id).legal_address
     city = GetCity(organization_address)
+
+    if not DirectorOrganization.objects.filter(organization_id=organization_id).exists():
+        raise CustomValidationError({'error': 'Нет данных о директоре компании'})
 
     # ФИО директора организации
     name_director = DirectorOrganization.objects.get(organization_id=organization_id).name_director
@@ -94,25 +103,45 @@ def GenerationEmploymentContractDocument(data):
         full_name_worker += f' {patronymic_worker}'
 
     birthday = str(Worker.objects.get(pk=organization_id).birthday)
-    birthday = birthday.split('-')
-    birthday = birthday[2] + '.' + birthday[1] + '.' + birthday[0]
+    try:
+        birthday = birthday.split('-')
+        birthday = birthday[2] + '.' + birthday[1] + '.' + birthday[0]
+    except Exception:
+        birthday = ''
+
+    if not DocumentsWorker.objects.filter(worker_id=worker_id, type_document='passport', archive=False).exists():
+        raise CustomValidationError({'error': 'У работника нет актуального паспорта'})
 
     passport_series = DocumentsWorker.objects.get(worker_id=worker_id, type_document='passport', archive=False).series
     passport_number = DocumentsWorker.objects.get(worker_id=worker_id, type_document='passport', archive=False).number
     passport = f'{passport_series} {passport_number}' if passport_series != '' else passport_number
     date_issue_passport = str(DocumentsWorker.objects.get(worker_id=worker_id, type_document='passport', archive=False).date_issue)
-    date_issue_passport = datetime.strptime(date_issue_passport, '%Y-%m-%d')
-    date_issue_passport = date_issue_passport.strftime('%d.%m.%Y')
+    if date_issue_passport:
+        date_issue_passport = datetime.strptime(date_issue_passport, '%Y-%m-%d')
+        date_issue_passport = date_issue_passport.strftime('%d.%m.%Y')
+    else:
+        raise CustomValidationError({'error': 'Не заполнена дата выдачи паспорта'})
+
+    if not DocumentsWorker.objects.filter(worker_id=worker_id, type_document='patent', archive=False).exists():
+        raise CustomValidationError({'error': 'У работника нет актуального патента'})
 
     patent_series = DocumentsWorker.objects.get(worker_id=worker_id, type_document='patent', archive=False).series
     patent_number = DocumentsWorker.objects.get(worker_id=worker_id, type_document='patent', archive=False).number
     patent = f'{patent_series} {patent_number}'
+
     date_issue_patent = str(DocumentsWorker.objects.get(worker_id=worker_id, type_document='patent', archive=False).date_issue)
-    date_issue_patent = datetime.strptime(date_issue_patent, '%Y-%m-%d')
-    date_issue_patent = date_issue_patent.strftime('%d.%m.%Y')
+    if date_issue_passport:
+        date_issue_patent = datetime.strptime(date_issue_patent, '%Y-%m-%d')
+        date_issue_patent = date_issue_patent.strftime('%d.%m.%Y')
+    else:
+        raise CustomValidationError({'error': 'Не заполнена дата выдачи патента'})
+
     date_end_patent = str(DocumentsWorker.objects.get(worker_id=worker_id, type_document='patent', archive=False).date_end)
-    date_end_patent = datetime.strptime(date_end_patent, '%Y-%m-%d')
-    date_end_patent = date_end_patent.strftime('%d.%m.%Y')
+    if date_end_patent:
+        date_end_patent = datetime.strptime(date_end_patent, '%Y-%m-%d')
+        date_end_patent = date_end_patent.strftime('%d.%m.%Y')
+    else:
+        raise CustomValidationError({'error': 'Не заполнена дата окончания патента'})
 
     context = {
         'organization': organization,

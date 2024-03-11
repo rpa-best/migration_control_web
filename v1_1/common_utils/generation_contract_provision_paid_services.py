@@ -38,7 +38,7 @@ def GenerationContractProvisionPaidServices(data):
         bic = Bank.objects.get(organization_id=organization_id).bic
         name_bank = GetInfoBank(bic)[0]['value']
     else:
-        raise CustomValidationError({'error': 'Нет данных банковских данных компании (расчетный счет, кредитный счет, '
+        raise CustomValidationError({'error': 'Нет банковских данных компании (расчетный счет, кредитный счет, '
                                               'БИК)'})
 
     # Юридический/фактический адрес организации
