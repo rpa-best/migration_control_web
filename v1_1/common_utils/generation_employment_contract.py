@@ -15,7 +15,6 @@ def GenerationEmploymentContractDocument(data):
     # =========== Входные данные, которые вводятся пользователем вручную ===========
     worker_id = data['worker_id']
     contract_type = data['contract_type']
-    cause = data['cause']
     number = data['number']
     position = data['position']
     salary = data['salary']
