@@ -45,13 +45,13 @@ def GenerationContractProvisionPaidServices(data):
     organization_address = Organization.objects.get(pk=organization_id).legal_address
     city = GetCity(organization_address)
 
-    if DirectorOrganization.objects.filter(organization_id=organization_id).exists():
-        # ФИО директора организации
-        name_director = DirectorOrganization.objects.get(organization_id=organization_id).name_director
-        surname_director = DirectorOrganization.objects.get(organization_id=organization_id).surname_director
-        patronymic_director = DirectorOrganization.objects.get(organization_id=organization_id).patronymic_director
-    else:
+    if not DirectorOrganization.objects.filter(organization_id=organization_id).exists():
         raise CustomValidationError({'error': 'Нет данных о директоре компании'})
+
+    # ФИО директора организации
+    name_director = DirectorOrganization.objects.get(organization_id=organization_id).name_director
+    surname_director = DirectorOrganization.objects.get(organization_id=organization_id).surname_director
+    patronymic_director = DirectorOrganization.objects.get(organization_id=organization_id).patronymic_director
 
     # ФИО директора организации в родительном падеже
     name_director_declension = NameDeclension(name_director)
@@ -78,12 +78,12 @@ def GenerationContractProvisionPaidServices(data):
     # Гражданство работника
     citizenship = CountryDeclination(Worker.objects.get(pk=worker_id).citizenship).upper()
 
-    if DocumentsWorker.objects.filter(worker_id=worker_id, type_document='passport', archive=False).exists():
-        # Серия и номер паспорта работника
-        passport_series = DocumentsWorker.objects.get(worker_id=worker_id, type_document='passport', archive=False).series
-        passport_number = DocumentsWorker.objects.get(worker_id=worker_id, type_document='passport', archive=False).number
-    else:
+    if not DocumentsWorker.objects.filter(worker_id=worker_id, type_document='passport', archive=False).exists():
         raise CustomValidationError({'error': 'У работника нет актуального паспорта'})
+
+    # Серия и номер паспорта работника
+    passport_series = DocumentsWorker.objects.get(worker_id=worker_id, type_document='passport', archive=False).series
+    passport_number = DocumentsWorker.objects.get(worker_id=worker_id, type_document='passport', archive=False).number
 
     # Адрес регистрации работника
     registration_address = Worker.objects.get(pk=organization_id).registration_address
