@@ -5,6 +5,7 @@ from v1_1.common_utils.functions_blanks import NameDeclension, PatronymicDeclens
     SurnameDeclension
 from v1_1.models.organization import Organization, Bank, DirectorOrganization
 from v1_1.models.worker import Worker, DocumentsWorker
+from .custom_handler import *
 
 
 # Договор возмездного оказания услуг (ГПХ)
@@ -17,8 +18,7 @@ def GenerationContractProvisionPaidServices(data):
     end_date = str(data['end_date'])
     end_date = ConvertDate(end_date, 'word_month')
     address = data['address']
-
-    # data table
+    # Данные для таблицы в документе
     services = data['services']
 
     # ============ Данные, которые подтягиваются из базы данных ============
@@ -31,19 +31,27 @@ def GenerationContractProvisionPaidServices(data):
     inn = Organization.objects.get(pk=organization_id).inn
     ogrn = Organization.objects.get(pk=organization_id).ogrn
     kpp = Organization.objects.get(pk=organization_id).kpp
-    payment_account = Bank.objects.get(organization_id=organization_id).payment_account
-    correspondent_account = Bank.objects.get(organization_id=organization_id).correspondent_account
-    bic = Bank.objects.get(organization_id=organization_id).bic
-    name_bank = GetInfoBank(bic)[0]['value']
+
+    if Bank.objects.filter(organization_id=organization_id).exists():
+        payment_account = Bank.objects.get(organization_id=organization_id).payment_account
+        correspondent_account = Bank.objects.get(organization_id=organization_id).correspondent_account
+        bic = Bank.objects.get(organization_id=organization_id).bic
+        name_bank = GetInfoBank(bic)[0]['value']
+    else:
+        raise CustomValidationError({'error': 'Нет данных банковских данных компании (расчетный счет, кредитный счет, '
+                                              'БИК)'})
 
     # Юридический/фактический адрес организации
     organization_address = Organization.objects.get(pk=organization_id).legal_address
     city = GetCity(organization_address)
 
-    # ФИО директора организации
-    name_director = DirectorOrganization.objects.get(organization_id=organization_id).name_director
-    surname_director = DirectorOrganization.objects.get(organization_id=organization_id).surname_director
-    patronymic_director = DirectorOrganization.objects.get(organization_id=organization_id).patronymic_director
+    if DirectorOrganization.objects.filter(organization_id=organization_id).exists():
+        # ФИО директора организации
+        name_director = DirectorOrganization.objects.get(organization_id=organization_id).name_director
+        surname_director = DirectorOrganization.objects.get(organization_id=organization_id).surname_director
+        patronymic_director = DirectorOrganization.objects.get(organization_id=organization_id).patronymic_director
+    else:
+        raise CustomValidationError({'error': 'Нет данных о директоре компании'})
 
     # ФИО директора организации в родительном падеже
     name_director_declension = NameDeclension(name_director)
@@ -70,9 +78,12 @@ def GenerationContractProvisionPaidServices(data):
     # Гражданство работника
     citizenship = CountryDeclination(Worker.objects.get(pk=worker_id).citizenship).upper()
 
-    # Серия и номер паспорта работника
-    passport_series = DocumentsWorker.objects.get(worker_id=worker_id, type_document='passport', archive=False).series
-    passport_number = DocumentsWorker.objects.get(worker_id=worker_id, type_document='passport', archive=False).number
+    if DocumentsWorker.objects.filter(worker_id=worker_id, type_document='passport', archive=False).exists():
+        # Серия и номер паспорта работника
+        passport_series = DocumentsWorker.objects.get(worker_id=worker_id, type_document='passport', archive=False).series
+        passport_number = DocumentsWorker.objects.get(worker_id=worker_id, type_document='passport', archive=False).number
+    else:
+        raise CustomValidationError({'error': 'У работника нет актуального паспорта'})
 
     # Адрес регистрации работника
     registration_address = Worker.objects.get(pk=organization_id).registration_address
