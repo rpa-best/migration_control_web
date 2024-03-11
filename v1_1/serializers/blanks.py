@@ -215,7 +215,7 @@ class NoticeConclusionSerializer(serializers.Serializer):
         return validated_data
 
 
-class ShowManagersSerializer(serializers.Serializer):
+class ShowManagersSerializer(serializers.ModelSerializer):
     class Meta:
         model = ResponsiblePersons
         fields = '__all__'
