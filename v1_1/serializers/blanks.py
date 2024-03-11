@@ -37,10 +37,10 @@ class EmploymentContractSerializer(serializers.Serializer):
     salary = serializers.IntegerField(write_only=True)
     contract_type = serializers.ChoiceField(choices=CONTRACT_TYPE)
     start_date = serializers.DateField(write_only=True)
-    end_date_urgent = serializers.DateField()
+    end_date_urgent = serializers.DateField(required=False)
+    cause = serializers.CharField(required=False)
     start_time = serializers.TimeField(write_only=True)
     end_time = serializers.TimeField(write_only=True)
-    cause = serializers.CharField()
 
     def validate_worker_id(self, value):
         if not Worker.objects.filter(pk=value).exists():
