@@ -4,6 +4,7 @@ from django.http import HttpResponse
 from v1_1.common_utils.functions_blanks import CountryDeclination
 from v1_1.models.organization import Organization, DirectorOrganization
 from v1_1.models.worker import DocumentsWorker, Worker
+from .custom_handler import *
 
 
 # Уведомление о заключении
@@ -31,6 +32,9 @@ def GenerationNoticeConclusion(data):
     okved = Organization.objects.get(pk=organization_id).okved.upper()
     legal_address = Organization.objects.get(pk=organization_id).legal_address.upper()
 
+    if not DirectorOrganization.objects.filter(organization_id=organization_id).exists():
+        raise CustomValidationError({'error': 'Нет данных о директоре компании'})
+
     # ФИО директора организации
     name_director = DirectorOrganization.objects.get(organization_id=organization_id).name_director
     surname_director = DirectorOrganization.objects.get(organization_id=organization_id).surname_director
@@ -47,18 +51,29 @@ def GenerationNoticeConclusion(data):
 
     # Гражданство работника
     citizenship = CountryDeclination(Worker.objects.get(pk=worker_id).citizenship).upper()
-    # Место рождения работника
-    place_birth = CountryDeclination(Worker.objects.get(pk=worker_id).place_birth).upper()
+
+    # Место рождения работника (в новом  бланке (2024 г) не используется
+    # place_birth = CountryDeclination(Worker.objects.get(pk=worker_id).place_birth).upper()
+
     # Дата рождения работника
     birthday = str(Worker.objects.get(pk=worker_id).birthday).upper()
+    if not birthday:
+        raise CustomValidationError({'error': 'Не заполнена дата рождения сотрудника'})
+
+    if not DocumentsWorker.objects.filter(worker_id=worker_id, type_document='passport', archive=False).exists():
+        raise CustomValidationError({'error': 'У работника нет актуального паспорта'})
 
     # Паспортные данные работника
     passport_series = DocumentsWorker.objects.get(worker_id=worker_id, type_document='passport', archive=False).series.upper()
     passport_number = DocumentsWorker.objects.get(worker_id=worker_id, type_document='passport', archive=False).number.upper()
     date_issue_passport = str(DocumentsWorker.objects.get(worker_id=worker_id, type_document='passport', archive=False).date_issue)
+    if date_issue_passport:
+        date_issue_passport = datetime.strptime(date_issue_passport, '%Y-%m-%d')
+        date_issue_passport = date_issue_passport.strftime('%d.%m.%Y')
+    else:
+        raise CustomValidationError({'error': 'Не заполнена дата выдачи паспорта'})
+
     issued_whom = str(DocumentsWorker.objects.get(worker_id=worker_id, type_document='passport', archive=False).issued_whom).upper()
-    date_issue_passport = datetime.strptime(date_issue_passport, '%Y-%m-%d')
-    date_issue_passport = date_issue_passport.strftime('%d.%m.%Y')
 
     path_file_doc = 'v1_1/document_templates/1b0e0fd1a3e9fdc5.xlsx'
     doc = load_workbook(path_file_doc)
