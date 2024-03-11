@@ -24,12 +24,16 @@ def GenerationNoticeConclusion(data):
     organization = Organization.objects.get(pk=organization_id)
     organizational_form = organization.get_organizational_form_display()
     organization = f'{organizational_form} {Organization.objects.get(pk=organization_id).name}'.upper()
-    phone = Organization.objects.get(pk=organization_id).phone.upper()
+    phone = Organization.objects.get(pk=organization_id).phone
+    if not phone:
+        raise CustomValidationError({'error': 'У компании не заполнен номер телефона'})
     inn = Organization.objects.get(pk=organization_id).inn
     kpp = Organization.objects.get(pk=organization_id).kpp
     inn_kpp = f'{inn}' + '/' + f'{kpp}'
     ogrn = f'ОГРН {Organization.objects.get(pk=organization_id).ogrn}'
-    okved = Organization.objects.get(pk=organization_id).okved.upper()
+    okved = Organization.objects.get(pk=organization_id).okved
+    if not okved:
+        raise CustomValidationError({'error': 'У компании не заполнен ОКВЭД'})
     legal_address = Organization.objects.get(pk=organization_id).legal_address.upper()
 
     if not DirectorOrganization.objects.filter(organization_id=organization_id).exists():
@@ -45,9 +49,9 @@ def GenerationNoticeConclusion(data):
         full_name_director += f' {patronymic_director}'
 
     # ФИО работника
-    name_worker = Worker.objects.get(pk=organization_id).name.upper()
-    surname_worker = Worker.objects.get(pk=organization_id).surname.upper()
-    patronymic_worker = Worker.objects.get(pk=organization_id).patronymic.upper()
+    name_worker = Worker.objects.get(pk=worker_id).name.upper()
+    surname_worker = Worker.objects.get(pk=worker_id).surname.upper()
+    patronymic_worker = Worker.objects.get(pk=worker_id).patronymic.upper()
 
     # Гражданство работника
     citizenship = CountryDeclination(Worker.objects.get(pk=worker_id).citizenship).upper()
@@ -260,6 +264,7 @@ def GenerationNoticeConclusion(data):
     #             break
 
     list_birthday = birthday.split('-')
+    print(list_birthday)
     #День
     sheet['R104'],  sheet['T104'] = list_birthday[2][0], list_birthday[2][1]
     #Месяц
@@ -529,11 +534,20 @@ def GenerationNoticeConclusion(data):
             pass
 
     else:
+        if not DirectorOrganization.objects.filter(organization_id=organization_id).exists():
+            raise CustomValidationError({'error': 'Нет данных о директоре компании'})
+
         sheet["AE200"] = full_name_director
         passport_series = DirectorOrganization.objects.get(organization_id=organization_id).passport_series
         passport_number = DirectorOrganization.objects.get(organization_id=organization_id).passport_number
+        if not passport_series and not passport_number:
+            raise CustomValidationError({'error': 'Не заполнена серия и номер паспорта у директора компании'})
         date_issue = DirectorOrganization.objects.get(organization_id=organization_id).date_issue_passport
+        if not date_issue:
+            raise CustomValidationError({'error': 'Не заполнена дата выдачи паспорта у директора компании'})
         issued_whom = DirectorOrganization.objects.get(organization_id=organization_id).issued_whom
+        if not issued_whom:
+            raise CustomValidationError({'error': 'Не заполнен орган выдачи паспорта у директора компании'})
 
         if len(passport_series) == 4:
             passport_series = passport_series[0] + passport_series[1] + ' ' + passport_series[2] + passport_series[3]
