@@ -215,6 +215,47 @@ class NoticeConclusionSerializer(serializers.Serializer):
         return validated_data
 
 
+class NoticeTerminationSerializer(serializers.Serializer):
+    BASES = (
+        ('employment_contract', 'Трудовой договор'),
+        ('civil_contract', 'Гражданско-правовой договор на выполнение работ (оказание услуг)')
+    )
+
+    TYPE_PERSON = (
+        ('person_proxy', 'Человек, который подаёт документы по доверенности'),
+        ('director', 'Директор')
+    )
+
+    worker_id = serializers.IntegerField(required=True)
+    name_territorial_body = serializers.CharField(write_only=True, max_length=100)
+    position = serializers.CharField(write_only=True, max_length=100)
+    base = serializers.ChoiceField(choices=BASE_TYPE_CHOICES)
+    end_date = serializers.DateField(write_only=True)
+    initiator = serializers.BooleanField()
+    person = serializers.ChoiceField(choices=TYPE_PERSON)
+    full_name = serializers.CharField(write_only=True, max_length=55)
+    series = serializers.CharField(max_length=4)
+    number = serializers.CharField(max_length=8)
+    date_issue = serializers.DateField(write_only=True)
+    issued_by = serializers.CharField(write_only=True, max_length=100)
+
+    def validate_worker_id(self, value):
+        if not Worker.objects.filter(pk=value).exists():
+            raise CustomValidationError({'worker_id': 'Работника не существует'})
+
+        user = self.context['request'].user.username
+        list_organizations = []
+        for organization in OrganizationUser.objects.filter(user_id=user):
+            list_organizations.append(organization.organization_id)
+
+        #Можно формировать бланки только для своих работников
+        if Worker.objects.get(pk=value).organization_id not in list_organizations:
+            raise CustomValidationError({'worker_id': 'Работника не из вашей организации'})
+
+    def create(self, validated_data):
+        return validated_data
+
+
 class ShowManagersSerializer(serializers.ModelSerializer):
     class Meta:
         model = ResponsiblePersons
