@@ -233,11 +233,11 @@ class NoticeTerminationSerializer(serializers.Serializer):
     end_date = serializers.DateField(write_only=True)
     initiator = serializers.BooleanField()
     person = serializers.ChoiceField(choices=TYPE_PERSON)
-    full_name = serializers.CharField(write_only=True, max_length=55)
-    series = serializers.CharField(max_length=4)
-    number = serializers.CharField(max_length=8)
-    date_issue = serializers.DateField(write_only=True)
-    issued_by = serializers.CharField(write_only=True, max_length=100)
+    full_name = serializers.CharField(write_only=True, max_length=55, required=False)
+    series = serializers.CharField(max_length=4, required=False)
+    number = serializers.CharField(max_length=8, required=False)
+    date_issue = serializers.DateField(write_only=True, required=False)
+    issued_by = serializers.CharField(write_only=True, max_length=100, required=False)
 
     def validate_worker_id(self, value):
         if not Worker.objects.filter(pk=value).exists():
