@@ -5,10 +5,10 @@ from v1_1.models.user import User
 class Organization(models.Model):
     ORGANIZATIONAL_FORM = [
         ('1', 'ООО'),
-        ('3', 'ПАО'),
-        ('4', 'НАО'),
-        ('5', 'ЗАО'),
-        ('6', 'ИП'),
+        ('2', 'ПАО'),
+        ('3', 'НАО'),
+        ('4', 'ЗАО'),
+        ('5', 'ИП'),
     ]
 
     organizational_form = models.CharField(choices=ORGANIZATIONAL_FORM, default='1', max_length=1)
