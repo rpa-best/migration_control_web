@@ -5,6 +5,7 @@ from v1_1.common_utils.generation_employment_contract import GenerationEmploymen
 from v1_1.common_utils.generation_notice_conclusion import GenerationNoticeConclusion
 from v1_1.common_utils.generation_payment_order import GenerationPaymentOrder
 from v1_1.common_utils.generation_suspension_order import GenerationSuspensionOrder
+from v1_1.common_utils.generation_notice_termination import GenerationNoticeTermination
 from v1_1.serializers.blanks import (NoticeConclusionSerializer, EmploymentContractSerializer,
                                      SuspensionOrderSerializer, GenerationPaymentOrderSerializer,
                                      ContractProvisionPaidServicesSerializer, SearchWorkerSerializer,
@@ -130,7 +131,7 @@ class NoticeTerminationAPIView(CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(request.data)
+        return GenerationNoticeTermination(request.data)
 
 
 @managers
