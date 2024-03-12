@@ -229,7 +229,7 @@ class NoticeTerminationSerializer(serializers.Serializer):
     worker_id = serializers.IntegerField(required=True)
     name_territorial_body = serializers.CharField(write_only=True, max_length=100)
     position = serializers.CharField(write_only=True, max_length=100)
-    base = serializers.ChoiceField(choices=BASE_TYPE_CHOICES)
+    base = serializers.ChoiceField(choices=BASES)
     end_date = serializers.DateField(write_only=True)
     initiator = serializers.BooleanField()
     person = serializers.ChoiceField(choices=TYPE_PERSON)

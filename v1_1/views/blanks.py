@@ -8,7 +8,7 @@ from v1_1.common_utils.generation_suspension_order import GenerationSuspensionOr
 from v1_1.serializers.blanks import (NoticeConclusionSerializer, EmploymentContractSerializer,
                                      SuspensionOrderSerializer, GenerationPaymentOrderSerializer,
                                      ContractProvisionPaidServicesSerializer, SearchWorkerSerializer,
-                                     ShowManagersSerializer)
+                                     ShowManagersSerializer, NoticeTerminationSerializer)
 from rest_framework.response import Response
 from v1_1.swagger_content.blanks import blanks, search_worker, managers
 import openpyxl
@@ -119,6 +119,18 @@ class NoticeConclusionAPIView(CreateAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return GenerationNoticeConclusion(request.data)
+
+
+@blanks
+class NoticeTerminationAPIView(CreateAPIView):
+    serializer_class = NoticeTerminationSerializer
+    permission_classes = (IsOwnerOrIsAdministratorInOrganizationWorker,)
+
+    def post(self, request, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(request.data)
 
 
 @managers
