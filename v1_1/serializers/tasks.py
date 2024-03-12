@@ -11,3 +11,7 @@ class TaskDocuments(serializers.ModelSerializer):
 class TaskInfo(serializers.Serializer):
     days_until_expiration = serializers.CharField()
     recommended_start_date = serializers.DateField()
+
+
+class NumberSerializer(serializers.Serializer):
+    number = serializers.IntegerField(read_only=True)

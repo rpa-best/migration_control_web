@@ -7,7 +7,7 @@ from v1_1.common_utils.custom_handler import CustomValidationError
 from v1_1.models import OrganizationUser
 from v1_1.models.worker import DocumentsWorker, Worker
 from django.db.models import Q
-from v1_1.serializers.tasks import TaskDocuments, TaskInfo
+from v1_1.serializers.tasks import TaskDocuments, TaskInfo, NumberSerializer
 from drf_spectacular.utils import extend_schema
 
 
@@ -55,6 +55,9 @@ class ExpiringDocumentsView(mixins.ListModelMixin, viewsets.GenericViewSet):
         queryset = DocumentsWorker.objects.filter(filter_conditions)
 
         return queryset
+
+    def get_documents_queryset(self):
+        return self.get_queryset()
 
     # def list(self, request, **kwargs):
     #     user = request.user  # Получение авторизованного пользователя
@@ -189,3 +192,47 @@ class TaskInfoView(mixins.ListModelMixin, viewsets.GenericViewSet):
         }
 
         return Response(document_info)
+
+
+@extend_schema(tags=['Tasks'])
+class ShowNumberTasksView(mixins.ListModelMixin, viewsets.GenericViewSet):
+    serializer_class = NumberSerializer
+    permission_class = IsAuthenticated
+
+    def list(self, request, **kwargs):
+        user = self.request.user
+
+        try:
+            organization_users = OrganizationUser.objects.filter(user=user)
+            organizations = [ou.organization.id for ou in organization_users]
+        except OrganizationUser.DoesNotExist:
+            raise CustomValidationError({'error': 'Вы не связаны ни с какой организацией'}, status=400)
+
+        # Текущая дата
+        today = datetime.now().date()
+
+        # Необходимо, чтобы возвращались документы, которым остаётся 30 дней до окончания срока или которые уже
+        #     # просрочены
+        filter_conditions = Q(date_end__lte=today) | Q(date_end__gte=today, date_end__lte=today + timedelta(days=30))
+
+        # Получение значений полей фильтрации из запроса GET
+        type_document = self.request.query_params.get('type_document')
+        worker_organization_id = self.request.query_params.get('worker_id__organization_id')
+
+        # Получение значений полей фильтрации из запроса GET
+        if type_document:
+            filter_conditions &= Q(type_document=type_document)
+        else:
+            filter_conditions &= Q(
+                type_document__in=['migration_card', 'patent', 'paycheck', 'temporary_residence', 'certificate_asylum'])
+
+        if worker_organization_id:
+            if not OrganizationUser.objects.filter(organization=worker_organization_id, user_id=user).exists():
+                raise CustomValidationError({'error': 'Вы не являетесь сотрудником этой организации'})
+            filter_conditions &= Q(worker_id__organization_id=worker_organization_id)
+        else:
+            filter_conditions &= Q(worker_id__organization_id__in=[org for org in organizations])
+
+        number = DocumentsWorker.objects.filter(filter_conditions).count()
+
+        return Response({'number': number})
