@@ -133,11 +133,11 @@ class OrganizationCreateSerializer(serializers.ModelSerializer):
 
 
 class OrganizationPutAndPatchSerializer(serializers.ModelSerializer):
-    organizational_form = serializers.ChoiceField(choices=Organization.ORGANIZATIONAL_FORM)
-    legal_address = serializers.CharField()
-    inn = serializers.CharField()
-    name_director = serializers.CharField(write_only=True,)
-    surname_director = serializers.CharField(write_only=True,)
+    organizational_form = serializers.ChoiceField(choices=Organization.ORGANIZATIONAL_FORM, required=False)
+    legal_address = serializers.CharField(required=False)
+    inn = serializers.CharField(required=False)
+    name_director = serializers.CharField(write_only=True, required=False)
+    surname_director = serializers.CharField(write_only=True, required=False)
     patronymic_director = serializers.CharField(write_only=True, required=False)
     passport_series = serializers.CharField(write_only=True, required=False)
     passport_number = serializers.CharField(write_only=True, required=False)
@@ -187,14 +187,19 @@ class OrganizationPutAndPatchSerializer(serializers.ModelSerializer):
             return data
 
     def update(self, instance, validated_data):
-        name_director = validated_data.pop('name_director')
-        surname_director = validated_data.pop('surname_director')
-        patronymic_director = validated_data.pop('patronymic_director')
-        passport_series = validated_data.pop('passport_series')
-        passport_number = validated_data.pop('passport_number')
-        issued_whom = validated_data.pop('issued_whom')
-        date_issue_passport = validated_data.pop('date_issue_passport')
-        date_end_passport = validated_data.pop('date_end_passport')
+        director = {
+            'name_director':  validated_data.pop('name_director', None),
+            'surname_director': validated_data.pop('surname_director', None),
+            'patronymic_director': validated_data.pop('patronymic_director', None),
+            'passport_series': validated_data.pop('passport_series', None),
+            'passport_number': validated_data.pop('passport_number', None),
+            'issued_whom': validated_data.pop('issued_whom', None),
+            'date_issue_passport': validated_data.pop('date_issue_passport', None),
+            'date_end_passport': validated_data.pop('date_end_passport', None),
+        }
+
+        # Исключение полей с значением None из словаря director_fields
+        director_fields = {key: value for key, value in director.items() if value is not None}
 
         instance: Organization = super(OrganizationPutAndPatchSerializer, self).update(instance, validated_data)
         instance.save()
@@ -203,21 +208,13 @@ class OrganizationPutAndPatchSerializer(serializers.ModelSerializer):
         if DirectorOrganization.objects.filter(organization=instance.id).exists():
             pk = DirectorOrganization.objects.filter(organization=instance.id).first().id
             # Обновление данных о директоре
-            DirectorOrganization.objects.filter(id=pk).update(id=pk, organization=instance, name_director=name_director,
-                                                              surname_director=surname_director,
-                                                              patronymic_director=patronymic_director,
-                                                              passport_series=passport_series,
-                                                              passport_number=passport_number, issued_whom=issued_whom,
-                                                              date_issue_passport=date_issue_passport,
-                                                              date_end_passport=date_end_passport)
+            DirectorOrganization.objects.filter(id=pk).update(**director_fields)
         else:
             # Создание директора
-            DirectorOrganization.objects.create(organization=instance, name_director=name_director,
-                                                surname_director=surname_director,
-                                                patronymic_director=patronymic_director,
-                                                passport_series=passport_series, passport_number=passport_number,
-                                                issued_whom=issued_whom, date_issue_passport=date_issue_passport,
-                                                date_end_passport=date_end_passport)
+            director['organization'] = instance
+            DirectorOrganization.objects.create(**director)
+
+        validated_data.update(director)
 
         return validated_data
 
