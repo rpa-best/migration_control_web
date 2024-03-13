@@ -139,37 +139,40 @@ class DocumentsWorkerSerializer(serializers.ModelSerializer):
         if 'archive' not in data:
             data['archive'] = False
 
+        worker_id = self.context['request'].parser_context['kwargs'].get('worker_id')
+        type_document = data.get('type_document')
+        archive = data.get('archive')
+
+        if self.instance:  # Если это редактирование записи
+            # Проверка, существуют ли другие активные документы у сотрудника с такими же параметрами, за исключением
+            # текущего документа self.instance.id
+            existing_documents = DocumentsWorker.objects.filter(worker_id=worker_id, type_document=type_document,
+                                                                archive=False).exclude(id=self.instance.id)
+            if not archive and existing_documents.exists():
+                raise CustomValidationError({'error': 'У сотрудника уже есть такой активный документ. '
+                                                      'Для добавления текущего документа необходимо один '
+                                                      'из документов пометить в архив'})
+
+            if archive:
+                if existing_documents.exists():
+                    raise CustomValidationError({'error': 'У сотрудника уже есть такой активный документ. '
+                                                          'Для добавления текущего документа необходимо один '
+                                                          'из документов пометить в архив'})
+        else:  # Создание новой записи
+            existing_documents = DocumentsWorker.objects.filter(worker_id=worker_id, type_document=type_document,
+                                                                archive=False)
+            if not archive and existing_documents.exists():
+                raise CustomValidationError({'error': 'У сотрудника уже есть такой активный документ. '
+                                                      'Для добавления текущего документа необходимо один '
+                                                      'из документов пометить в архив'})
+
         return data
-
-    def update(self, instance, validated_data):
-        if 'type_document' in validated_data:
-            worker_id = self.context['request'].parser_context['kwargs'].get('worker_id')
-            if not DocumentsWorker.objects.filter(pk=instance.id, type_document=validated_data['type_document'],
-                                                  worker_id=worker_id, archive=False).exists():
-                if validated_data['archive'] is False:
-                    raise CustomValidationError({'error':  'У сотрудника уже есть такой активный документ. '
-                                                           'Для добавления текущего документа необходимо один '
-                                                           'из документов пометить в архив'})
-
-        instance: DocumentsWorker = super().update(instance, validated_data)
-        instance.save()
-        return validated_data
 
     def create(self, validated_data):
         type_document = validated_data['type_document']
 
         if type_document == '' or type_document is None:
             raise CustomValidationError({'type_document': 'Выберите тип документа'})
-
-        if 'type_document' in validated_data:
-            worker_id = self.context['request'].parser_context['kwargs'].get('worker_id')
-
-            if DocumentsWorker.objects.filter(type_document=validated_data['type_document'], worker_id=worker_id,
-                                              archive=False).exists():
-                if validated_data['archive'] is False:
-                    raise CustomValidationError({'error':  'У сотрудника уже есть такой активный документ. '
-                                                           'Для добавления текущего документа необходимо один '
-                                                           'из документов пометить в архив'})
 
         # Проверка, что все обязательные поля для выбранного типа документа заполнены
         for field in self.REQUIRED_FIELDS[type_document]:
