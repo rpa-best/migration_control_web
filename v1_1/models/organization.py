@@ -21,7 +21,6 @@ class Organization(models.Model):
     owner = models.ForeignKey(User, models.CASCADE, blank=True, null=True)
     legal_address = models.CharField(max_length=255, blank=True)
     create_at = models.DateTimeField(auto_now=True)
-    balance = models.FloatField(default=0)
 
     def __str__(self):
         return f"{self.get_organizational_form_display()}"

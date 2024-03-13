@@ -127,6 +127,7 @@ class OrganizationCreateSerializer(serializers.ModelSerializer):
 class OrganizationPutAndPatchSerializer(serializers.ModelSerializer):
     organizational_form = serializers.ChoiceField(choices=Organization.ORGANIZATIONAL_FORM)
     legal_address = serializers.CharField()
+    inn = serializers.CharField()
 
     class Meta:
         model = Organization
@@ -136,6 +137,7 @@ class OrganizationPutAndPatchSerializer(serializers.ModelSerializer):
             'inn',
             'kpp',
             'ogrn',
+            'okved',
             'phone',
             'legal_address',
         )
@@ -146,9 +148,9 @@ class OrganizationPutAndPatchSerializer(serializers.ModelSerializer):
         return value
 
     def validate_inn(self, value):
-        if Organization.objects.filter(inn=value).exists():
-            raise CustomValidationError({'inn': 'Организация с таким ИНН уже существует'})
-        return value
+        organization_id = self.context['request'].parser_context['kwargs'].get('id')
+        if Organization.objects.filter(inn=value).exclude(id=organization_id).exists():
+            raise CustomValidationError({'inn': 'Компания с таким ИНН уже существует'})
 
     def validate(self, data):
         user = self.context['request'].user.username
