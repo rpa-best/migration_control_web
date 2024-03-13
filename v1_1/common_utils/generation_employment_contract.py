@@ -93,9 +93,9 @@ def GenerationEmploymentContractDocument(data):
     citizenship = CountryDeclination(Worker.objects.get(pk=worker_id).citizenship).upper()
 
     # ФИО работника
-    name_worker = Worker.objects.get(pk=organization_id).name
-    surname_worker = Worker.objects.get(pk=organization_id).surname
-    patronymic_worker = Worker.objects.get(pk=organization_id).patronymic
+    name_worker = Worker.objects.get(pk=worker_id).name
+    surname_worker = Worker.objects.get(pk=worker_id).surname
+    patronymic_worker = Worker.objects.get(pk=worker_id).patronymic
 
     full_name_worker = f'{surname_worker} {name_worker}'
     if patronymic_worker:
