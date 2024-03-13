@@ -10,6 +10,14 @@ from v1_1.models.user import User
 
 class OrganizationShowSerializer(serializers.ModelSerializer):
     organizational_form = serializers.CharField(source='get_organizational_form_display')
+    name_director = serializers.CharField(source='directororganization.name_director')
+    surname_director = serializers.CharField(source='directororganization.surname_director')
+    patronymic_director = serializers.CharField(source='directororganization.patronymic_director')
+    passport_series = serializers.CharField(source='directororganization.passport_series')
+    passport_number = serializers.CharField(source='directororganization.passport_number')
+    issued_whom = serializers.CharField(source='directororganization.issued_whom')
+    date_issue_passport = serializers.DateField(source='directororganization.date_issue_passport')
+    date_end_passport = serializers.DateField(source='directororganization.date_end_passport')
 
     class Meta:
         model = Organization
@@ -90,7 +98,7 @@ class OrganizationCreateSerializer(serializers.ModelSerializer):
             MigrationAddress.objects.create(organization=instance, name=address)
 
         DirectorOrganization.objects.create(
-            organization_id=instance,
+            organization=instance,
             name_director=director['name_director'],
             surname_director=director['surname_director'],
             patronymic_director=director['patronymic_director']
@@ -128,6 +136,14 @@ class OrganizationPutAndPatchSerializer(serializers.ModelSerializer):
     organizational_form = serializers.ChoiceField(choices=Organization.ORGANIZATIONAL_FORM)
     legal_address = serializers.CharField()
     inn = serializers.CharField()
+    name_director = serializers.CharField(write_only=True,)
+    surname_director = serializers.CharField(write_only=True,)
+    patronymic_director = serializers.CharField(write_only=True, required=False)
+    passport_series = serializers.CharField(write_only=True, required=False)
+    passport_number = serializers.CharField(write_only=True, required=False)
+    issued_whom = serializers.CharField(write_only=True, required=False)
+    date_issue_passport = serializers.DateField(write_only=True, required=False)
+    date_end_passport = serializers.DateField(write_only=True, required=False)
 
     class Meta:
         model = Organization
@@ -140,6 +156,14 @@ class OrganizationPutAndPatchSerializer(serializers.ModelSerializer):
             'okved',
             'phone',
             'legal_address',
+            'name_director',
+            'surname_director',
+            'patronymic_director',
+            'passport_series',
+            'passport_number',
+            'issued_whom',
+            'date_issue_passport',
+            'date_end_passport'
         )
 
     def validate_legal_address(self, value):
@@ -161,6 +185,41 @@ class OrganizationPutAndPatchSerializer(serializers.ModelSerializer):
             raise CustomValidationError({'message': 'Вы не являетесь сотрудником этой организации'})
         else:
             return data
+
+    def update(self, instance, validated_data):
+        name_director = validated_data.pop('name_director')
+        surname_director = validated_data.pop('surname_director')
+        patronymic_director = validated_data.pop('patronymic_director')
+        passport_series = validated_data.pop('passport_series')
+        passport_number = validated_data.pop('passport_number')
+        issued_whom = validated_data.pop('issued_whom')
+        date_issue_passport = validated_data.pop('date_issue_passport')
+        date_end_passport = validated_data.pop('date_end_passport')
+
+        instance: Organization = super(OrganizationPutAndPatchSerializer, self).update(instance, validated_data)
+        instance.save()
+
+        # Есть ли уже у организации директор?
+        if DirectorOrganization.objects.filter(organization=instance.id).exists():
+            pk = DirectorOrganization.objects.filter(organization=instance.id).first().id
+            # Обновление данных о директоре
+            DirectorOrganization.objects.filter(id=pk).update(id=pk, organization=instance, name_director=name_director,
+                                                              surname_director=surname_director,
+                                                              patronymic_director=patronymic_director,
+                                                              passport_series=passport_series,
+                                                              passport_number=passport_number, issued_whom=issued_whom,
+                                                              date_issue_passport=date_issue_passport,
+                                                              date_end_passport=date_end_passport)
+        else:
+            # Создание директора
+            DirectorOrganization.objects.create(organization=instance, name_director=name_director,
+                                                surname_director=surname_director,
+                                                patronymic_director=patronymic_director,
+                                                passport_series=passport_series, passport_number=passport_number,
+                                                issued_whom=issued_whom, date_issue_passport=date_issue_passport,
+                                                date_end_passport=date_end_passport)
+
+        return validated_data
 
 
 class MigrationAddressShowSerializer(serializers.ModelSerializer):

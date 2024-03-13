@@ -27,13 +27,13 @@ class Organization(models.Model):
 
 
 class DirectorOrganization(models.Model):
-    organization_id = models.OneToOneField(Organization, on_delete=models.CASCADE, unique=True)
+    organization = models.OneToOneField(Organization, on_delete=models.CASCADE, unique=True)
     name_director = models.CharField(max_length=150)
     surname_director = models.CharField(max_length=150)
     patronymic_director = models.CharField(max_length=150, blank=True, null=True)
     passport_series = models.CharField(max_length=20, blank=True, null=True)
     passport_number = models.CharField(max_length=255, blank=True, null=True)
-    issued_whom = models.CharField(max_length=150)
+    issued_whom = models.CharField(max_length=150,  blank=True, null=True)
     date_issue_passport = models.DateField(blank=True, null=True)
     date_end_passport = models.DateField(blank=True, null=True)
 
