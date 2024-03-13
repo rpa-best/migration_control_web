@@ -148,9 +148,10 @@ class OrganizationPutAndPatchSerializer(serializers.ModelSerializer):
         return value
 
     def validate_inn(self, value):
-        organization_id = self.context['request'].parser_context['kwargs'].get('id')
+        organization_id = self.context['request'].parser_context['kwargs'].get('pk')
         if Organization.objects.filter(inn=value).exclude(id=organization_id).exists():
             raise CustomValidationError({'inn': 'Компания с таким ИНН уже существует'})
+        return value
 
     def validate(self, data):
         user = self.context['request'].user.username
