@@ -10,7 +10,7 @@ from v1_1.models.organization import Organization, MigrationAddress, Organizatio
 from v1_1.permissions.owner import IsOwner
 from v1_1.permissions.owner_or_admin import IsOwnerOrIsAdministratorInOrganization
 from v1_1.serializers.organization import OrganizationCreateSerializer, OrganizationShowSerializer, \
-    OrganizationPutAndPatchSerializer, MigrationAddressSerializer, MigrationAddressShowSerializer, \
+    OrganizationPutAndPatchSerializer, MigrationAddressSerializer, \
     OrganizationCreateUserSerializer, ShowOrganizationUserSerializer, SearchOrganizationSerializer
 from rest_framework import mixins, viewsets, status
 
@@ -106,29 +106,30 @@ class SearchOrganizationAPIViewSet(mixins.ListModelMixin, viewsets.GenericViewSe
 
 
 @extend_schema(tags=['Migration addresses of organizations'])
-class MigrationAddressAPIViewSet(ModelViewSet):
+class ShowMigrationAddressAPIViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+    serializer_class = MigrationAddressSerializer
+    permission_class = IsOwnerOrIsAdministratorInOrganization
+
     def get_queryset(self):
         # Получение авторизованного пользователя
         user = self.request.user
-        #Возвращать только те адреса миграционого учета в организациях, сотрудником которых является пользователь
-        return MigrationAddress.objects.filter(organization__organizationuser__user=user)
 
-    def get_serializer_class(self):
-        if self.request.method in ['GET']:
-            serializer_class = MigrationAddressShowSerializer
-        else:
-            serializer_class = MigrationAddressSerializer
+        # Получение организаций, в которых работает пользователь
+        if not OrganizationUser.objects.filter(user=user, organization=self.kwargs.get('organization')).exists():
+            raise CustomValidationError({'organization': 'Вы не являетесь работником этой организации'})
 
-        return serializer_class
+        # Фильтрация работников по организации
+        queryset = MigrationAddress.objects.filter(Q(organization=self.kwargs.get('organization')))
 
-    def get_permissions(self):
-        # Определение разрешений в зависимости от типа запроса
-        if self.action in ['create', 'update', 'partial_update', 'destroy']:
-            permission_classes = [IsOwnerOrIsAdministratorInOrganization]
-        else:
-            permission_classes = [IsAuthenticated]
+        return queryset
 
-        return [permission() for permission in permission_classes]
+
+@extend_schema(tags=['Migration addresses of organizations'])
+class MigrationAddressAPIViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,
+                                 viewsets.GenericViewSet):
+    serializer_class = MigrationAddressSerializer
+    permission_class = IsOwnerOrIsAdministratorInOrganization
+    queryset = MigrationAddress.objects.all()
 
 
 @extend_schema(tags=['Users of the organization'])
