@@ -82,3 +82,9 @@ class ResponsiblePersons(models.Model):
 class BookkeeperOrganization(models.Model):
     organization = models.OneToOneField(Organization, on_delete=models.CASCADE)
     full_name_bookkeeper = models.CharField(max_length=255, blank=True, null=True)
+
+
+class HostPartyOrganization(models.Model):
+    organization = models.OneToOneField(Organization, on_delete=models.CASCADE)
+    full_name_host_name = models.CharField(max_length=255, blank=True, null=True)
+    phone = models.CharField(max_length=28, unique=True, blank=True, null=True, default=None)
