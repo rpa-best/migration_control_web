@@ -10,7 +10,7 @@ from v1_1.models.organization import Organization, MigrationAddress, Organizatio
 from v1_1.permissions.owner import IsOwner
 from v1_1.permissions.owner_or_admin import IsOwnerOrIsAdministratorInOrganization
 from v1_1.serializers.organization import OrganizationCreateSerializer, OrganizationShowSerializer, \
-    OrganizationPutAndPatchSerializer, MigrationAddressSerializer, \
+    OrganizationPutAndPatchSerializer, ShowMigrationAddressSerializer, MigrationAddressSerializer, \
     OrganizationCreateUserSerializer, ShowOrganizationUserSerializer, SearchOrganizationSerializer
 from rest_framework import mixins, viewsets, status
 
@@ -107,7 +107,7 @@ class SearchOrganizationAPIViewSet(mixins.ListModelMixin, viewsets.GenericViewSe
 
 @extend_schema(tags=['Migration addresses of organizations'])
 class ShowMigrationAddressAPIViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
-    serializer_class = MigrationAddressSerializer
+    serializer_class = ShowMigrationAddressSerializer
     permission_class = IsOwnerOrIsAdministratorInOrganization
 
     def get_queryset(self):

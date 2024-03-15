@@ -260,7 +260,7 @@ class OrganizationPutAndPatchSerializer(serializers.ModelSerializer):
         return validated_data
 
 
-class MigrationAddressSerializer(serializers.ModelSerializer):
+class ShowMigrationAddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = MigrationAddress
         fields = '__all__'
@@ -279,6 +279,20 @@ class MigrationAddressSerializer(serializers.ModelSerializer):
         user = self.context['request'].user.username
 
         if not OrganizationUser.objects.filter(organization=organization, user=user).exists():
+            raise CustomValidationError({'organization': 'Вы не являетесь сотрудником этой организации'})
+        else:
+            return value
+
+
+class MigrationAddressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MigrationAddress
+        fields = '__all__'
+
+    def validate_organization(self, value):
+        user = self.context['request'].user.username
+        # Можно добавить адрес миграции только для организации, в которой работает пользователь.
+        if not OrganizationUser.objects.filter(organization=value, user=user).exists():
             raise CustomValidationError({'organization': 'Вы не являетесь сотрудником этой организации'})
         else:
             return value
