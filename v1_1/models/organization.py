@@ -78,3 +78,7 @@ class ResponsiblePersons(models.Model):
     date_issue_passport = models.DateField(blank=True, null=True)
     date_end_passport = models.DateField(blank=True, null=True)
 
+
+class BookkeeperOrganization(models.Model):
+    organization = models.OneToOneField(Organization, on_delete=models.CASCADE)
+    full_name_bookkeeper = models.CharField(max_length=255, blank=True, null=True)

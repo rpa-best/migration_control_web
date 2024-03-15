@@ -3,7 +3,7 @@ from django.db.transaction import atomic
 from rest_framework import serializers
 from v1_1.apies.DaData import AddressSearch
 from v1_1.common_utils.custom_handler import CustomValidationError
-from v1_1.models.organization import Organization, MigrationAddress, OrganizationUser, DirectorOrganization
+from v1_1.models.organization import Organization, MigrationAddress, OrganizationUser, DirectorOrganization, BookkeeperOrganization
 from v1_1.models.subscription import Subscription, ServiceRate
 from v1_1.models.user import User
 
@@ -18,6 +18,7 @@ class OrganizationShowSerializer(serializers.ModelSerializer):
     issued_whom = serializers.CharField(source='directororganization.issued_whom')
     date_issue_passport = serializers.DateField(source='directororganization.date_issue_passport')
     date_end_passport = serializers.DateField(source='directororganization.date_end_passport')
+    full_name_bookkeeper = serializers.DateField(source='bookkeeperorganization.full_name_bookkeeper')
 
     class Meta:
         model = Organization
@@ -144,6 +145,7 @@ class OrganizationPutAndPatchSerializer(serializers.ModelSerializer):
     issued_whom = serializers.CharField(write_only=True, required=False)
     date_issue_passport = serializers.DateField(write_only=True, required=False)
     date_end_passport = serializers.DateField(write_only=True, required=False)
+    full_name_bookkeeper = serializers.CharField(write_only=True, required=False)
 
     class Meta:
         model = Organization
@@ -163,7 +165,8 @@ class OrganizationPutAndPatchSerializer(serializers.ModelSerializer):
             'passport_number',
             'issued_whom',
             'date_issue_passport',
-            'date_end_passport'
+            'date_end_passport',
+            'full_name_bookkeeper'
         )
 
     def validate_legal_address(self, value):
@@ -201,6 +204,8 @@ class OrganizationPutAndPatchSerializer(serializers.ModelSerializer):
         # Исключение полей с значением None из словаря director_fields
         director_fields = {key: value for key, value in director.items() if value is not None}
 
+        full_name_bookkeeper = validated_data.pop('full_name_bookkeeper', None)
+
         instance: Organization = super(OrganizationPutAndPatchSerializer, self).update(instance, validated_data)
         instance.save()
 
@@ -215,6 +220,16 @@ class OrganizationPutAndPatchSerializer(serializers.ModelSerializer):
             DirectorOrganization.objects.create(**director)
 
         validated_data.update(director)
+
+        if BookkeeperOrganization.objects.filter(organization=instance.id).exists():
+            # Заполнено ФИО для обновления бухгалтера?
+            if full_name_bookkeeper:
+                # Получение первичного ключа у бухгалтера
+                pk = BookkeeperOrganization.objects.filter(organization=instance.id).first().id
+                # Обновление ФИО бухгалтера
+                BookkeeperOrganization.objects.filter(id=pk).update(full_name_bookkeeper=full_name_bookkeeper)
+        else:
+            BookkeeperOrganization.objects.create(organization=instance, full_name_bookkeeper=full_name_bookkeeper)
 
         return validated_data
 
