@@ -3,7 +3,8 @@ from django.db.transaction import atomic
 from rest_framework import serializers
 from v1_1.apies.DaData import AddressSearch
 from v1_1.common_utils.custom_handler import CustomValidationError
-from v1_1.models.organization import Organization, MigrationAddress, OrganizationUser, DirectorOrganization, BookkeeperOrganization
+from v1_1.models.organization import (Organization, MigrationAddress, OrganizationUser, DirectorOrganization,
+                                      BookkeeperOrganization, HostPartyOrganization)
 from v1_1.models.subscription import Subscription, ServiceRate
 from v1_1.models.user import User
 
@@ -19,6 +20,8 @@ class OrganizationShowSerializer(serializers.ModelSerializer):
     date_issue_passport = serializers.DateField(source='directororganization.date_issue_passport')
     date_end_passport = serializers.DateField(source='directororganization.date_end_passport')
     full_name_bookkeeper = serializers.DateField(source='bookkeeperorganization.full_name_bookkeeper')
+    full_name_host_party = serializers.DateField(source='hostpartyorganization.full_name_host_party')
+    phone_host_party = serializers.DateField(source='hostpartyorganization.phone_host_party')
 
     class Meta:
         model = Organization
@@ -146,6 +149,8 @@ class OrganizationPutAndPatchSerializer(serializers.ModelSerializer):
     date_issue_passport = serializers.DateField(write_only=True, required=False)
     date_end_passport = serializers.DateField(write_only=True, required=False)
     full_name_bookkeeper = serializers.CharField(write_only=True, required=False)
+    full_name_host_party = serializers.CharField(write_only=True, required=False)
+    phone_host_party = serializers.CharField(write_only=True, required=False)
 
     class Meta:
         model = Organization
@@ -166,7 +171,9 @@ class OrganizationPutAndPatchSerializer(serializers.ModelSerializer):
             'issued_whom',
             'date_issue_passport',
             'date_end_passport',
-            'full_name_bookkeeper'
+            'full_name_bookkeeper',
+            'full_name_host_party',
+            'phone_host_party'
         )
 
     def validate_legal_address(self, value):
@@ -206,6 +213,13 @@ class OrganizationPutAndPatchSerializer(serializers.ModelSerializer):
 
         full_name_bookkeeper = validated_data.pop('full_name_bookkeeper', None)
 
+        host_party = {
+            'full_name_host_party':  validated_data.pop('full_name_host_party', None),
+            'phone_host_party': validated_data.pop('phone_host_party', None),
+        }
+
+        host_party_fields = {key: value for key, value in host_party.items() if value is not None}
+
         instance: Organization = super(OrganizationPutAndPatchSerializer, self).update(instance, validated_data)
         instance.save()
 
@@ -221,6 +235,7 @@ class OrganizationPutAndPatchSerializer(serializers.ModelSerializer):
 
         validated_data.update(director)
 
+        # Существует бухгалтер у организации?
         if BookkeeperOrganization.objects.filter(organization=instance.id).exists():
             # Заполнено ФИО для обновления бухгалтера?
             if full_name_bookkeeper:
@@ -230,6 +245,17 @@ class OrganizationPutAndPatchSerializer(serializers.ModelSerializer):
                 BookkeeperOrganization.objects.filter(id=pk).update(full_name_bookkeeper=full_name_bookkeeper)
         else:
             BookkeeperOrganization.objects.create(organization=instance, full_name_bookkeeper=full_name_bookkeeper)
+
+        # Существует принимающая сторона у организации?
+        if HostPartyOrganization.objects.filter(organization=instance.id).exists():
+            # Получение первичного ключа у принимающей стороны
+            pk = HostPartyOrganization.objects.filter(organization=instance.id).first().id
+            # Обновление данных у принимающей стороны
+            HostPartyOrganization.objects.filter(id=pk).update(**host_party_fields)
+        else:
+            # Создание принимающей стороны у организации
+            host_party_fields['organization'] = instance
+            HostPartyOrganization.objects.create(**host_party_fields)
 
         return validated_data
 
