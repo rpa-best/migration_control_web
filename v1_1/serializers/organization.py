@@ -22,6 +22,10 @@ class OrganizationShowSerializer(serializers.ModelSerializer):
     full_name_bookkeeper = serializers.DateField(source='bookkeeperorganization.full_name_bookkeeper')
     full_name_host_party = serializers.DateField(source='hostpartyorganization.full_name_host_party')
     phone_host_party = serializers.DateField(source='hostpartyorganization.phone_host_party')
+    full_name_contact_person = serializers.DateField(source='hostpartyorganization.full_name_contact_person')
+    phone_host_contact_person = serializers.DateField(source='hostpartyorganization.phone_host_contact_person')
+    additional_phone = serializers.DateField(source='hostpartyorganization.additional_phone')
+    email_contact_person = serializers.DateField(source='hostpartyorganization.email_contact_person')
 
     class Meta:
         model = Organization
@@ -309,7 +313,7 @@ class OrganizationCreateUserSerializer(serializers.ModelSerializer):
         read_only_fields = ('organization', )
 
     def validate_username(self, value):
-        organization_id = self.context['request'].parser_context['kwargs'].get('organization_id')
+        organization_id = self.context['request'].parser_context['kwargs'].get('organization')
         if OrganizationUser.objects.filter(user=value, organization=organization_id).exists():
             raise CustomValidationError({'username': 'Пользователь с этой почтой уже есть в организации'})
 
@@ -346,7 +350,7 @@ class OrganizationCreateUserSerializer(serializers.ModelSerializer):
 
         if not User.objects.filter(username=username).exists():
             #Создание пользователя
-            user = User.objects.create(username=username, name=first_name)
+            user = User.objects.create(username=username, first_name=first_name)
             try:
                 user.regenerate_and_send_password()
             except Exception:
@@ -367,6 +371,9 @@ class OrganizationCreateUserSerializer(serializers.ModelSerializer):
 
 class ShowOrganizationUserSerializer(serializers.ModelSerializer):
     phone = serializers.CharField(source='user.phone')
+    first_name = serializers.CharField(source='user.first_name')
+    surname = serializers.CharField(source='user.surname')
+    patronymic = serializers.CharField(source='user.patronymic')
 
     class Meta:
         model = OrganizationUser
