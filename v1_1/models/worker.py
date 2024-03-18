@@ -38,6 +38,8 @@ class Worker(models.Model):
     avatar = models.ImageField(upload_to=UploadPath('image'), null=True)
     processing_personal_data = models.BooleanField(default=0)
     date_dismissal = models.DateField(blank=True, null=True)
+    create_at = models.DateTimeField(auto_now=True)
+    paid = models.BooleanField(default=False, null=True, blank=True)
 
 
 class DocumentsWorker(models.Model):
