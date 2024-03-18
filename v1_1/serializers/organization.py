@@ -289,8 +289,6 @@ class OrganizationPutAndPatchSerializer(serializers.ModelSerializer):
         else:
             # Создание контактного
             contact_person_fields['organization'] = instance
-            print('dsd')
-            print(contact_person)
             ContactPersonOrganization.objects.create(**contact_person_fields)
 
         return validated_data
