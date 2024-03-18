@@ -4,7 +4,7 @@ from rest_framework import serializers
 from v1_1.apies.DaData import AddressSearch
 from v1_1.common_utils.custom_handler import CustomValidationError
 from v1_1.models.organization import (Organization, MigrationAddress, OrganizationUser, DirectorOrganization,
-                                      BookkeeperOrganization, HostPartyOrganization)
+                                      BookkeeperOrganization, HostPartyOrganization, ContactPersonOrganization)
 from v1_1.models.subscription import Subscription, ServiceRate
 from v1_1.models.user import User
 
@@ -22,10 +22,10 @@ class OrganizationShowSerializer(serializers.ModelSerializer):
     full_name_bookkeeper = serializers.DateField(source='bookkeeperorganization.full_name_bookkeeper')
     full_name_host_party = serializers.DateField(source='hostpartyorganization.full_name_host_party')
     phone_host_party = serializers.DateField(source='hostpartyorganization.phone_host_party')
-    full_name_contact_person = serializers.DateField(source='hostpartyorganization.full_name_contact_person')
-    phone_host_contact_person = serializers.DateField(source='hostpartyorganization.phone_host_contact_person')
-    additional_phone = serializers.DateField(source='hostpartyorganization.additional_phone')
-    email_contact_person = serializers.DateField(source='hostpartyorganization.email_contact_person')
+    full_name_contact_person = serializers.DateField(source='contactpersonorganization.full_name_contact_person')
+    phone_host_contact_person = serializers.DateField(source='contactpersonorganization.phone_host_contact_person')
+    additional_phone = serializers.DateField(source='contactpersonorganization.additional_phone')
+    email_contact_person = serializers.DateField(source='contactpersonorganization.email_contact_person')
 
     class Meta:
         model = Organization
