@@ -22,10 +22,10 @@ class OrganizationShowSerializer(serializers.ModelSerializer):
     full_name_bookkeeper = serializers.DateField(source='bookkeeperorganization.full_name_bookkeeper')
     full_name_host_party = serializers.DateField(source='hostpartyorganization.full_name_host_party')
     phone_host_party = serializers.DateField(source='hostpartyorganization.phone_host_party')
-    full_name_contact_person = serializers.DateField(source='contactpersonorganization.full_name_contact_person')
-    phone_host_contact_person = serializers.DateField(source='contactpersonorganization.phone_host_contact_person')
+    full_name_contact_person = serializers.DateField(source='contactpersonorganization.full_name')
+    phone_contact_person = serializers.DateField(source='contactpersonorganization.phone')
     additional_phone = serializers.DateField(source='contactpersonorganization.additional_phone')
-    email_contact_person = serializers.DateField(source='contactpersonorganization.email_contact_person')
+    email_contact_person = serializers.DateField(source='contactpersonorganization.email')
 
     class Meta:
         model = Organization
@@ -158,6 +158,10 @@ class OrganizationPutAndPatchSerializer(serializers.ModelSerializer):
     full_name_bookkeeper = serializers.CharField(write_only=True, required=False)
     full_name_host_party = serializers.CharField(write_only=True, required=False)
     phone_host_party = serializers.CharField(write_only=True, required=False)
+    full_name_contact_person = serializers.CharField(write_only=True, required=False)
+    phone_contact_person = serializers.CharField(write_only=True, required=False)
+    additional_phone = serializers.CharField(write_only=True, required=False)
+    email_contact_person = serializers.CharField(write_only=True, required=False)
 
     class Meta:
         model = Organization
@@ -180,7 +184,11 @@ class OrganizationPutAndPatchSerializer(serializers.ModelSerializer):
             'date_end_passport',
             'full_name_bookkeeper',
             'full_name_host_party',
-            'phone_host_party'
+            'phone_host_party',
+            'full_name_contact_person',
+            'phone_contact_person',
+            'additional_phone',
+            'email_contact_person'
         )
 
     def validate_legal_address(self, value):
@@ -215,6 +223,13 @@ class OrganizationPutAndPatchSerializer(serializers.ModelSerializer):
             'date_end_passport': validated_data.pop('date_end_passport', None),
         }
 
+        contact_person = {
+            'full_name': validated_data.pop('full_name_contact_person', None),
+            'phone': validated_data.pop('phone_contact_person', None),
+            'additional_phone': validated_data.pop('additional_phone', None),
+            'email': validated_data.pop('email_contact_person', None),
+        }
+
         # Исключение полей с значением None из словаря director_fields
         director_fields = {key: value for key, value in director.items() if value is not None}
 
@@ -227,6 +242,8 @@ class OrganizationPutAndPatchSerializer(serializers.ModelSerializer):
 
         host_party_fields = {key: value for key, value in host_party.items() if value is not None}
 
+        contact_person_fields = {key: value for key, value in contact_person.items() if value is not None}
+
         instance: Organization = super(OrganizationPutAndPatchSerializer, self).update(instance, validated_data)
         instance.save()
 
@@ -237,7 +254,7 @@ class OrganizationPutAndPatchSerializer(serializers.ModelSerializer):
             DirectorOrganization.objects.filter(id=pk).update(**director_fields)
         else:
             # Создание директора
-            director['organization'] = instance
+            director_fields['organization'] = instance
             DirectorOrganization.objects.create(**director)
 
         validated_data.update(director)
@@ -263,6 +280,18 @@ class OrganizationPutAndPatchSerializer(serializers.ModelSerializer):
             # Создание принимающей стороны у организации
             host_party_fields['organization'] = instance
             HostPartyOrganization.objects.create(**host_party_fields)
+
+        # Существует контактное лицо в организации?
+        if ContactPersonOrganization.objects.filter(organization=instance.id).exists():
+            pk = ContactPersonOrganization.objects.filter(organization=instance.id).first().id
+            # Обновление данных о директоре
+            ContactPersonOrganization.objects.filter(id=pk).update(**contact_person_fields)
+        else:
+            # Создание контактного
+            contact_person_fields['organization'] = instance
+            print('dsd')
+            print(contact_person)
+            ContactPersonOrganization.objects.create(**contact_person_fields)
 
         return validated_data
 
