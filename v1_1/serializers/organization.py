@@ -103,6 +103,9 @@ class OrganizationCreateSerializer(serializers.ModelSerializer):
 
         # Добавление фактических адресов
         for address in actual_addresses:
+            if AddressSearch(address) is not None:
+                address = AddressSearch(address)
+
             MigrationAddress.objects.create(organization=instance, name=address)
 
         DirectorOrganization.objects.create(
@@ -300,6 +303,12 @@ class MigrationAddressSerializer(serializers.ModelSerializer):
             raise CustomValidationError({'organization': 'Вы не являетесь сотрудником этой организации'})
         else:
             return value
+
+    def validate_name(self, value):
+        if AddressSearch(value) is not None:
+            value = AddressSearch(value)
+
+        return value
 
 
 class OrganizationCreateUserSerializer(serializers.ModelSerializer):
