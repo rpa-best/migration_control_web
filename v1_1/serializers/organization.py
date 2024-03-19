@@ -340,12 +340,14 @@ class MigrationAddressSerializer(serializers.ModelSerializer):
 
 class OrganizationCreateUserSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source='user.username')
+    surname = serializers.CharField(source='user.surname')
     first_name = serializers.CharField(source='user.first_name')
+    patronymic = serializers.CharField(source='user.patronymic', required=False)
     role = serializers.ChoiceField(choices=OrganizationUser.USER_ROLE_CHOICES)
 
     class Meta:
         model = OrganizationUser
-        fields = ('username', 'first_name', 'organization', 'role')
+        fields = ('username', 'surname', 'first_name', 'patronymic', 'organization', 'role')
         read_only_fields = ('organization', )
 
     def validate_username(self, value):
