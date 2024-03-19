@@ -1,0 +1,39 @@
+version: '3.3'
+
+services:
+  dev_migration_control_web:
+    image: dev_migration_control
+    container_name: dev_migration_control_web
+    build: .
+    ports:
+      - "4001:4001"
+    command: sh -c "gunicorn migration_control_web.wsgi:application --bind 0.0.0.0:4001"
+    restart: always
+    env_file:
+      - ./.env
+    volumes:
+      - .:/app/
+
+  dev_migration_control_redis:
+    container_name: dev_migration_control_redis
+    image: "redis:alpine"
+
+  dev_migration_control_celery:
+    container_name: dev_migration_control_celery
+    image: dev_migration_control
+    command: celery -A migration_control_web worker --pool solo
+    volumes:
+      - ./:/app/
+    restart: always
+    env_file:
+      - ./.env
+    depends_on:
+      - dev_migration_control_redis
+
+  dev_migration_control_celery_beat:
+    build: .
+    command: celery -A migration_control_web beat
+    volumes:
+      - ./:/app/
+    depends_on:
+      - dev_migration_control_redis

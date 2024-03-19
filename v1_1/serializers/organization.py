@@ -385,12 +385,15 @@ class OrganizationCreateUserSerializer(serializers.ModelSerializer):
             'username': validated_data['user']['username'],
             'surname': validated_data['user']['first_name'],
             'first_name': validated_data['user']['first_name'],
-            'patronymic': validated_data['user']['patronymic'],
-            'role': validated_data['role']
         }
+
+        if 'patronymic' in validated_data['user']:
+            user_fields['patronymic'] = validated_data['user']['patronymic']
+
+        role = validated_data['role']
         organization = self.context['request'].parser_context['kwargs'].get('organization')
 
-        if not User.objects.filter(username=username).exists():
+        if not User.objects.filter(username=validated_data['user']['username']).exists():
             #Создание пользователя
             user = User.objects.create(**user_fields)
             try:
@@ -400,7 +403,7 @@ class OrganizationCreateUserSerializer(serializers.ModelSerializer):
                                                       'не существует'})
 
         else:
-            user = User.objects.filter(username=username).first()
+            user = User.objects.filter(username=validated_data['user']['username']).first()
 
         # Занесение созданного пользователя в выбранную организацию
         organization_user = OrganizationUser.objects.create(
