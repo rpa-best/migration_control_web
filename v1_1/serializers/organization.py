@@ -381,14 +381,18 @@ class OrganizationCreateUserSerializer(serializers.ModelSerializer):
 
     @atomic
     def create(self, validated_data):
-        username = validated_data['user']['username']
-        first_name = validated_data['user']['first_name']
-        role = validated_data['role']
+        user_fields = {
+            'username': validated_data['user']['username'],
+            'surname': validated_data['user']['first_name'],
+            'first_name': validated_data['user']['first_name'],
+            'patronymic': validated_data['user']['patronymic'],
+            'role': validated_data['role']
+        }
         organization = self.context['request'].parser_context['kwargs'].get('organization')
 
         if not User.objects.filter(username=username).exists():
             #Создание пользователя
-            user = User.objects.create(username=username, first_name=first_name)
+            user = User.objects.create(**user_fields)
             try:
                 user.regenerate_and_send_password()
             except Exception:
