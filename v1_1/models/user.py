@@ -132,3 +132,10 @@ class BalanceTransfer(models.Model):
             user.balance -= self.cost
         user.save()
         super(BalanceTransfer, self).save(*args, **kwargs)
+
+
+class HistoryPayment(models.Model):
+    user = models.ForeignKey(User, verbose_name='Пользователь', on_delete=models.CASCADE)
+    operation = models.CharField(verbose_name='Операция', max_length=255)
+    date_payment = models.DateTimeField(verbose_name='Дата', auto_now=True)
+    amount = models.FloatField(verbose_name='Сумма')

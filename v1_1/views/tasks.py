@@ -56,9 +56,6 @@ class ExpiringDocumentsView(mixins.ListModelMixin, viewsets.GenericViewSet):
 
         return queryset
 
-    def get_documents_queryset(self):
-        return self.get_queryset()
-
     # def list(self, request, **kwargs):
     #     user = request.user  # Получение авторизованного пользователя
     #
