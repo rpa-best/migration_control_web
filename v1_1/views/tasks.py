@@ -109,7 +109,7 @@ class ExpiringDocumentsView(mixins.ListModelMixin, viewsets.GenericViewSet):
             # Иначе список будет для всех организацией, в которых есть авторизованный пользователь
             filter_conditions &= Q(worker_id__organization_id__in=[org for org in organizations])
 
-        expiring_documents = DocumentsWorker.objects.filter(filter_conditions)
+        expiring_documents = DocumentsWorker.objects.filter(filter_conditions, archive=False)
 
         data = []
         for doc in expiring_documents:
