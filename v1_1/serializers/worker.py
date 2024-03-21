@@ -12,7 +12,6 @@ class CreateWorkerSerializer(serializers.ModelSerializer):
     patronymic = serializers.CharField(required=False)
     phone = serializers.CharField(required=False)
     email = serializers.CharField(required=False)
-    identification_card = serializers.CharField(source='get_identification_card_display')
 
     class Meta:
         model = Worker
@@ -63,7 +62,7 @@ class CreateWorkerSerializer(serializers.ModelSerializer):
             raise CustomValidationError({'error': "У владельца нет активной подписки."})
 
         # Получение максимального количества работников, которых можно создать
-        max_employees = subscription.service_rate.number_employees
+        max_employees = subscription.number_workers
         #
         # # Получение списка ИНН работников, созданных пользователем
         # user_employees = Worker.objects.filter(organization__owner=organization_owner.user).values_list('inn',
