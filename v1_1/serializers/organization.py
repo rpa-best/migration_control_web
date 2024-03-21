@@ -6,7 +6,7 @@ from v1_1.common_utils.custom_handler import CustomValidationError
 from v1_1.models.organization import (Organization, MigrationAddress, OrganizationUser, DirectorOrganization,
                                       BookkeeperOrganization, HostPartyOrganization, ContactPersonOrganization)
 from v1_1.models.subscription import Subscription, ServiceRate
-from v1_1.models.user import User
+from v1_1.models.user import User, HistoryPayment
 
 
 class OrganizationShowSerializer(serializers.ModelSerializer):
