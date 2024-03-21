@@ -346,6 +346,10 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'v1_1.models.subscription.checking_subscription_relevance',
         'schedule': 1,  # каждую секунду
     },
+    'payment_for_worker': {
+        'task': 'v1_1.models.worker.payment_for_worker',
+        'schedule': 1,  # каждую секунду
+    }
 }
 CELERY_TIMEZONE = 'Europe/Moscow'
 CELERY_BROKER_URL = "redis://migration_control_redis:6379"

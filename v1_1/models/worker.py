@@ -1,6 +1,11 @@
 from django.db import models
 from v1_1.common_utils.file_paths import UploadPath
 from v1_1.models.organization import Organization
+from v1_1.models.subscription import Subscription
+from datetime import timedelta
+from django.utils import timezone
+from user import HistoryPayment
+from celery import shared_task
 
 
 class Worker(models.Model):
@@ -70,3 +75,35 @@ class DocumentsWorker(models.Model):
 class FileDocuments(models.Model):
     document_id = models.ForeignKey(DocumentsWorker, on_delete=models.CASCADE)
     file_document = models.FileField(upload_to=UploadPath('documents'), null=True, blank=True)
+
+
+@shared_task
+def payment_for_worker():
+    one_day_ago = timezone.now() - timedelta(days=1)
+    # Фильтрация работников, которые созданы больше 1-го дня и не оплачены (paid=False)
+    workers = Worker.objects.filter(
+        create_at__lt=one_day_ago,
+        paid=False,
+        status__in=['accepted', 'dismissed']
+    )
+
+    for worker in workers:
+        owner = worker.organization.owner
+        # Получение подписки владельца
+        subscription = Subscription.objects.get(user=owner)
+        # Цена за одного работника
+        price = subscription.service_rate.cost_workers
+        # Снятие денежных средств с баланса владельца подписки
+        owner.balance -= price
+        owner.save()
+
+        # Работнику выставляется значение `Оплачен`, то есть с него больше уже не будет браться плата
+        worker.paid = True
+        worker.save()
+
+        # Запись платежа в историю
+        HistoryPayment.objects.create(
+            user=owner,
+            operation='Создание сотрудника',
+            amount=price
+        )
