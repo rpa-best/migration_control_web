@@ -128,6 +128,13 @@ class OrganizationCreateSerializer(serializers.ModelSerializer):
         user_obj.balance -= price
         user_obj.save()
 
+        # Запись платежа за создание компании в историю
+        HistoryPayment.objects.create(
+            user=user,
+            operation='Создание компании',
+            amount=price
+        )
+
         response_data = {
             'id': instance.id,
             'organizational_form': instance.organizational_form,
