@@ -6,6 +6,7 @@ from celery import shared_task
 from celery.schedules import crontab
 from migration_control_web.celery import app
 from celery import Celery
+from .user import HistoryPayment, User
 
 
 class ServiceRate(models.Model):
@@ -70,9 +71,14 @@ class Subscription(models.Model):
             self.expiration_date = self.start_date + timedelta(days=30)
 
             if self.service_rate.type_tariff == 'pro':
+                # Вычитание из баланса за расширенный пакет
+                user_obj = User.objects.get(username=self.user)
+                user_obj.balance -= self.service_rate.cost_all_documents
+                user_obj.save()
+
                 # Запись платежа за расширенный пакет в историю
                 HistoryPayment.objects.create(
-                    user=owner,
+                    user=self.user,
                     operation='Расширенный пакет',
                     amount=self.service_rate.cost_all_documents
                 )

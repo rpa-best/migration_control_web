@@ -4,7 +4,7 @@ from v1_1.models.organization import Organization
 from v1_1.models.subscription import Subscription
 from datetime import timedelta
 from django.utils import timezone
-from user import HistoryPayment
+from .user import HistoryPayment
 from celery import shared_task
 
 
