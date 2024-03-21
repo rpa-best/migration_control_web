@@ -101,7 +101,7 @@ def payment_for_worker():
         worker.paid = True
         worker.save()
 
-        # Запись платежа в историю
+        # Запись платежа за создание сотрудника в историю
         HistoryPayment.objects.create(
             user=owner,
             operation='Создание сотрудника',
