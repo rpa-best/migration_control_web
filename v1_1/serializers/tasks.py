@@ -1,11 +1,30 @@
 from rest_framework import serializers
 from v1_1.models.worker import DocumentsWorker
+from datetime import date, datetime, timedelta
 
 
 class TaskDocuments(serializers.ModelSerializer):
+    days_until_expiration = serializers.SerializerMethodField()
+    recommended_start_date = serializers.SerializerMethodField()
+    document = serializers.SerializerMethodField()
+
     class Meta:
         model = DocumentsWorker
         fields = '__all__'
+
+    def get_document(self, obj):
+        return obj.get_type_document_display()
+
+    def get_days_until_expiration(self, obj):
+        today = date.today()
+        if obj.date_end <= today:
+            return 'Просрочено'
+        else:
+            return (obj.date_end - today).days
+
+    def get_recommended_start_date(self, obj):
+        return obj.date_end - timedelta(days=7)
+
 
 
 class TaskInfo(serializers.Serializer):
@@ -15,3 +34,19 @@ class TaskInfo(serializers.Serializer):
 
 class NumberSerializer(serializers.Serializer):
     number = serializers.IntegerField(read_only=True)
+
+class DocumentsWorkerSerializer(serializers.ModelSerializer):
+    days_until_expiration = serializers.SerializerMethodField()
+
+    class Meta:
+        model = DocumentsWorker
+        fields = '__all__'
+
+    def get_days_until_expiration(self, obj):
+        today = date.today()
+        print(today)
+        print(obj.date_end)
+        if obj.date_end <= today:
+            return 'Просрочено'
+        else:
+            return (obj.date_end - today).days

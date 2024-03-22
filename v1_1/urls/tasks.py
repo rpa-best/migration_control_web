@@ -1,6 +1,6 @@
 from django.urls import include, path
 from rest_framework import routers
-from v1_1.views.tasks import ExpiringDocumentsView, TaskInfoView, WorkerExpiringDocumentsView, ShowNumberTasksView
+from v1_1.views.tasks import (ExpiringDocumentsView, TaskInfoView, WorkerExpiringDocumentsView, ShowNumberTasksView)
 
 
 router = routers.DefaultRouter()
