@@ -36,7 +36,7 @@ class OrganizationCreateSerializer(serializers.ModelSerializer):
     organizational_form = serializers.ChoiceField(choices=Organization.ORGANIZATIONAL_FORM)
     inn = serializers.CharField(max_length=20)
     legal_address = serializers.CharField()
-    actual_addresses = serializers.ListField(child=serializers.CharField())
+    actual_address = serializers.CharField()
     name_director = serializers.CharField()
     surname_director = serializers.CharField()
     patronymic_director = serializers.CharField(required=False)
@@ -49,7 +49,7 @@ class OrganizationCreateSerializer(serializers.ModelSerializer):
             'name',
             'inn',
             'legal_address',
-            'actual_addresses',
+            'actual_address',
             'name_director',
             'surname_director',
             'patronymic_director',
@@ -57,6 +57,11 @@ class OrganizationCreateSerializer(serializers.ModelSerializer):
         read_only_fields = ('id',)
 
     def validate_legal_address(self, value):
+        if AddressSearch(value) is not None:
+            return AddressSearch(value)
+        return value
+
+    def validate_actual_addresses(self, value):
         if AddressSearch(value) is not None:
             return AddressSearch(value)
         return value
@@ -86,9 +91,6 @@ class OrganizationCreateSerializer(serializers.ModelSerializer):
         validated_data.pop('surname_director', None)
         validated_data.pop('patronymic_director', None)
 
-        # Создание записей для модели MigrationAddress
-        actual_addresses = validated_data.pop('actual_addresses')
-
         instance: Organization = super(OrganizationCreateSerializer, self).create(validated_data)
         instance.owner_id = self.context['request'].user
         instance.save()
@@ -100,13 +102,6 @@ class OrganizationCreateSerializer(serializers.ModelSerializer):
             organization=instance,
             role='owner'
         )
-
-        # Добавление фактических адресов
-        for address in actual_addresses:
-            if AddressSearch(address) is not None:
-                address = AddressSearch(address)
-
-            MigrationAddress.objects.create(organization=instance, name=address)
 
         DirectorOrganization.objects.create(
             organization=instance,
@@ -144,7 +139,7 @@ class OrganizationCreateSerializer(serializers.ModelSerializer):
             'surname_director': director['surname_director'],
             'patronymic_director': director['patronymic_director'],
             'legal_address': instance.legal_address,
-            'actual_addresses': actual_addresses
+            'actual_address': instance.actual_address
         }
 
         return response_data
@@ -181,6 +176,8 @@ class OrganizationPutAndPatchSerializer(serializers.ModelSerializer):
             'okved',
             'phone',
             'legal_address',
+            'actual_address',
+            'actual_address',
             'name_director',
             'surname_director',
             'patronymic_director',

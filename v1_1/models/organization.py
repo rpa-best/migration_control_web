@@ -20,6 +20,7 @@ class Organization(models.Model):
     phone = models.CharField(max_length=28, unique=True, blank=True, null=True, default=None)
     owner = models.ForeignKey(User, models.CASCADE, blank=True, null=True)
     legal_address = models.CharField(max_length=255, blank=True)
+    actual_address = models.CharField(max_length=255, blank=True)
     create_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
