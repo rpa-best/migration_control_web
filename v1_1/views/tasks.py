@@ -192,6 +192,6 @@ class ShowNumberTasksView(mixins.ListModelMixin, viewsets.GenericViewSet):
         else:
             filter_conditions &= Q(worker_id__organization_id__in=[org for org in organizations])
 
-        number = DocumentsWorker.objects.filter(filter_conditions).count()
+        number = DocumentsWorker.objects.filter(filter_conditions, archive=False).count()
 
         return Response({'number': number})
