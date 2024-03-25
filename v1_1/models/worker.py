@@ -1,3 +1,4 @@
+import datetime
 from django.db import models
 from v1_1.common_utils.file_paths import UploadPath
 from v1_1.models.organization import Organization
@@ -43,7 +44,7 @@ class Worker(models.Model):
     avatar = models.ImageField(upload_to=UploadPath('image'), null=True)
     processing_personal_data = models.BooleanField(default=0)
     date_dismissal = models.DateField(blank=True, null=True)
-    create_at = models.DateTimeField(auto_now=True)
+    create_at = models.DateTimeField(default=timezone.now)
     paid = models.BooleanField(default=False, null=True, blank=True)
 
 
@@ -79,10 +80,12 @@ class FileDocuments(models.Model):
 
 @shared_task
 def payment_for_worker():
-    one_day_ago = timezone.now() - timedelta(days=1)
+    current_datetime = timezone.now()
+    twenty_four_hours_ago = current_datetime - timedelta(hours=24)
+
     # Фильтрация работников, которые созданы больше 1-го дня и не оплачены (paid=False)
     workers = Worker.objects.filter(
-        create_at__lt=one_day_ago,
+        create_at__lte=twenty_four_hours_ago,
         paid=False,
         status__in=['accepted', 'dismissed']
     )
