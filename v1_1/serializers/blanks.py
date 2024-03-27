@@ -99,7 +99,7 @@ class SuspensionOrderSerializer(serializers.Serializer):
         for organization in OrganizationUser.objects.filter(user_id=user):
             list_organizations.append(organization.organization_id)
 
-        if ResponsiblePersons.objects.get(pk=value).organization not in list_organizations:
+        if ResponsiblePersons.objects.get(pk=value).organization.id not in list_organizations:
             raise CustomValidationError({'first_manager_id': 'Менеджер не из вашей компании'})
 
         return value
@@ -113,7 +113,7 @@ class SuspensionOrderSerializer(serializers.Serializer):
         for organization in OrganizationUser.objects.filter(user_id=user):
             list_organizations.append(organization.organization_id)
 
-        if ResponsiblePersons.objects.get(pk=value).organization not in list_organizations:
+        if ResponsiblePersons.objects.get(pk=value).organization.id not in list_organizations:
             raise CustomValidationError({'second_manager_id': 'Менеджер не из вашей компании'})
 
         return value
