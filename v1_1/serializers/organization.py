@@ -4,7 +4,8 @@ from rest_framework import serializers
 from v1_1.apies.DaData import AddressSearch
 from v1_1.common_utils.custom_handler import CustomValidationError
 from v1_1.models.organization import (Organization, MigrationAddress, OrganizationUser, DirectorOrganization,
-                                      BookkeeperOrganization, HostPartyOrganization, ContactPersonOrganization)
+                                      BookkeeperOrganization, HostPartyOrganization, ContactPersonOrganization,
+                                      ResponsiblePersons)
 from v1_1.models.subscription import Subscription, ServiceRate
 from v1_1.models.user import User, HistoryPayment
 
@@ -431,3 +432,17 @@ class ShowOrganizationUserSerializer(serializers.ModelSerializer):
 
 class SearchOrganizationSerializer(serializers.Serializer):
     inn_or_ogrn = serializers.CharField(write_only=True, required=True)
+
+
+class ResponsiblePersonsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ResponsiblePersons
+        fields = '__all__'
+
+    def validate_organization(self, value):
+        user = self.context['request'].user.username
+        # Можно добавить ответственное лицо для организации, в которой работает пользователь.
+        if not OrganizationUser.objects.filter(organization=value, user=user).exists():
+            raise CustomValidationError({'organization': 'Вы не являетесь сотрудником этой организации'})
+        else:
+            return value

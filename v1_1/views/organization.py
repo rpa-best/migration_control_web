@@ -6,12 +6,13 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from v1_1.apies.DaData import OrganizationSearch
 from v1_1.common_utils.custom_handler import CustomValidationError
-from v1_1.models.organization import Organization, MigrationAddress, OrganizationUser
+from v1_1.models.organization import Organization, MigrationAddress, OrganizationUser, ResponsiblePersons
 from v1_1.permissions.owner import IsOwner
 from v1_1.permissions.owner_or_admin import IsOwnerOrIsAdministratorInOrganization
 from v1_1.serializers.organization import OrganizationCreateSerializer, OrganizationShowSerializer, \
     OrganizationPutAndPatchSerializer, ShowMigrationAddressSerializer, MigrationAddressSerializer, \
-    OrganizationCreateUserSerializer, ShowOrganizationUserSerializer, SearchOrganizationSerializer
+    OrganizationCreateUserSerializer, ShowOrganizationUserSerializer, SearchOrganizationSerializer, \
+    ResponsiblePersonsSerializer
 from rest_framework import mixins, viewsets, status
 
 
@@ -108,7 +109,7 @@ class SearchOrganizationAPIViewSet(mixins.ListModelMixin, viewsets.GenericViewSe
 @extend_schema(tags=['Migration addresses of organizations'])
 class ShowMigrationAddressAPIViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     serializer_class = ShowMigrationAddressSerializer
-    permission_class = IsOwnerOrIsAdministratorInOrganization
+    permission_class = IsAuthenticated
 
     def get_queryset(self):
         # Получение авторизованного пользователя
@@ -163,3 +164,30 @@ class OrganizationUsersListView(ModelViewSet):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@extend_schema(tags=['Responsible persons'])
+class ShowResponsiblePersonsAPIViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+    serializer_class = ResponsiblePersonsSerializer
+    permission_class = IsAuthenticated
+
+    def get_queryset(self):
+        # Получение авторизованного пользователя
+        user = self.request.user
+
+        # Получение организаций, в которых работает пользователь
+        if not OrganizationUser.objects.filter(user=user, organization=self.kwargs.get('organization')).exists():
+            raise CustomValidationError({'organization': 'Вы не являетесь работником этой организации'})
+
+        # Фильтрация ответственных лиц по организации
+        queryset = ResponsiblePersons.objects.filter(Q(organization=self.kwargs.get('organization')))
+
+        return queryset
+
+
+@extend_schema(tags=['Responsible persons'])
+class ResponsiblePersonsAPIViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,
+                                   viewsets.GenericViewSet):
+    serializer_class = ResponsiblePersonsSerializer
+    permission_class = IsOwnerOrIsAdministratorInOrganization
+    queryset = ResponsiblePersons.objects.all()

@@ -93,7 +93,7 @@ class HostPartyOrganization(models.Model):
 
 class ContactPersonOrganization(models.Model):
     organization = models.OneToOneField(Organization, on_delete=models.CASCADE)
-    full_name = models.CharField(max_length=255, blank=True, null=True)
+    full_name = models.CharField(max_length=255, blank=True, null=True, default=None)
     phone = models.CharField(max_length=28, blank=True, null=True, default=None)
     additional_phone = models.CharField(max_length=28, blank=True, null=True, default=None)
-    email = models.EmailField(blank=True, null=True)
+    email = models.EmailField(blank=True, null=True, default=None)
