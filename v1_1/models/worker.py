@@ -35,6 +35,7 @@ class Worker(models.Model):
     place_birth = models.CharField(max_length=255, blank=True)
     identification_card = models.CharField(max_length=50, choices=IDENTIFICATION_CARD)
     organization = models.ForeignKey('Organization', on_delete=models.CASCADE)
+    date_employment = models.DateField(blank=True, null=True)
     position = models.CharField(max_length=255, blank=True)
     actual_work_address = models.CharField(max_length=255, blank=True)
     status = models.CharField(max_length=50, choices=STATUS, default='accepted')
