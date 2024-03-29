@@ -2,7 +2,8 @@ from django.urls import include, path
 from rest_framework import routers
 from v1_1.views.organization import (OrganizationAPIViewSet, ShowMigrationAddressAPIViewSet, MigrationAddressAPIViewSet,
                                      OrganizationUsersListView, SearchOrganizationAPIViewSet,
-                                     ShowResponsiblePersonsAPIViewSet, ResponsiblePersonsAPIViewSet)
+                                     ShowResponsiblePersonsAPIViewSet, ResponsiblePersonsAPIViewSet,
+                                     ShowBodiesMIAAPIViewSet, BodiesMIAAPIViewSet)
 
 
 router = routers.DefaultRouter()
@@ -13,6 +14,8 @@ router.register('migration-address', MigrationAddressAPIViewSet, 'migration-addr
 router.register(r'(?P<organization>\d+)/users', OrganizationUsersListView, 'organization-users'),
 router.register(r'(?P<organization>\d+)/responsible-persons', ShowResponsiblePersonsAPIViewSet, 'responsible-persons')
 router.register('responsible-persons', ResponsiblePersonsAPIViewSet, 'responsible-persons')
+router.register(r'(?P<organization>\d+)/bodies-mia', ShowBodiesMIAAPIViewSet, 'bodies-mi')
+router.register('bodies-mia', BodiesMIAAPIViewSet, 'bodies-mia')
 
 urlpatterns = [
     path('', include(router.urls)),

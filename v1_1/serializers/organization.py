@@ -5,7 +5,7 @@ from v1_1.apies.DaData import AddressSearch
 from v1_1.common_utils.custom_handler import CustomValidationError
 from v1_1.models.organization import (Organization, MigrationAddress, OrganizationUser, DirectorOrganization,
                                       BookkeeperOrganization, HostPartyOrganization, ContactPersonOrganization,
-                                      ResponsiblePersons)
+                                      ResponsiblePersons, BodiesMIA)
 from v1_1.models.subscription import Subscription, ServiceRate
 from v1_1.models.user import User, HistoryPayment
 
@@ -437,6 +437,20 @@ class SearchOrganizationSerializer(serializers.Serializer):
 class ResponsiblePersonsSerializer(serializers.ModelSerializer):
     class Meta:
         model = ResponsiblePersons
+        fields = '__all__'
+
+    def validate_organization(self, value):
+        user = self.context['request'].user.username
+        # Можно добавить ответственное лицо для организации, в которой работает пользователь.
+        if not OrganizationUser.objects.filter(organization=value, user=user).exists():
+            raise CustomValidationError({'organization': 'Вы не являетесь сотрудником этой организации'})
+        else:
+            return value
+
+
+class BodiesMIASerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BodiesMIA
         fields = '__all__'
 
     def validate_organization(self, value):

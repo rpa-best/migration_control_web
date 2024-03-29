@@ -6,13 +6,13 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from v1_1.apies.DaData import OrganizationSearch
 from v1_1.common_utils.custom_handler import CustomValidationError
-from v1_1.models.organization import Organization, MigrationAddress, OrganizationUser, ResponsiblePersons
+from v1_1.models.organization import Organization, MigrationAddress, OrganizationUser, ResponsiblePersons, BodiesMIA
 from v1_1.permissions.owner import IsOwner
 from v1_1.permissions.owner_or_admin import IsOwnerOrIsAdministratorInOrganization
 from v1_1.serializers.organization import OrganizationCreateSerializer, OrganizationShowSerializer, \
     OrganizationPutAndPatchSerializer, ShowMigrationAddressSerializer, MigrationAddressSerializer, \
     OrganizationCreateUserSerializer, ShowOrganizationUserSerializer, SearchOrganizationSerializer, \
-    ResponsiblePersonsSerializer
+    ResponsiblePersonsSerializer, BodiesMIASerializer
 from rest_framework import mixins, viewsets, status
 
 
@@ -191,3 +191,30 @@ class ResponsiblePersonsAPIViewSet(mixins.CreateModelMixin, mixins.UpdateModelMi
     serializer_class = ResponsiblePersonsSerializer
     permission_class = IsOwnerOrIsAdministratorInOrganization
     queryset = ResponsiblePersons.objects.all()
+
+
+@extend_schema(tags=['Bodies of the Ministry of Internal Affairs'])
+class ShowBodiesMIAAPIViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+    serializer_class = BodiesMIASerializer
+    permission_class = IsAuthenticated
+
+    def get_queryset(self):
+        # Получение авторизованного пользователя
+        user = self.request.user
+
+        # Получение организаций, в которых работает пользователь
+        if not OrganizationUser.objects.filter(user=user, organization=self.kwargs.get('organization')).exists():
+            raise CustomValidationError({'organization': 'Вы не являетесь работником этой организации'})
+
+        # Фильтрация ответственных лиц по организации
+        queryset = BodiesMIA.objects.filter(Q(organization=self.kwargs.get('organization')))
+
+        return queryset
+
+
+@extend_schema(tags=['Bodies of the Ministry of Internal Affairs'])
+class BodiesMIAAPIViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,
+                          viewsets.GenericViewSet):
+    serializer_class = BodiesMIASerializer
+    permission_class = IsOwnerOrIsAdministratorInOrganization
+    queryset = BodiesMIA.objects.all()

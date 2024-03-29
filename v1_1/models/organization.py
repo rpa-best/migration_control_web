@@ -97,3 +97,8 @@ class ContactPersonOrganization(models.Model):
     phone = models.CharField(max_length=28, blank=True, null=True, default=None)
     additional_phone = models.CharField(max_length=28, blank=True, null=True, default=None)
     email = models.EmailField(blank=True, null=True, default=None)
+
+
+class BodiesMIA(models.Model):
+    organization = models.ForeignKey(Organization, models.CASCADE)
+    name = models.CharField(max_length=255, blank=True)
