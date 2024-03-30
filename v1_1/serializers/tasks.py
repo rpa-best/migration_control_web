@@ -18,9 +18,7 @@ class TaskDocuments(serializers.ModelSerializer):
         return obj.get_type_document_display()
 
     def get_organization(self, obj):
-        organization = (f'{obj.worker_id.organization.get_organizational_form_display()} '
-                        f'{obj.worker_id.organization.name}')
-        return organization
+        return obj.worker_id.organization.id
 
     def get_days_until_expiration(self, obj):
         today = date.today()
