@@ -6,6 +6,7 @@ from datetime import date, datetime, timedelta
 class TaskDocuments(serializers.ModelSerializer):
     days_until_expiration = serializers.SerializerMethodField()
     recommended_start_date = serializers.SerializerMethodField()
+    organization_id = serializers.SerializerMethodField()
     organization = serializers.SerializerMethodField()
     document = serializers.SerializerMethodField()
     worker = serializers.SerializerMethodField()
@@ -17,8 +18,16 @@ class TaskDocuments(serializers.ModelSerializer):
     def get_document(self, obj):
         return obj.get_type_document_display()
 
-    def get_organization(self, obj):
+    def get_organization_id(self, obj):
         return obj.worker_id.organization.id
+
+    def get_organization_id(self, obj):
+        return obj.worker_id.organization.id
+
+    def get_organization(self, obj):
+        organization = (f'{obj.worker_id.organization.get_organizational_form_display()} '
+                        f'{obj.worker_id.organization.name}')
+        return organization
 
     def get_days_until_expiration(self, obj):
         today = date.today()
