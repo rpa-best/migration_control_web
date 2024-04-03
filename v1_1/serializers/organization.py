@@ -460,3 +460,7 @@ class BodiesMIASerializer(serializers.ModelSerializer):
             raise CustomValidationError({'organization': 'Вы не являетесь сотрудником этой организации'})
         else:
             return value
+
+
+class SearchBankSerializer(serializers.Serializer):
+    bic = serializers.CharField(write_only=True, required=True)

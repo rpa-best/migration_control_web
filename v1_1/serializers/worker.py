@@ -35,13 +35,13 @@ class CreateWorkerSerializer(serializers.ModelSerializer):
 
         return value
 
-    @staticmethod
-    def validate_phone(value):
-        phone_pattern = re.compile(r'^\+?1?\d{9,15}$')
-        if not phone_pattern.match(value):
-            raise CustomValidationError({'phone': 'Введён некорректный номер телефона'})
-
-        return value
+    # @staticmethod
+    # def validate_phone(value):
+    #     phone_pattern = re.compile(r'^\+?1?\d{9,15}$')
+    #     if not phone_pattern.match(value):
+    #         raise CustomValidationError({'phone': 'Введён некорректный номер телефона'})
+    #
+    #     return value
 
     @staticmethod
     def validate_email(value):

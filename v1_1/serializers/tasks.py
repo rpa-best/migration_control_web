@@ -70,8 +70,6 @@ class DocumentsWorkerSerializer(serializers.ModelSerializer):
 
     def get_days_until_expiration(self, obj):
         today = date.today()
-        print(today)
-        print(obj.date_end)
         if obj.date_end <= today:
             return 'Просрочено'
         else:
