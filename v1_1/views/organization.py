@@ -4,7 +4,7 @@ from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
-from v1_1.apies.DaData import OrganizationSearch
+from v1_1.apies.DaData import OrganizationSearch, GetInfoBank
 from v1_1.common_utils.custom_handler import CustomValidationError
 from v1_1.models.organization import Organization, MigrationAddress, OrganizationUser, ResponsiblePersons, BodiesMIA
 from v1_1.permissions.owner import IsOwner
@@ -12,7 +12,7 @@ from v1_1.permissions.owner_or_admin import IsOwnerOrIsAdministratorInOrganizati
 from v1_1.serializers.organization import OrganizationCreateSerializer, OrganizationShowSerializer, \
     OrganizationPutAndPatchSerializer, ShowMigrationAddressSerializer, MigrationAddressSerializer, \
     OrganizationCreateUserSerializer, ShowOrganizationUserSerializer, SearchOrganizationSerializer, \
-    ResponsiblePersonsSerializer, BodiesMIASerializer
+    ResponsiblePersonsSerializer, BodiesMIASerializer, SearchBankSerializer
 from rest_framework import mixins, viewsets, status
 
 
@@ -218,3 +218,31 @@ class BodiesMIAAPIViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixi
     serializer_class = BodiesMIASerializer
     permission_class = IsOwnerOrIsAdministratorInOrganization
     queryset = BodiesMIA.objects.all()
+
+
+@extend_schema(tags=['Bank'])
+class SearchBankAPIViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    serializer_class = SearchBankSerializer
+    permission_class = IsOwner
+
+    def list(self, request, **kwargs):
+        # Получение БИК из пути url
+        bik = self.kwargs.get('bik')
+
+        if bik.isdigit():
+            info = GetInfoBank(bik)
+            if len(info) != 0:
+                correspondent_account = info[0]['data']['correspondent_account']
+                name_bank = info[0]['value']
+                city_bank = info[0]['data']['payment_city'].replace('г ', '', 1)
+
+                return Response({
+                    'correspondent_account': correspondent_account,
+                    'name_bank': name_bank,
+                    'city_bank': city_bank
+                })
+            else:
+                raise CustomValidationError({'error': 'Банк не найден'})
+        else:
+            raise CustomValidationError({'error': 'Некорректный ввод'})
+
