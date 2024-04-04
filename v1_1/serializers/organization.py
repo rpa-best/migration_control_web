@@ -5,7 +5,7 @@ from v1_1.apies.DaData import AddressSearch
 from v1_1.common_utils.custom_handler import CustomValidationError
 from v1_1.models.organization import (Organization, MigrationAddress, OrganizationUser, DirectorOrganization,
                                       BookkeeperOrganization, HostPartyOrganization, ContactPersonOrganization,
-                                      ResponsiblePersons, BodiesMIA)
+                                      ResponsiblePersons, BodiesMIA, Bank)
 from v1_1.models.subscription import Subscription, ServiceRate
 from v1_1.models.user import User, HistoryPayment
 
@@ -464,3 +464,44 @@ class BodiesMIASerializer(serializers.ModelSerializer):
 
 class SearchBankSerializer(serializers.Serializer):
     bic = serializers.CharField(write_only=True, required=True)
+
+
+class BankShowAndCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Bank
+        fields = '__all__'
+        read_only_fields = ('organization',)
+
+    def validate(self, data):
+        organization = self.context['request'].parser_context['kwargs'].get('organization')
+        user = self.context['request'].user.username
+        # Можно указывать только ту организацию, в которой работает пользователь.
+        if not OrganizationUser.objects.filter(organization=organization, user=user).exists():
+            raise CustomValidationError({'organization': 'Вы не являетесь сотрудником этой компании'})
+
+        return data
+
+    def create(self, validated_data):
+        organization = self.context['request'].parser_context['kwargs'].get('organization')
+        if Bank.objects.filter(organization=organization).exists():
+            raise CustomValidationError({'error': 'У компании уже есть банк'})
+
+        organization = Organization.objects.get(pk=organization)
+        validated_data['organization'] = organization
+        instance: Bank = super().create(validated_data)
+        instance.save()
+        return validated_data
+
+
+class BankUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Bank
+        fields = '__all__'
+
+    def validate_organization(self, value):
+        user = self.context['request'].user.username
+        # Можно указывать только ту организацию, в которой работает пользователь.
+        if not OrganizationUser.objects.filter(organization=value, user=user).exists():
+            raise CustomValidationError({'organization': 'Вы не являетесь сотрудником этой компании'})
+
+        return data

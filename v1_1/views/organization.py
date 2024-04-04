@@ -6,13 +6,16 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from v1_1.apies.DaData import OrganizationSearch, GetInfoBank
 from v1_1.common_utils.custom_handler import CustomValidationError
-from v1_1.models.organization import Organization, MigrationAddress, OrganizationUser, ResponsiblePersons, BodiesMIA
+from v1_1.models.organization import (Organization, MigrationAddress, OrganizationUser, ResponsiblePersons, BodiesMIA,
+                                      Bank)
 from v1_1.permissions.owner import IsOwner
 from v1_1.permissions.owner_or_admin import IsOwnerOrIsAdministratorInOrganization
-from v1_1.serializers.organization import OrganizationCreateSerializer, OrganizationShowSerializer, \
-    OrganizationPutAndPatchSerializer, ShowMigrationAddressSerializer, MigrationAddressSerializer, \
-    OrganizationCreateUserSerializer, ShowOrganizationUserSerializer, SearchOrganizationSerializer, \
-    ResponsiblePersonsSerializer, BodiesMIASerializer, SearchBankSerializer
+from v1_1.serializers.organization import (OrganizationCreateSerializer, OrganizationShowSerializer,
+                                           OrganizationPutAndPatchSerializer, ShowMigrationAddressSerializer,
+                                           MigrationAddressSerializer, OrganizationCreateUserSerializer,
+                                           ShowOrganizationUserSerializer, SearchOrganizationSerializer,
+                                           ResponsiblePersonsSerializer, BodiesMIASerializer, SearchBankSerializer,
+                                           BankShowAndCreateSerializer, BankUpdateSerializer)
 from rest_framework import mixins, viewsets, status
 
 
@@ -245,4 +248,23 @@ class SearchBankAPIViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
                 raise CustomValidationError({'error': 'Банк не найден'})
         else:
             raise CustomValidationError({'error': 'Некорректный ввод'})
+
+
+@extend_schema(tags=['Bank'])
+class BankShowAndCreateAPIViewSet(mixins.ListModelMixin, mixins.CreateModelMixin,  mixins.DestroyModelMixin,
+                                  viewsets.GenericViewSet):
+    serializer_class = BankShowAndCreateSerializer
+    permission_class = IsOwnerOrIsAdministratorInOrganization
+
+    def get_queryset(self):
+        return Bank.objects.filter(organization=self.kwargs.get('organization'))
+
+
+@extend_schema(tags=['Bank'])
+class BankUpdateAPIViewSet(mixins.UpdateModelMixin, viewsets.GenericViewSet):
+    serializer_class = BankUpdateSerializer
+    permission_class = IsOwnerOrIsAdministratorInOrganization
+    queryset = Bank.objects.all()
+
+
 

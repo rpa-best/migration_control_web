@@ -3,7 +3,8 @@ from rest_framework import routers
 from v1_1.views.organization import (OrganizationAPIViewSet, ShowMigrationAddressAPIViewSet, MigrationAddressAPIViewSet,
                                      OrganizationUsersListView, SearchOrganizationAPIViewSet,
                                      ShowResponsiblePersonsAPIViewSet, ResponsiblePersonsAPIViewSet,
-                                     ShowBodiesMIAAPIViewSet, BodiesMIAAPIViewSet, SearchBankAPIViewSet)
+                                     ShowBodiesMIAAPIViewSet, BodiesMIAAPIViewSet, SearchBankAPIViewSet,
+                                     BankShowAndCreateAPIViewSet, BankUpdateAPIViewSet)
 
 
 router = routers.DefaultRouter()
@@ -17,6 +18,8 @@ router.register('responsible-persons', ResponsiblePersonsAPIViewSet, 'responsibl
 router.register(r'(?P<organization>\d+)/bodies-mia', ShowBodiesMIAAPIViewSet, 'bodies-mi')
 router.register('bodies-mia', BodiesMIAAPIViewSet, 'bodies-mia')
 router.register(r'(?P<bik>\d+)/search-bank', SearchBankAPIViewSet, 'search-bank'),
+router.register(r'(?P<organization>\d+)/bank', BankShowAndCreateAPIViewSet, 'bank-show-and-create')
+router.register('bank', BankUpdateAPIViewSet, 'bank-update')
 
 
 urlpatterns = [
