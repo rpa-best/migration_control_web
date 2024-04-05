@@ -21,7 +21,6 @@ router.register(r'(?P<bik>\d+)/search-bank', SearchBankAPIViewSet, 'search-bank'
 router.register(r'(?P<organization>\d+)/bank', BankShowAndCreateAPIViewSet, 'bank-show-and-create')
 router.register('bank', BankUpdateAPIViewSet, 'bank-update')
 
-
 urlpatterns = [
     path('', include(router.urls)),
 ]

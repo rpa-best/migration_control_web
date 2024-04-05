@@ -51,8 +51,9 @@ class CreateWorkerSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, data):
-        if Worker.objects.filter(organization=data['organization'].id, phone=data['phone']).exists():
-            raise CustomValidationError({'phone': 'Номер телефона занят другим работником'})
+        if 'phone' in data:
+            if Worker.objects.filter(organization=data['organization'].id, phone=data['phone']).exists():
+                raise CustomValidationError({'phone': 'Номер телефона занят другим работником'})
 
         # Получение владельца организации
         organization_owner = OrganizationUser.objects.filter(organization=data['organization'].id, role='owner').first()
