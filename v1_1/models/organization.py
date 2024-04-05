@@ -41,14 +41,11 @@ class DirectorOrganization(models.Model):
 
 class Bank(models.Model):
     organization = models.OneToOneField(Organization, on_delete=models.CASCADE, unique=True)
-    bic = models.CharField(max_length=9, unique=True)
+    bic = models.CharField(max_length=9)
     name_bank = models.CharField(max_length=255, blank=True)
     payment_account = models.CharField(max_length=20)
     correspondent_account = models.CharField(max_length=20)
     city_bank = models.CharField(max_length=255, blank=True)
-
-    class Meta:
-        unique_together = ('organization_id', 'bic')
 
 
 class OrganizationUser(models.Model):
