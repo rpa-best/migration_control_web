@@ -490,7 +490,7 @@ class BankShowAndCreateSerializer(serializers.ModelSerializer):
         validated_data['organization'] = organization
         instance: Bank = super().create(validated_data)
         instance.save()
-        return validated_data
+        return instance
 
 
 class BankUpdateSerializer(serializers.ModelSerializer):
