@@ -22,6 +22,7 @@ class Worker(models.Model):
     )
 
     STATUS = (
+        ('vacancy', 'Вакансия'),
         ('accepted', 'Принят'),
         ('dismissed', 'Уволен'),
     )
@@ -38,7 +39,7 @@ class Worker(models.Model):
     date_employment = models.DateField(blank=True, null=True)
     position = models.CharField(max_length=255, blank=True)
     actual_work_address = models.CharField(max_length=255, blank=True)
-    status = models.CharField(max_length=50, choices=STATUS, default='accepted')
+    status = models.CharField(max_length=50, choices=STATUS, default='vacancy')
     phone = models.CharField(max_length=28, unique=True, blank=True, null=True,
                              default=None)
     registration_address = models.CharField(max_length=255, blank=True)
