@@ -81,6 +81,21 @@ class FileDocuments(models.Model):
     file_document = models.FileField(upload_to=UploadPath('documents'), null=True, blank=True)
 
 
+class Tasks(models.Model):
+    STATUS = (
+        ('done', 'Выполнено'),
+        ('overdue', 'Просрочено'),
+        ('open', 'Открыто'),
+        ('shifted', 'Сдвинуто'),
+        ('cancelled', 'Отменено')
+    )
+
+    document_id = models.ForeignKey(DocumentsWorker, on_delete=models.CASCADE)
+    status = models.CharField(max_length=50, choices=STATUS)
+    days_until_expiration = models.CharField(max_length=30)
+    recommended_start_date = models.DateField()
+
+
 @shared_task
 def payment_for_worker():
     current_datetime = timezone.now()

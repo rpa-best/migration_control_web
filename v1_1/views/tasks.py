@@ -165,7 +165,7 @@ class ShowNumberTasksView(mixins.ListModelMixin, viewsets.GenericViewSet):
             organization_users = OrganizationUser.objects.filter(user=user)
             organizations = [ou.organization.id for ou in organization_users]
         except OrganizationUser.DoesNotExist:
-            raise CustomValidationError({'error': 'Вы не связаны ни с какой организацией'}, status=400)
+            raise CustomValidationError({'error': 'Вы не связаны ни с какой организацией'}, code=400)
 
         # Текущая дата
         today = datetime.now().date()
