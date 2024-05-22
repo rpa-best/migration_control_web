@@ -349,6 +349,10 @@ CELERY_BEAT_SCHEDULE = {
     'payment_for_worker': {
         'task': 'v1_1.models.worker.payment_for_worker',
         'schedule': 1,  # каждую секунду
+    },
+    'task_formation': {
+        'task': 'v1_1.models.worker.task_formation',
+        'schedule': 1,  # каждую секунду
     }
 }
 CELERY_TIMEZONE = 'Europe/Moscow'
