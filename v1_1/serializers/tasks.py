@@ -1,50 +1,36 @@
 from rest_framework import serializers
-from v1_1.models.worker import DocumentsWorker, Worker
+from v1_1.models.worker import DocumentsWorker, Worker, Tasks
 from datetime import date, datetime, timedelta
 
 
 class TaskDocuments(serializers.ModelSerializer):
-    days_until_expiration = serializers.SerializerMethodField()
-    recommended_start_date = serializers.SerializerMethodField()
     organization_id = serializers.SerializerMethodField()
     organization = serializers.SerializerMethodField()
     document = serializers.SerializerMethodField()
     worker = serializers.SerializerMethodField()
 
     class Meta:
-        model = DocumentsWorker
+        model = Tasks
         fields = '__all__'
 
     def get_document(self, obj):
-        return obj.get_type_document_display()
+        return obj.document_id.get_type_document_display()
 
     def get_organization_id(self, obj):
-        return obj.worker_id.organization.id
-
-    def get_organization_id(self, obj):
-        return obj.worker_id.organization.id
+        return obj.document_id.worker_id.organization.id
 
     def get_organization(self, obj):
-        organization = (f'{obj.worker_id.organization.get_organizational_form_display()} '
-                        f'{obj.worker_id.organization.name}')
+        organization = (f'{obj.document_id.worker_id.organization.get_organizational_form_display()} '
+                        f'{obj.document_id.worker_id.organization.name}')
         return organization
 
-    def get_days_until_expiration(self, obj):
-        today = date.today()
-        if obj.date_end <= today:
-            return 'Просрочено'
-        else:
-            return (obj.date_end - today).days
-
-    def get_recommended_start_date(self, obj):
-        return obj.date_end - timedelta(days=7)
-
     def get_worker(self, obj):
-        worker_id = obj.worker_id.id
+        worker_id = obj.document_id.worker_id.id
+        worker_obj = Worker.objects.get(pk=worker_id)
         # ФИО работника
-        name_worker = Worker.objects.get(pk=obj.worker_id.id).name
-        surname_worker = Worker.objects.get(pk=worker_id).surname
-        patronymic_worker = Worker.objects.get(pk=worker_id).patronymic
+        name_worker = worker_obj.name
+        surname_worker = worker_obj.surname
+        patronymic_worker = worker_obj.patronymic
 
         full_name_worker = f'{surname_worker} {name_worker}'
         if patronymic_worker:

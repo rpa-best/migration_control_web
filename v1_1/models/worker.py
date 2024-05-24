@@ -85,10 +85,8 @@ class DocumentsWorker(models.Model):
             today = date.today()
 
             if self.date_end <= today:  # Документ просрочен?
-                status = 'overdue'
                 days_until_expiration = 'Просрочено'
             else:
-                status = 'open'
                 days_until_expiration = (self.date_end - today).days
 
             recommended_start_date = self.date_end - timedelta(days=7)
@@ -100,6 +98,7 @@ class DocumentsWorker(models.Model):
                 # Если дата окончания (date_end) документа изменилась, то в задаче поле `days_until_expiration` должно
                 # поменять значение
                 doc_task.days_until_expiration = days_until_expiration
+                doc_task.status = status
                 doc_task.save()
 
             if doc_task.recommended_start_date != recommended_start_date:
