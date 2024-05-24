@@ -39,24 +39,11 @@ class TaskDocuments(serializers.ModelSerializer):
         return full_name_worker
 
 
-class TaskInfo(serializers.Serializer):
-    days_until_expiration = serializers.CharField()
-    recommended_start_date = serializers.DateField()
-
-
 class NumberSerializer(serializers.Serializer):
     number = serializers.IntegerField(read_only=True)
 
 class DocumentsWorkerSerializer(serializers.ModelSerializer):
-    days_until_expiration = serializers.SerializerMethodField()
 
     class Meta:
-        model = DocumentsWorker
+        model = Tasks
         fields = '__all__'
-
-    def get_days_until_expiration(self, obj):
-        today = date.today()
-        if obj.date_end <= today:
-            return 'Просрочено'
-        else:
-            return (obj.date_end - today).days
