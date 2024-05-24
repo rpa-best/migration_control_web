@@ -47,3 +47,9 @@ class DocumentsWorkerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tasks
         fields = '__all__'
+
+
+class TasksSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tasks
+        fields = '__all__'

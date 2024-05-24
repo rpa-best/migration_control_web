@@ -1,6 +1,6 @@
 from django.urls import include, path
 from rest_framework import routers
-from v1_1.views.tasks import ExpiringDocumentsView, WorkerExpiringDocumentsView, ShowNumberTasksView
+from v1_1.views.tasks import ExpiringDocumentsView, WorkerExpiringDocumentsView, ShowNumberTasksView, TaskDeleteView
 
 
 router = routers.DefaultRouter()
@@ -10,4 +10,5 @@ router.register('number', ShowNumberTasksView, 'number')
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('task-delete/<int:pk>', TaskDeleteView.as_view()),
 ]
