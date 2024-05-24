@@ -8,9 +8,11 @@ from v1_1.common_utils.custom_handler import CustomValidationError
 from v1_1.models import OrganizationUser
 from v1_1.models.worker import DocumentsWorker, Worker, Tasks
 from django.db.models import Q
-from v1_1.serializers.tasks import TaskDocuments, TaskInfo, NumberSerializer, DocumentsWorkerSerializer
+from v1_1.serializers.tasks import (TaskDocuments, NumberSerializer, DocumentsWorkerSerializer, TasksSerializer,
+                                    TasksStatusSerializer)
 from drf_spectacular.utils import extend_schema
 from rest_framework import generics
+from rest_framework.generics import DestroyAPIView, UpdateAPIView
 from v1_1.common_utils.paginations import CustomPagination
 
 
@@ -125,3 +127,15 @@ class ShowNumberTasksView(mixins.ListModelMixin, viewsets.GenericViewSet):
         number = Tasks.objects.filter(filter_conditions).count()
 
         return Response({'number': number})
+
+
+@extend_schema(tags=['Tasks'])
+class TaskDeleteView(DestroyAPIView):
+    queryset = Tasks.objects.all()
+    serializer_class = TasksSerializer
+
+
+@extend_schema(tags=['Tasks'])
+class TaskStatusUpdateView(UpdateAPIView):
+    queryset = Tasks.objects.all()
+    serializer_class = TasksStatusSerializer

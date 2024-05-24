@@ -53,3 +53,10 @@ class TasksSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tasks
         fields = '__all__'
+
+
+class TasksStatusSerializer(serializers.ModelSerializer):
+    """Сериалайзер для изменения статуса задачи"""
+    class Meta:
+        model = Tasks
+        fields = ['status']
