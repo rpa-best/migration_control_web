@@ -6,6 +6,8 @@ from django.db.models import Q
 
 
 class IsOwnerOrIsAdministratorInOrganization(BasePermission):
+    message = 'У Вас недостаточно прав. Необходимо быть владельцем или администратором'
+
     def has_permission(self, request, view):
         if request.data.get('organization') is not None:
             # Получение id организации из поля запроса
@@ -72,6 +74,8 @@ class IsOwnerOrIsAdministratorInOrganizationWorker(BasePermission):
 
 # Разрешение для взаимодействия с файлами документами работников
 class IsOwnerOrIsAdministratorForFileDocument(BasePermission):
+    message = 'У Вас недостаточно прав. Необходимо быть владельцем или администратором'
+
     def has_permission(self, request, view):
 
         if request.user.is_authenticated:

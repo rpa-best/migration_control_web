@@ -4,16 +4,21 @@ from v1_1.models.subscription import Subscription
 
 
 class IsOwner(BasePermission):
+    message = 'У вас нет активной подписки'
+
     def has_permission(self, request, view):
         if request.user.is_authenticated and Subscription.objects.filter(user=request.user, status='active').exists():
             return True
-        return False
+        else:
+            return False
 
     def has_object_permission(self, request, view, obj):
         return self.has_permission(request, view)
 
 
 class IsnOwnerInOrganization(BasePermission):
+    message = 'У Вас недостаточно прав. Необходимо быть владельцем или администратором'
+
     def has_permission(self, request, view):
         organization = request.data.get('organization')
         if request.user.is_authenticated:

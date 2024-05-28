@@ -24,7 +24,6 @@ from v1_1.models.subscription import Subscription
 class IsAdministratorInOrganization(BasePermission):
     def has_permission(self, request, view):
         organization = request.data.get('organization')
-        print(organization)
         if request.user.is_authenticated:
             # Проверяем, является ли пользователь администратором организации
             if OrganizationUser.objects.filter(user=request.user, organization=organization, role='admin').exists():
