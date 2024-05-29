@@ -101,7 +101,7 @@ class DocumentsWorkerSerializer(serializers.ModelSerializer):
     # Параметр для определения обязательных полей для каждого типа документа
     REQUIRED_FIELDS = {
         'passport': ['series', 'number', 'issued_whom', 'date_issue', 'date_end'],
-        'migration_card': ['number', 'date_issue', 'date_end'],
+        'migration_card': ['series', 'number', 'date_issue', 'date_end'],
         'registration': ['date_issue', 'date_end'],
         'patent': ['date_issue', 'date_end'],
         'paycheck': ['date_end'],
