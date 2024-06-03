@@ -23,3 +23,11 @@ class FileRenderer(BaseRenderer):
                 zip_file.writestr(file_name, file_content)
 
         return response
+
+
+class XMLRender(BaseRenderer):
+    format = "xml"
+    media_type = "application/xml"
+
+    def render(self, data, accepted_media_type=None, renderer_context=None):
+        return data

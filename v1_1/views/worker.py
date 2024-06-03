@@ -4,6 +4,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework.views import APIView
 from v1_1.common_utils.custom_handler import CustomValidationError
+from v1_1.common_utils.renderers import XMLRender
+from v1_1.common_utils.xml import json_to_xml
 from v1_1.filters.worker import WorkerFilter
 from v1_1.models.organization import OrganizationUser
 from v1_1.models.worker import Worker, DocumentsWorker, FileDocuments
@@ -80,6 +82,7 @@ class ShowWorkersAPIViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, vi
     filterset_fields = ['status']
     serializer_class = WorkerSerializer
     permission_class = IsAuthenticated
+    renderer_classes = (JSONRenderer, XMLRender)
 
     def get_queryset(self):
         # Получение авторизованного пользователя
@@ -94,6 +97,16 @@ class ShowWorkersAPIViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, vi
 
         return queryset
 
+    def list_xml(self, request, *args, **kwargs):
+        workers = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(workers, many=True)
+        xml = json_to_xml(serializer.data)
+        return Response(xml)
+
+    def list(self, request, *args, **kwargs):
+        if request.query_params.get("format") == "xml":
+            return self.list_xml(request, *args, **kwargs)
+        return super().list(request, *args, **kwargs)
 
 @extend_schema(tags=['Documents worker'])
 class DocumentsWorkerAPIViewSet(ModelViewSet):
