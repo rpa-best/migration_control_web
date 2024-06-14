@@ -24,7 +24,7 @@ class OrganizationAPIViewSet(ModelViewSet):
     def get_queryset(self):
         # Получение авторизованного пользователя
         user = self.request.user
-        #Возвращать только те организации, сотрудником которых является пользователь
+        # Возвращать только те организации, сотрудником которых является пользователь
         return Organization.objects.filter(organizationuser__user=user)
 
     def get_serializer_class(self):

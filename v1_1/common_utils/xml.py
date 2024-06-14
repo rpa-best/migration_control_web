@@ -82,19 +82,18 @@ def json_to_xml(workers: list) -> str:
         }
 
         for doc in documents:
-            if doc.type_document == 'passport':
-                document_type = doc.type_document
-                if document_type in documents_dict:
-                    document_element = ET.SubElement(documents_worker, documents_dict[document_type][0],
-                                                     attrib={'Index': '0'})
-                    for element_name in documents_dict[document_type][1]:
-                        element_value = getattr(doc, element_name.lower(), None)
-                        if element_value:
-                            element = ET.SubElement(document_element, element_name, attrib={'Index': '0'})
-                            if element_name.startswith('Date'):
-                                element_value = str(element_value).split('-')
-                                element_value = f'{element_value[2]}.{element_value[1]}.{element_value[0]}'
-                            element.text = element_value
+            document_type = doc.type_document
+            if document_type in documents_dict:
+                document_element = ET.SubElement(documents_worker, documents_dict[document_type][0],
+                                                 attrib={'Index': '0'})
+                for element_name in documents_dict[document_type][1]:
+                    element_value = getattr(doc, element_name.lower(), None)
+                    if element_value:
+                        element = ET.SubElement(document_element, element_name, attrib={'Index': '0'})
+                        if element_name.startswith('Date'):
+                            element_value = str(element_value).split('-')
+                            element_value = f'{element_value[2]}.{element_value[1]}.{element_value[0]}'
+                        element.text = element_value
 
     xml_string = minidom.parseString(ET.tostring(root)).toprettyxml(indent='  ', newl='\n')
     return xml_string
