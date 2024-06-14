@@ -78,7 +78,11 @@ def json_to_xml(workers: list) -> str:
             'passport': ('Passport', ['Series', 'Number', 'IssuedWhom', 'DateIssue', 'DateEnd']),
             'migration_card': ('MigrationCard', ['Series', 'Number', 'DateIssue', 'DateEnd']),
             'registration': ('Registration', ['DateIssue', 'DateEnd']),
-            'patent': ('Patent', ['Series', 'Number', 'IssuedWhom', 'TerritoryAction', 'DateIssue', 'DateEnd'])
+            'patent': ('Patent', ['Series', 'Number', 'IssuedWhom', 'TerritoryAction', 'DateIssue', 'DateEnd']),
+            'paycheck': ('Paycheck', ['DateEnd']),
+            'temporary_residence': ('TemporaryResidence', ['Series', 'Number', 'IssuedWhom', 'DateIssue', 'DateEnd']),
+            'residence_permit': ('ResidencePermit', ['Series', 'Number', 'IssuedWhom', 'DateIssue', 'DateEnd']),
+            'certificate_asylum': ('CertificateAsylum', ['Series', 'Number', 'IssuedWhom', 'DateIssue', 'DateEnd']),
         }
 
         for doc in documents:
@@ -87,9 +91,18 @@ def json_to_xml(workers: list) -> str:
                 document_element = ET.SubElement(documents_worker, documents_dict[document_type][0],
                                                  attrib={'Index': '0'})
                 for element_name in documents_dict[document_type][1]:
+                    if element_name == 'DateIssue':
+                        element_name = 'Date_Issue'
+                    elif element_name == 'DateEnd':
+                        element_name = 'Date_End'
+                    elif element_name == 'IssuedWhom':
+                        element_name = 'Issued_Whom'
+
                     element_value = getattr(doc, element_name.lower(), None)
+
                     if element_value:
-                        element = ET.SubElement(document_element, element_name, attrib={'Index': '0'})
+                        element = ET.SubElement(document_element, element_name.replace('_', ''
+                                                                                       ), attrib={'Index': '0'})
                         if element_name.startswith('Date'):
                             element_value = str(element_value).split('-')
                             element_value = f'{element_value[2]}.{element_value[1]}.{element_value[0]}'
