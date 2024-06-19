@@ -2,7 +2,7 @@ from django.urls import include, path
 from rest_framework import routers
 from v1_1.views.blanks import (NoticeConclusionAPIView, EmploymentContractAPIView, SuspensionOrderAPIView,
                                PaymentOrderAPIView, ContractProvisionPaidServicesAPIView, NoticeTerminationAPIView,
-                               SearchWorkers, ShowManagersAPIView)
+                               SearchWorkers, ShowManagersAPIView, ArrivalNoticeAPIView)
 
 
 router = routers.DefaultRouter()
@@ -16,6 +16,6 @@ urlpatterns = [
     path('contract-provision-paid-services/', ContractProvisionPaidServicesAPIView.as_view()),
     path('notice-conclusion/', NoticeConclusionAPIView.as_view()),
     path('notice-termination/', NoticeTerminationAPIView.as_view()),
+    path('arrival-notice/', ArrivalNoticeAPIView.as_view()),
     path('show-managers/<int:organization>/', ShowManagersAPIView.as_view(), name='show-managers'),
-
 ]
