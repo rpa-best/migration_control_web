@@ -14,8 +14,8 @@ class CustomValidationError(APIException):
         if code is None:
             code = self.default_code
 
-        # For validation failures, we may collect many errors together,
-        # so the details should always be coerced to a list if not already.
+        # В случае сбоев при проверке собирается множество ошибок вместе,
+        # поэтому данные всегда следует приводить к списку, если это еще не сделано.
         if isinstance(detail, tuple):
             detail = list(detail)
         elif not isinstance(detail, dict) and not isinstance(detail, list):

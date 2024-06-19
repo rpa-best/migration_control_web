@@ -7,7 +7,6 @@ from v1_1.common_utils.validate_password import validate_password
 from v1_1.models import User
 from v1_1.models.user import UserPvc, RegistrationLog
 from django.utils import timezone
-from rest_framework import serializers
 from v1_1.models.subscription import Subscription, ServiceRate
 
 

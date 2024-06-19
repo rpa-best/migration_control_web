@@ -9,9 +9,9 @@ from v1_1.common_utils import get_client_ip
 from v1_1.models.user import UserOutstandingToken
 
 
-# Этот код отвечает за генерацию токенов для аутентификации пользователей в приложении. Он использует \
-# библиотеку rest_framework_simplejwt для работы с токенами JWT и модель UserOutstandingToken для хранения \
-# информация о выпущенных токенах.
+""" Этот код отвечает за генерацию токенов для аутентификации пользователей в приложении. Он использует \
+библиотеку rest_framework_simplejwt для работы с токенами JWT и модель UserOutstandingToken для хранения \
+информация о выпущенных токенах. """
 
 class RefreshToken(_RefreshToken):
 

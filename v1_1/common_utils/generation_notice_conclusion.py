@@ -404,6 +404,7 @@ def GenerationNoticeConclusion(data):
                                            'AE', 'AG', 'AI', 'AK', 'AM', 'AO', 'AQ', 'AS', 'AU', 'AW', 'AY', 'BA', 'BC',
                                            'BE', 'BG', 'BI', 'BK', 'BM', 'BO', 'BQ']
         row = 132
+        index = 0
         index_publisher_last = 0
         stop = False
         for symbol in issued_whom:

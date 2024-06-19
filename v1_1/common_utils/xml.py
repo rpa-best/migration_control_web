@@ -4,6 +4,7 @@ import xml.dom.minidom as minidom
 import math
 from ..models.worker import DocumentsWorker
 
+
 def json_to_xml(workers: list) -> str:
     root = ET.Element("root")
 
@@ -98,7 +99,7 @@ def json_to_xml(workers: list) -> str:
                     elif element_name == 'IssuedWhom':
                         element_name = 'Issued_Whom'
 
-                    element_value = getattr(doc, element_name.lower(), None)
+                    element_value = getattr(doc, element_name.lower(), None)    # получение значения из документа
 
                     if element_value:
                         element = ET.SubElement(document_element, element_name.replace('_', ''
