@@ -7,7 +7,7 @@ from django.db.transaction import atomic
 from rest_framework_simplejwt.views import TokenRefreshView
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from v1_1.common_utils.token import get_token
-from v1_1.models.user import User, UserPvc
+from v1_1.models import User, UserPvc
 from v1_1.serializers.account import AccountCreateSerializer, AuthSerializer, AccountDetailSerializer, \
     AccountPatchSerializer, UserAvatarsSerializer, ChangePasswordSerializer, CheckEmailSerializer, \
     ValidationPasswordAndPhoneSerializer, CreatingSubscriptionSerializer

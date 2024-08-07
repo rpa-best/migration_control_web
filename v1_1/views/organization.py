@@ -6,8 +6,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from v1_1.apies.DaData import OrganizationSearch, GetInfoBank
 from v1_1.common_utils.custom_handler import CustomValidationError
-from v1_1.models.organization import (Organization, MigrationAddress, OrganizationUser, ResponsiblePersons, BodiesMIA,
-                                      Bank)
+from v1_1.models import (Organization, MigrationAddress, OrganizationUser, ResponsiblePersons, BodiesMIA, Bank)
 from v1_1.permissions.owner import IsOwner
 from v1_1.permissions.owner_or_admin import IsOwnerOrIsAdministratorInOrganization
 from v1_1.serializers.organization import (OrganizationCreateSerializer, OrganizationShowSerializer,

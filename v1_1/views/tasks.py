@@ -3,17 +3,14 @@ from rest_framework import filters
 from rest_framework import mixins, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from datetime import datetime, timedelta
 from v1_1.common_utils.custom_handler import CustomValidationError
 from v1_1.models import OrganizationUser
-from v1_1.models.worker import DocumentsWorker, Worker, Tasks
+from v1_1.models import DocumentsWorker, Worker, Tasks
 from django.db.models import Q
-from v1_1.serializers.tasks import (TaskDocuments, NumberSerializer, DocumentsWorkerSerializer, TasksSerializer,
+from v1_1.serializers.tasks import (TaskDocuments, NumberSerializer, TasksSerializer,
                                     TasksStatusSerializer)
 from drf_spectacular.utils import extend_schema
-from rest_framework import generics
 from rest_framework.generics import DestroyAPIView, UpdateAPIView
-from v1_1.common_utils.paginations import CustomPagination
 
 
 @extend_schema(tags=['Tasks'])

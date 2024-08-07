@@ -1,5 +1,4 @@
 from rest_framework import generics
-from rest_framework.response import Response
 from rest_framework.filters import SearchFilter
 from ..models.news import News
 from ..serializers.news import NewsSerializer, NewsDetailSerializer

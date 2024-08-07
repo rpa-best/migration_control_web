@@ -1,30 +1,20 @@
 from django.db.models import Q
 from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
-from rest_framework.views import APIView
+from rest_framework.viewsets import ModelViewSet
 from v1_1.common_utils.custom_handler import CustomValidationError
 from v1_1.common_utils.renderers import XMLRender
 from v1_1.common_utils.xml import json_to_xml
-from v1_1.filters.worker import WorkerFilter
-from v1_1.models.organization import OrganizationUser
-from v1_1.models.worker import Worker, DocumentsWorker, FileDocuments
+from v1_1.models import OrganizationUser
+from v1_1.models import Worker, DocumentsWorker, FileDocuments
 from v1_1.permissions.owner_or_admin import IsOwnerOrIsAdministratorInOrganization, \
     IsOwnerOrIsAdministratorInOrganizationWorker, IsOwnerOrIsAdministratorForFileDocument
 from v1_1.serializers.worker import WorkerSerializer, CreateWorkerSerializer, DocumentsWorkerSerializer, \
     FileDocumentsSerializer
 from rest_framework import mixins, viewsets
 from rest_framework.response import Response
-from rest_framework.parsers import FileUploadParser
-from io import BytesIO
-from django.http import HttpResponse
-import zipfile
-import os
-import requests
 from ..common_utils.renderers import FileRenderer
 from rest_framework.renderers import JSONRenderer
-import io
-from rest_framework.decorators import action
 
 
 @extend_schema(tags=['Worker'])
