@@ -14,10 +14,11 @@ from v1_1.models.user import UserOutstandingToken
 информация о выпущенных токенах. """
 
 class RefreshToken(_RefreshToken):
-
-    # Метод генерирует токен для конкретного пользователя.
     @classmethod
     def for_user(cls, user, request=None):
+        """ Этот метод устанавливает идентификатор пользователя в токене и сохраняет информацию о токене в базе данных,
+        включая IP-адрес, пользовательский агент и идентификатор устройства, если они доступны в запросе. Это позволяет
+         отслеживать активные токены пользователя. """
         user_id = getattr(user, api_settings.USER_ID_FIELD)
         if not isinstance(user_id, int):
             user_id = str(user_id)
@@ -49,8 +50,10 @@ class RefreshToken(_RefreshToken):
         return token
 
 
-# Класс для генерации токенов для аутентификации клиента, поэтому он определяет параметры для подписи и проверки токена
 class ClientRefreshToken(RefreshToken):
+    """ Класс определяет параметры для подписи и проверки токена, такие как алгоритм подписи, ключ подписи, URL для
+    получения открытого ключа (JWK_URL) и другие параметры, необходимые для работы с токенами аутентификации клиента. """
+
     _token_backend = TokenBackend(
         api_settings.ALGORITHM,
         settings.CLIENT_SIGNING_KEY,  # api_settings.SIGNING_KEY,

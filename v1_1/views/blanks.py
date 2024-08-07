@@ -17,6 +17,8 @@ import openpyxl
 from django.http import HttpResponse
 from v1_1.permissions.owner_or_admin import IsOwnerOrIsAdministratorInOrganizationWorker, isPro
 from rest_framework import mixins, viewsets
+
+from ..common_utils.custom_handler import CustomValidationError
 from ..models.worker import Worker, DocumentsWorker
 from rest_framework import serializers, generics
 from django.db.models import Q

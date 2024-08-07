@@ -90,6 +90,8 @@ class SuspensionOrderSerializer(serializers.Serializer):
         if Worker.objects.get(pk=value).organization_id not in list_organizations:
             raise CustomValidationError({'worker_id': 'Сотрудник не из вашей компании'})
 
+        return value
+
     def validate_first_manager_id(self, value):
         if not ResponsiblePersons.objects.filter(pk=value).exists():
             raise CustomValidationError({'first_manager_id': 'Менеджера не существует'})

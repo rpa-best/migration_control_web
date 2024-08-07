@@ -124,10 +124,9 @@ REST_FRAMEWORK = {
         'django_filters.rest_framework.DjangoFilterBackend',
         "rest_framework.filters.SearchFilter",
     ),
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-    'DEFAULT_PAGINATION_CLASS': 'v1_1.common_utils.paginations.CustomPagination'
-    # 'DEFAULT_SCHEMA_CLASS': 'v1_1.common_utils.swagger_schema.CustomAutoSchema',
-
+    # 'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_PAGINATION_CLASS': 'v1_1.common_utils.paginations.CustomPagination',
+    'DEFAULT_SCHEMA_CLASS': 'v1_1.common_utils.swagger_schema.CustomAutoSchema'
 }
 
 SIMPLE_JWT = {

@@ -32,7 +32,7 @@ services:
 
   migration_control_celery_beat:
     build: .
-    command: celery -A migration_control_web beat
+    command: celery -A migration_control_web beat -l info
     volumes:
       - ./:/app/
     depends_on:

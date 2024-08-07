@@ -320,7 +320,7 @@ class ShowMigrationAddressSerializer(serializers.ModelSerializer):
         if not OrganizationUser.objects.filter(organization=organization, user=user).exists():
             raise CustomValidationError({'organization': 'Вы не являетесь сотрудником этой организации'})
         else:
-            return value
+            return attrs
 
 
 class MigrationAddressSerializer(serializers.ModelSerializer):
@@ -504,4 +504,4 @@ class BankUpdateSerializer(serializers.ModelSerializer):
         if not OrganizationUser.objects.filter(organization=value, user=user).exists():
             raise CustomValidationError({'organization': 'Вы не являетесь сотрудником этой компании'})
 
-        return data
+        return value

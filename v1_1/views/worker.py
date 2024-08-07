@@ -108,6 +108,7 @@ class ShowWorkersAPIViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, vi
             return self.list_xml(request, *args, **kwargs)
         return super().list(request, *args, **kwargs)
 
+
 @extend_schema(tags=['Documents worker'])
 class DocumentsWorkerAPIViewSet(ModelViewSet):
     serializer_class = DocumentsWorkerSerializer
