@@ -1,7 +1,7 @@
 from django.urls import include, path
 from v1_1.views.account import AuthView, AccountCreateAPIView, AccountDetailAPIView, MyAvatarViewSet, RefreshView, \
-    ChangePasswordView, CheckEmailView, ValidationPasswordAndPhoneAPIView, CreatingSubscriptionView
-
+    ChangePasswordView, CheckEmailView, ValidationPasswordAndPhoneAPIView, CreatingSubscriptionView, \
+    ListServiceRateView, CurrentRate, MonthlyExpensesView
 
 urlpatterns = [
     path('auth/', AuthView.as_view()),
@@ -13,7 +13,9 @@ urlpatterns = [
     path('me/', AccountDetailAPIView.as_view()),
     path('change-password/', ChangePasswordView.as_view()),
     path('avatar/', MyAvatarViewSet.as_view()),
+    path('monthly-expenses/', MonthlyExpensesView.as_view(), name='monthly-expenses'),
     # Подписка
-    path('subscription/', CreatingSubscriptionView.as_view())
-
+    path('subscription/', CreatingSubscriptionView.as_view()),
+    path('list-service-rate/', ListServiceRateView.as_view()),
+    path('current-rate/', CurrentRate.as_view())
 ]

@@ -81,4 +81,10 @@ subscription = extend_schema_view(
     post=extend_schema(
         tags=['Subscription']
     ),
+    get=extend_schema(
+        tags=['Subscription']
+    ),
+    list=extend_schema(
+        tags=['Subscription']
+    ),
 )

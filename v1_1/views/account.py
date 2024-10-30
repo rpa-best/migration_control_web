@@ -1,17 +1,23 @@
 import os
+
+from django.utils import timezone
+from rest_framework.response import Response
+from django.db.models import Sum
 from rest_framework import status, generics
-from rest_framework.generics import CreateAPIView, GenericAPIView, RetrieveUpdateAPIView
+from rest_framework.generics import CreateAPIView, GenericAPIView, RetrieveUpdateAPIView, RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.db.transaction import atomic
 from rest_framework_simplejwt.views import TokenRefreshView
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from v1_1.common_utils.token import get_token
-from v1_1.models import User, UserPvc
+from v1_1.models import User, UserPvc, HistoryPayment
 from v1_1.serializers.account import AccountCreateSerializer, AuthSerializer, AccountDetailSerializer, \
     AccountPatchSerializer, UserAvatarsSerializer, ChangePasswordSerializer, CheckEmailSerializer, \
-    ValidationPasswordAndPhoneSerializer, CreatingSubscriptionSerializer
+    ValidationPasswordAndPhoneSerializer, CreatingSubscriptionSerializer, ListServiceRateSerializer, \
+    CurrentRateSerializer
 from ..common_utils.serializers import TokenRefreshSerializer
+from ..models.subscription import ServiceRate, Subscription
 from ..swagger_content import account
 
 
@@ -150,8 +156,47 @@ class MyAvatarViewSet(generics.UpdateAPIView):
         serializer.save()
 
 
+@account.account
+class MonthlyExpensesView(RetrieveAPIView):
+    permission_class = IsAuthenticated
+
+    def get(self, request):
+        ''' Вывод затрат за текущий календарный месяц '''
+
+        # Получение текущей даты
+        now = timezone.now()
+        # Определение первый и последний день текущего месяца
+        first_day_of_month = now.replace(day=1)
+        last_day_of_month = (first_day_of_month + timezone.timedelta(days=31)).replace(day=1) - timezone.timedelta(days=1)
+
+        # Фильтрация затрат пользователя за текущий месяц
+        expenses = HistoryPayment.objects.filter(
+            user=request.user,
+            date_payment__range=(first_day_of_month, last_day_of_month)
+        ).aggregate(total_amount=Sum('amount'))
+
+        return Response({
+            'total_amount': expenses['total_amount'] or 0  # Если нет затрат, возвращается 0
+        })
+
+
 @account.subscription
 class CreatingSubscriptionView(CreateAPIView):
     serializer_class = CreatingSubscriptionSerializer
     permission_class = IsAuthenticated
 
+
+@account.subscription
+class ListServiceRateView(generics.ListAPIView):
+    queryset = ServiceRate.objects.all()
+    permission_classes = ()
+    serializer_class = ListServiceRateSerializer
+
+
+@account.subscription
+class CurrentRate(RetrieveAPIView):
+    queryset = Subscription.objects.all()
+    serializer_class = CurrentRateSerializer
+
+    def get_object(self):
+        return self.request.user
