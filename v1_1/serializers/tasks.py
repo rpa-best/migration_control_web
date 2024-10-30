@@ -7,7 +7,9 @@ class TaskDocuments(serializers.ModelSerializer):
     organization_id = serializers.SerializerMethodField()
     organization = serializers.SerializerMethodField()
     document = serializers.SerializerMethodField()
+    date_end = serializers.SerializerMethodField()
     worker = serializers.SerializerMethodField()
+    worker_id = serializers.SerializerMethodField()
 
     class Meta:
         model = Tasks
@@ -15,6 +17,9 @@ class TaskDocuments(serializers.ModelSerializer):
 
     def get_document(self, obj):
         return obj.document_id.get_type_document_display()
+
+    def get_date_end(self, obj):
+        return obj.document_id.date_end
 
     def get_organization_id(self, obj):
         return obj.document_id.worker_id.organization.id
@@ -37,6 +42,10 @@ class TaskDocuments(serializers.ModelSerializer):
             full_name_worker += f' {patronymic_worker}'
 
         return full_name_worker
+
+    def get_worker_id(self, obj):
+        worker_id = obj.document_id.worker_id.id
+        return worker_id
 
 
 class NumberSerializer(serializers.Serializer):
