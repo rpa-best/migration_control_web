@@ -102,7 +102,6 @@ class Subscription(models.Model):
 
             # if self.service_rate.type_tariff == 'pro':
             #     # Вычитание из баланса за расширенный пакет
-            print('dsdsd')
             user_obj = User.objects.get(username=self.user)
             user_obj.balance -= self.service_rate.price
             user_obj.save()
