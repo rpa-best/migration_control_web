@@ -9,24 +9,47 @@ from celery import Celery
 from .user import HistoryPayment, User
 
 
+class Benefits(models.Model):
+    name = models.CharField('Название', max_length=255, unique=True)
+
+    class Meta:
+        verbose_name = 'Выгода'
+        verbose_name_plural = 'Выгоды'
+
+    def __str__(self):
+        return self.name
+
+
 class ServiceRate(models.Model):
     TYPES_TARIFFS = (
         ('standard', 'Стандартная'),
         ('pro', 'Про'),
     )
 
-    type_tariff = models.SlugField('Тип тарифа', choices=TYPES_TARIFFS, unique=True)
+    type_tariff = models.CharField('Тип тарифа', choices=TYPES_TARIFFS, unique=True)
     name = models.CharField('Название', max_length=255)
+    description = models.TextField('Описание')
     cost_organizations = models.FloatField('Цена за организацию', default=0)
     cost_workers = models.FloatField('Цена за сотрудника', default=0)
-    cost_all_documents = models.FloatField('Цена за расширенный пакет', default=0)
+    price = models.FloatField('Цена за расширенный пакет', default=0)
 
     class Meta:
         verbose_name = 'Тарифная ставка'
         verbose_name_plural = 'Тарифные ставки'
 
+
     def __str__(self):
         return self.get_type_tariff_display()
+
+
+class BenefitsServiceRate(models.Model):
+    service_rate = models.ForeignKey(ServiceRate, on_delete=models.CASCADE, verbose_name='Тариф', related_name='benefitsservicerate_set')
+    benefit = models.ForeignKey(Benefits, verbose_name='Выгода', on_delete=models.CASCADE, blank=True, null=True)
+
+    class Meta:
+        verbose_name = 'Выгода тарифа'
+        verbose_name_plural = 'Выгоды тарифа'
+        unique_together = ('service_rate', 'benefit')
 
 
 class Subscription(models.Model):
@@ -39,8 +62,10 @@ class Subscription(models.Model):
 
     status = models.CharField('Статус', max_length=50, default='process', choices=STATUS)
     user = models.OneToOneField('User', verbose_name='Пользователь', on_delete=models.CASCADE, to_field='username')
+    # service_rate = models.ForeignKey(ServiceRate, verbose_name='Тариф', on_delete=models.CASCADE,
+    #                                  to_field='type_tariff')
     service_rate = models.ForeignKey(ServiceRate, verbose_name='Тариф', on_delete=models.CASCADE,
-                                     to_field='type_tariff')
+                                     )
     number_organizations = models.IntegerField('Количество организаций', default=1)
     number_workers = models.IntegerField('Количество работников', default=10)
     cost = models.FloatField('Стоимость', blank=True, null=True)
@@ -56,37 +81,45 @@ class Subscription(models.Model):
         # Если пользователь в подписке выбрал тариф 'standard', то поле cost_all_documents для вычисления не
         # используется, поскольку только при тарифе pro(Про) указывается сумма для поля cost_all_documents
         if self.service_rate.type_tariff == 'standard':
-            self.cost = (self.number_organizations * self.service_rate.cost_organizations) + (
-                        self.number_workers * self.service_rate.cost_workers)
+            # self.cost = (self.number_organizations * self.service_rate.cost_organizations) + (
+            #             self.number_workers * self.service_rate.cost_workers)
+            pass
         elif self.service_rate.type_tariff == 'pro':
-            self.cost = (self.number_organizations * self.service_rate.cost_organizations) + (
-                        self.number_workers * self.service_rate.cost_workers) + self.service_rate.cost_all_documents
+            self.cost = self.service_rate.price
+            # self.cost = (self.number_organizations * self.service_rate.cost_organizations) + (
+            #             self.number_workers * self.service_rate.cost_workers) + self.service_rate.cost_all_documents
+
+        self.cost = self.service_rate.price
 
         # Если пользователь поменял другие данные, допустим кол-во работников, но при этом у него поле status и так уже
         # имеет значение "active", то не должно быть повторного вычисления этих дат, они должны остаться без изменения
-        if self.status == 'active' and not self.start_date:
+        # if self.status == 'active' and not self.start_date:
+        if self.status == 'active':
             # Если в подписке пользователя выбирается статус `active`, то вычисляется текущая дата для поля start_date
             # и вычисляется дата (текущая дата + 30 дней) для поля expiration_date.
             self.start_date = datetime.now().date()
             self.expiration_date = self.start_date + timedelta(days=30)
 
-            if self.service_rate.type_tariff == 'pro':
-                # Вычитание из баланса за расширенный пакет
-                user_obj = User.objects.get(username=self.user)
-                user_obj.balance -= self.service_rate.cost_all_documents
-                user_obj.save()
+            # if self.service_rate.type_tariff == 'pro':
+            #     # Вычитание из баланса за расширенный пакет
+            print('dsdsd')
+            user_obj = User.objects.get(username=self.user)
+            user_obj.balance -= self.service_rate.price
+            user_obj.save()
 
-                # Запись платежа за расширенный пакет в историю
-                HistoryPayment.objects.create(
-                    user=self.user,
-                    operation='Расширенный пакет',
-                    amount=self.service_rate.cost_all_documents
+            # Запись платежа за расширенный пакет в историю
+            HistoryPayment.objects.create(
+                user=self.user,
+                operation='Расширенный пакет',
+                amount=self.service_rate.price
                 )
         elif self.status == 'not_active' and self.start_date:
             # Если в подписке пользователя выбирается статус `not_active`, то обнуляется дата для поля start_date и
             # expiration_date.
             self.start_date = None
             self.expiration_date = None
+        elif self.status == 'not_active' and not self.start_date:
+            self.status = 'process'
 
         super(Subscription, self).save(*args, **kwargs)
 
