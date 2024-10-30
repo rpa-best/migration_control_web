@@ -42,11 +42,16 @@ def GenerationArrivalNotice(data):
     surname_worker = worker.surname.upper()
     patronymic_worker = worker.patronymic
     citizenship_worker = worker.citizenship.upper()
+
+    if worker.birthday is None:
+        raise CustomValidationError({'error': 'У сотрудника не указана дата рождения'})
+
     birthday_worker = str(worker.birthday).split('-')
     gender_worker = worker.gender
     place_birth_worker = worker.place_birth.upper()
     phone_worker = worker.phone
     identification_card_display = worker.get_identification_card_display().upper()
+    print(worker.identification_card)
     if not DocumentsWorker.objects.filter(worker_id=worker, type_document=worker.identification_card,
                                                          archive=False).exists():
         raise CustomValidationError({'error': 'У сотрудника нет документа, удостоверяющий личность'})

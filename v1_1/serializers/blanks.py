@@ -264,7 +264,7 @@ class ArrivalNoticeSerializer(serializers.Serializer):
         ('visa', 'Виза'),
         ('resident_card', 'Вид на жительство'),
         ('temporary_residence_permit', 'Разрешение на временное проживание'),
-        ('temporary_residence_permit', 'Разрешение на временное проживание в целях получения образования'),
+        ('temporary_residence_permit_educational', 'Разрешение на временное проживание в целях получения образования'),
     )
 
     TYPE_DEPARTURE = (
