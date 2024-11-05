@@ -85,17 +85,11 @@ class CreateWorkerSerializer(serializers.ModelSerializer):
 
 class WorkerSerializer(serializers.ModelSerializer):
     registration_address = serializers.CharField()
-    identification_card = serializers.CharField(source='get_identification_card_display')
-    # organization = serializers.SerializerMethodField()
+    identification_card = serializers.ChoiceField(choices=Worker.IDENTIFICATION_CARD, required=False)
 
     class Meta:
         model = Worker
         fields = '__all__'
-
-    # def get_organization(self, obj):
-    #     organization = (f'{obj.organization.get_organizational_form_display()} '
-    #                     f'{obj.organization.name}')
-    #     return organization
 
     def validate_registration_address(self, value):
         if AddressSearch(value) is not None:

@@ -75,17 +75,30 @@ class ShowWorkersAPIViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, vi
     renderer_classes = (JSONRenderer, XMLRender)
 
     def get_queryset(self):
+        search = self.request.query_params.get('search', '')
+        search_parts = search.split()
+
         # Получение авторизованного пользователя
         user = self.request.user
 
-        # Получение организаций, в которых работает пользователь
-        if not OrganizationUser.objects.filter(user=user, organization=self.kwargs.get('organization')).exists():
+        # Получение организации, в которой работает пользователь
+        organization_id = self.kwargs.get('organization')
+
+        if not OrganizationUser.objects.filter(user=user, organization=organization_id).exists():
             raise CustomValidationError({'organization': 'Вы не являетесь работником этой организации'})
 
         # Фильтрация работников по организации
-        queryset = Worker.objects.filter(Q(organization=self.kwargs.get('organization')))
+        q_objects = Q(organization=organization_id)
 
-        return queryset
+        # Создание Q-объектов для поиска
+        for search_part in search_parts:
+            q_objects &= (Q(name__icontains=search_part) |
+                          Q(surname__icontains=search_part) |
+                          Q(patronymic__icontains=search_part))
+
+        # Фильтрация работников по Q-объектам
+        workers = Worker.objects.filter(q_objects)
+        return workers
 
     def list_xml(self, request, *args, **kwargs):
         workers = self.filter_queryset(self.get_queryset())
