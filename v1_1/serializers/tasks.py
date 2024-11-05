@@ -7,6 +7,7 @@ class TaskDocuments(serializers.ModelSerializer):
     organization_id = serializers.SerializerMethodField()
     organization = serializers.SerializerMethodField()
     document = serializers.SerializerMethodField()
+    type_document = serializers.SerializerMethodField()
     date_end = serializers.SerializerMethodField()
     worker = serializers.SerializerMethodField()
     worker_id = serializers.SerializerMethodField()
@@ -17,6 +18,9 @@ class TaskDocuments(serializers.ModelSerializer):
 
     def get_document(self, obj):
         return obj.document_id.get_type_document_display()
+
+    def get_type_document(self, obj):
+        return obj.document_id.type_document
 
     def get_date_end(self, obj):
         return obj.document_id.date_end
