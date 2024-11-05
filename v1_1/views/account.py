@@ -2,8 +2,8 @@ import os
 
 from django.utils import timezone
 from rest_framework.response import Response
-from django.db.models import Sum
-from rest_framework import status, generics
+from django.db.models import Sum, Q, Count
+from rest_framework import status, generics, mixins, viewsets
 from rest_framework.generics import CreateAPIView, GenericAPIView, RetrieveUpdateAPIView, RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -11,7 +11,7 @@ from django.db.transaction import atomic
 from rest_framework_simplejwt.views import TokenRefreshView
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from v1_1.common_utils.token import get_token
-from v1_1.models import User, UserPvc, HistoryPayment
+from v1_1.models import User, UserPvc, HistoryPayment, OrganizationUser, Tasks
 from v1_1.serializers.account import AccountCreateSerializer, AuthSerializer, AccountDetailSerializer, \
     AccountPatchSerializer, UserAvatarsSerializer, ChangePasswordSerializer, CheckEmailSerializer, \
     ValidationPasswordAndPhoneSerializer, CreatingSubscriptionSerializer, ListServiceRateSerializer, \
@@ -178,6 +178,63 @@ class MonthlyExpensesView(RetrieveAPIView):
         return Response({
             'total_amount': expenses['total_amount'] or 0  # Если нет затрат, возвращается 0
         })
+
+
+@account.account
+class ProgressTasksView(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = self.request.user  # Получение авторизованного пользователя
+
+        try:
+            organization_users = OrganizationUser .objects.filter(user=user)
+            # Получение списка id организаций авторизованного пользователя
+            organizations = [ou.organization.id for ou in organization_users]
+        except OrganizationUser .DoesNotExist:
+            return Response({'error': 'Вы не связаны ни с какой организацией'}, status=400)
+
+        # Фильтрация задач по организациям
+        filter_conditions = Q(document_id__worker_id__organization_id__in=organizations)
+
+        # Получение общего количества задач
+        total_tasks = Tasks.objects.filter(filter_conditions).count()
+
+        # Получение количества задач по статусу
+        status_counts = Tasks.objects.filter(filter_conditions).values('status').annotate(count=Count('id'))
+
+        # Создание словаря для подсчета процентов
+        status_percentages = {
+            'done': {'title': 'Выполнено', 'color': '#7DC066', 'count': 0},
+            'rejected': {'title': 'Отклонено', 'color': '#E5646C', 'count': 0},
+            'open': {'title': 'Открыто', 'color': '#59B4D1', 'count': 0},
+            'shifted': {'title': 'Сдвинуто', 'color': '#F3935D', 'count': 0},
+            'cancelled': {'title': 'Отменено', 'color': '#727880', 'count': 0},
+        }
+
+        # Заполнение словаря counts
+        for status in status_counts:
+            status_percentages[status['status']]['count'] = status['count']
+
+        # Вычисление процентов
+        if total_tasks > 0:
+            for status in status_percentages.values():
+                status['percentage'] = (status['count'] / total_tasks) * 100
+        else:
+            for status in status_percentages.values():
+                status['percentage'] = 0
+
+        # Формирование выходной структуры данных
+        response_data = [
+            {
+                'title': status['title'],
+                'percentage': status['percentage'],
+                'color': status['color'],
+            }
+            for status in status_percentages.values()
+        ]
+
+        return Response(response_data)
 
 
 @account.subscription
