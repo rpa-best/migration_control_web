@@ -117,7 +117,7 @@ class FileDocuments(models.Model):
 class Tasks(models.Model):
     STATUS = (
         ('done', 'Выполнено'),
-        ('overdue', 'Просрочено'),
+        ('rejected', 'Отклонено'),
         ('open', 'Открыто'),
         ('shifted', 'Сдвинуто'),
         ('cancelled', 'Отменено')
@@ -150,11 +150,10 @@ def task_formation():
 
         today = date.today()
 
+        status = 'open'
         if doc.date_end <= today:  # Документ просрочен?
-            status = 'overdue'
             days_until_expiration = 'Просрочено'
         else:
-            status = 'open'
             days_until_expiration = (doc.date_end - today).days
 
         recommended_start_date = doc.date_end - timedelta(days=7)
