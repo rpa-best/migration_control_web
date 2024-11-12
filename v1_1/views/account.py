@@ -1,12 +1,10 @@
 import os
-
 from django.utils import timezone
 from rest_framework.response import Response
 from django.db.models import Sum, Q, Count
-from rest_framework import status, generics, mixins, viewsets
-from rest_framework.generics import CreateAPIView, GenericAPIView, RetrieveUpdateAPIView, RetrieveAPIView
+from rest_framework import status, generics
+from rest_framework.generics import CreateAPIView, RetrieveUpdateAPIView, RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
 from django.db.transaction import atomic
 from rest_framework_simplejwt.views import TokenRefreshView
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
@@ -161,7 +159,7 @@ class MonthlyExpensesView(RetrieveAPIView):
     permission_class = IsAuthenticated
 
     def get(self, request):
-        ''' Вывод затрат за текущий календарный месяц '''
+        """ Вывод затрат за текущий календарный месяц """
 
         # Получение текущей даты
         now = timezone.now()

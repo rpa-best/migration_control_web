@@ -97,8 +97,8 @@ class Subscription(models.Model):
         if self.status == 'active':
             # Если в подписке пользователя выбирается статус `active`, то вычисляется текущая дата для поля start_date
             # и вычисляется дата (текущая дата + 30 дней) для поля expiration_date.
-            self.start_date = datetime.now().date()
-            self.expiration_date = self.start_date + timedelta(days=30)
+            # self.start_date = datetime.now().date()
+            # self.expiration_date = self.start_date + timedelta(days=30)
 
             # if self.service_rate.type_tariff == 'pro':
             #     # Вычитание из баланса за расширенный пакет
