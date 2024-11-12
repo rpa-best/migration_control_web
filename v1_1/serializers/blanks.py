@@ -358,6 +358,30 @@ class ArrivalNoticeSerializer(serializers.Serializer):
     structure = serializers.CharField(help_text='Строение принимающей стороны', max_length=4, required=False)
     apartment = serializers.CharField(help_text='Квартира принимающей стороны', max_length=4, required=False)
 
+    def validate(self, attrs):
+        receiving_side = attrs.get('receiving_side')
+
+        if receiving_side == 'legal_entity':
+            # Удаляем поля, которые не должны быть заполнены для юридического лица
+            attrs.pop('surname_receiving_side', None)
+            attrs.pop('name_receiving_side', None)
+            attrs.pop('patronymic_receiving_side', None)
+            attrs.pop('type_of_identity_document', None)
+            attrs.pop('series_receiving_side', None)
+            attrs.pop('number_receiving_side', None)
+            attrs.pop('date_issue_receiving_side', None)
+            attrs.pop('sell_by_receiving_side', None)
+            attrs.pop('region', None)
+            attrs.pop('area', None)
+            attrs.pop('city', None)
+            attrs.pop('street', None)
+            attrs.pop('house', None)
+            attrs.pop('frame', None)
+            attrs.pop('structure', None)
+            attrs.pop('apartment', None)
+
+        return attrs
+
     def create(self, validated_data):
         return validated_data
 
