@@ -117,7 +117,7 @@ class FileDocuments(models.Model):
 class Tasks(models.Model):
     STATUS = (
         ('done', 'Выполнено'),
-        ('rejected', 'Отклонено'),
+        ('overdue', 'Просрочено'),
         ('open', 'Открыто'),
         ('shifted', 'Сдвинуто'),
         ('cancelled', 'Отменено')
