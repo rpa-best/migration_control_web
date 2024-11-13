@@ -328,7 +328,7 @@ class ServiceRateSerializer(serializers.ModelSerializer):
 
 
 class CreatingSubscriptionSerializer(serializers.ModelSerializer):
-    # service_rate = serializers.ChoiceField(choices=ServiceRate.TYPES_TARIFFS)
+    service_rate = serializers.IntegerField()
 
     class Meta:
         model = Subscription
@@ -352,18 +352,24 @@ class CreatingSubscriptionSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = self.context['request'].user
         validated_data['user'] = user
-        validated_data['service_rate'] = ServiceRate.objects.filter(type_tariff=validated_data['service_rate']).first()
+
+        service_rate = validated_data.get('service_rate')
+        service_rate_instance = ServiceRate.objects.filter(pk=service_rate).first()
+
+        if not service_rate_instance:
+            raise CustomValidationError({'error': 'Тариф не найден'})
+
+        validated_data['service_rate'] = service_rate_instance
 
         if Subscription.objects.filter(user=user).exists():
             instance = Subscription.objects.get(user=user)
             instance: Subscription = super().update(instance, validated_data)
         else:
             instance: Subscription = super().create(validated_data)
+
         instance.save()
-
-        validated_data['service_rate'] = validated_data['service_rate'].type_tariff
+        validated_data['service_rate'] = service_rate
         return validated_data
-
 
 class ChangingSubscriptionSerializer(serializers.ModelSerializer):
     service_rate = serializers.ChoiceField(choices=ServiceRate.TYPES_TARIFFS)
