@@ -51,7 +51,6 @@ def GenerationArrivalNotice(data):
     place_birth_worker = worker.place_birth.upper()
     phone_worker = worker.phone
     identification_card_display = worker.get_identification_card_display().upper()
-    print(worker.identification_card)
     if not DocumentsWorker.objects.filter(worker_id=worker, type_document=worker.identification_card,
                                                          archive=False).exists():
         raise CustomValidationError({'error': 'У сотрудника нет документа, удостоверяющий личность'})
@@ -243,8 +242,8 @@ def GenerationArrivalNotice(data):
         sheet["DD36"] = 'X'
 
     if document_type != 'not_documents':
-        series = data['series']
-        number = data['number']
+        series = str(data['series'])
+        number = str(data['number'])
         if len(series) == 4:
             sheet["J40"] = series[0]
             sheet["N40"] = series[1]
