@@ -101,7 +101,7 @@ class Subscription(models.Model):
             # self.expiration_date = self.start_date + timedelta(days=30)
 
             # if self.service_rate.type_tariff == 'pro':
-            #     # Вычитание из баланса за расширенный пакет
+            #     # Вычитание из баланса за приобретение подписки
             user_obj = User.objects.get(username=self.user)
             user_obj.balance -= self.service_rate.price
             user_obj.save()
