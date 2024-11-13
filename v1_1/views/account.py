@@ -204,7 +204,7 @@ class ProgressTasksView(RetrieveAPIView):
         # Создание словаря для подсчета процентов
         status_percentages = {
             'done': {'title': 'Выполнено', 'color': '#7DC066', 'count': 0},
-            'rejected': {'title': 'Отклонено', 'color': '#E5646C', 'count': 0},
+            'overdue': {'title': 'Просрочено', 'color': '#E5646C', 'count': 0},
             'open': {'title': 'Открыто', 'color': '#59B4D1', 'count': 0},
             'shifted': {'title': 'Сдвинуто', 'color': '#F3935D', 'count': 0},
             'cancelled': {'title': 'Отменено', 'color': '#727880', 'count': 0},
