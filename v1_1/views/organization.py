@@ -57,10 +57,11 @@ class SearchOrganizationAPIViewSet(mixins.ListModelMixin, viewsets.GenericViewSe
 
         if inn_or_ogrn.isdigit():
             info = OrganizationSearch(inn_or_ogrn)
+            print(info)
             if len(info) != 0:
                 try:
                     organizational_form = info[0]['data']['opf']['short']
-                    name_organization = info[0]['value']
+                    name_organization = info[0]['value'].replace(f'{organizational_form} ', '').replace('\"', '')
                     inn = info[0]['data']['inn']
                     legal_address = info[0]['data']['address']['unrestricted_value']
                     actual_address = info[0]['data']['address']['unrestricted_value']
