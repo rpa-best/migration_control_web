@@ -56,13 +56,6 @@ class NumberSerializer(serializers.Serializer):
     number = serializers.IntegerField(read_only=True)
 
 
-class DocumentsWorkerSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Tasks
-        fields = '__all__'
-
-
 class TasksSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tasks

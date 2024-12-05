@@ -7,6 +7,8 @@ from v1_1.common_utils.custom_handler import CustomValidationError
 from v1_1.models import OrganizationUser
 from v1_1.models import DocumentsWorker, Worker, Tasks
 from django.db.models import Q
+from v1_1.serializers.worker import DocumentsWorkerSerializer
+from v1_1.permissions.owner_or_admin import IsOwnerOrIsAdministratorInOrganizationWorker
 from v1_1.serializers.tasks import (TaskDocuments, NumberSerializer, TasksSerializer,
                                     TasksStatusSerializer)
 from drf_spectacular.utils import extend_schema
@@ -135,3 +137,22 @@ class TaskDeleteView(DestroyAPIView):
 class TaskStatusUpdateView(UpdateAPIView):
     queryset = Tasks.objects.all()
     serializer_class = TasksStatusSerializer
+
+
+@extend_schema(tags=['Tasks'])
+class DocumentsWorkerTaskAPIViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
+    serializer_class = DocumentsWorkerSerializer
+    permission_classes = [IsOwnerOrIsAdministratorInOrganizationWorker]
+
+    def get_queryset(self):
+        return DocumentsWorker.objects.filter(Q(worker_id=self.kwargs.get('worker_id')))
+
+    def create(self, request, *args, **kwargs):
+        id_old_doc = self.kwargs.get('doc_task_id')     # Получение документа из задачи,
+        id_old_doc = DocumentsWorker.objects.get(pk=id_old_doc)
+        id_old_doc.archive = True
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        response_data = serializer.create(serializer.validated_data)  # Используем метод create из сериализатора
+        id_old_doc.save()   # Сохранение занесения предыдущего документа из задачи в архив
+        return Response(response_data)

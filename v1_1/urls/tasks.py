@@ -1,13 +1,16 @@
 from django.urls import include, path
 from rest_framework import routers
 from v1_1.views.tasks import (ExpiringDocumentsView, WorkerExpiringDocumentsView, ShowNumberTasksView, TaskDeleteView,
-                              TaskStatusUpdateView)
+                              TaskStatusUpdateView, DocumentsWorkerTaskAPIViewSet)
 
 
 router = routers.DefaultRouter()
 router.register('list', ExpiringDocumentsView, 'list-task')
 router.register(r'(?P<worker_id>\d+)/list', WorkerExpiringDocumentsView, 'worker-tasks'),
 router.register('number', ShowNumberTasksView, 'number')
+router.register(r'documents-task/(?P<worker_id>\d+)/(?P<doc_task_id>\d+)', DocumentsWorkerTaskAPIViewSet,
+                'documents-task'),
+
 
 urlpatterns = [
     path('', include(router.urls)),
