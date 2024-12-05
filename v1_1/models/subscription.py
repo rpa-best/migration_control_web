@@ -1,11 +1,7 @@
 from django.db import models
-from datetime import timedelta
 from django.utils import timezone
 from datetime import datetime, time
 from celery import shared_task
-from celery.schedules import crontab
-from migration_control_web.celery import app
-from celery import Celery
 from .user import HistoryPayment, User
 
 
@@ -36,7 +32,6 @@ class ServiceRate(models.Model):
     class Meta:
         verbose_name = 'Тарифная ставка'
         verbose_name_plural = 'Тарифные ставки'
-
 
     def __str__(self):
         return self.get_type_tariff_display()
