@@ -143,28 +143,30 @@ class DocumentsWorkerSerializer(serializers.ModelSerializer):
         type_document = data.get('type_document')
         archive = data.get('archive')
 
-        if self.instance:  # Если это редактирование записи
-            # Проверка, существуют ли другие активные документы у сотрудника с такими же параметрами, за исключением
-            # текущего документа self.instance.id
-            existing_documents = DocumentsWorker.objects.filter(worker_id=worker_id, type_document=type_document,
-                                                                archive=False).exclude(id=self.instance.id)
-            if not archive and existing_documents.exists():
-                raise CustomValidationError({'error': 'У сотрудника уже есть такой активный документ. '
-                                                      'Для добавления текущего документа необходимо один '
-                                                      'из документов пометить в архив'})
-
-            if archive:
-                if existing_documents.exists():
+        doc_task = self.context['request'].parser_context['kwargs'].get('doc_task_id')
+        if not doc_task:
+            if self.instance:  # Если это редактирование записи
+                # Проверка, существуют ли другие активные документы у сотрудника с такими же параметрами, за исключением
+                # текущего документа self.instance.id
+                existing_documents = DocumentsWorker.objects.filter(worker_id=worker_id, type_document=type_document,
+                                                                    archive=False).exclude(id=self.instance.id)
+                if not archive and existing_documents.exists():
                     raise CustomValidationError({'error': 'У сотрудника уже есть такой активный документ. '
                                                           'Для добавления текущего документа необходимо один '
                                                           'из документов пометить в архив'})
-        else:  # Создание новой записи
-            existing_documents = DocumentsWorker.objects.filter(worker_id=worker_id, type_document=type_document,
-                                                                archive=False)
-            if not archive and existing_documents.exists():
-                raise CustomValidationError({'error': 'У сотрудника уже есть такой активный документ. '
-                                                      'Для добавления текущего документа необходимо один '
-                                                      'из документов пометить в архив'})
+
+                if archive:
+                    if existing_documents.exists():
+                        raise CustomValidationError({'error': 'У сотрудника уже есть такой активный документ. '
+                                                              'Для добавления текущего документа необходимо один '
+                                                              'из документов пометить в архив'})
+            else:  # Создание новой записи
+                existing_documents = DocumentsWorker.objects.filter(worker_id=worker_id, type_document=type_document,
+                                                                    archive=False)
+                if not archive and existing_documents.exists():
+                    raise CustomValidationError({'error': 'У сотрудника уже есть такой активный документ. '
+                                                          'Для добавления текущего документа необходимо один '
+                                                          'из документов пометить в архив'})
 
         return data
 
