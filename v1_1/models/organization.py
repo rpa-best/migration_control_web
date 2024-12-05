@@ -69,8 +69,8 @@ class MigrationAddress(models.Model):
 
 class ResponsiblePersons(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
-    name = models.CharField(max_length=150)
-    surname = models.CharField(max_length=150)
+    name = models.CharField(max_length=150, blank=True, null=True)
+    surname = models.CharField(max_length=150, blank=True, null=True)
     patronymic = models.CharField(max_length=150, blank=True, null=True)
     passport_series = models.CharField(max_length=20, blank=True, null=True)
     passport_number = models.CharField(max_length=255, blank=True, null=True)
@@ -100,4 +100,4 @@ class ContactPersonOrganization(models.Model):
 
 class BodiesMIA(models.Model):
     organization = models.ForeignKey(Organization, models.CASCADE)
-    name = models.CharField(max_length=255, blank=True)
+    name = models.CharField(max_length=255, blank=True, null=True)

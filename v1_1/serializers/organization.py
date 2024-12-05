@@ -435,6 +435,15 @@ class SearchOrganizationSerializer(serializers.Serializer):
 
 
 class ResponsiblePersonsSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(write_only=True, required=False)
+    surname = serializers.CharField(write_only=True, required=False)
+    patronymic = serializers.CharField(write_only=True, required=False)
+    passport_series = serializers.CharField(write_only=True, required=False)
+    passport_number = serializers.CharField(write_only=True, required=False)
+    issued_whom = serializers.CharField(write_only=True, required=False)
+    date_issue_passport = serializers.DateField(write_only=True, required=False)
+    date_end_passport = serializers.DateField(write_only=True, required=False)
+
     class Meta:
         model = ResponsiblePersons
         fields = '__all__'
@@ -449,6 +458,8 @@ class ResponsiblePersonsSerializer(serializers.ModelSerializer):
 
 
 class BodiesMIASerializer(serializers.ModelSerializer):
+    name = serializers.CharField(write_only=True, required=False)
+
     class Meta:
         model = BodiesMIA
         fields = '__all__'
@@ -467,6 +478,12 @@ class SearchBankSerializer(serializers.Serializer):
 
 
 class BankShowAndCreateSerializer(serializers.ModelSerializer):
+    bic = serializers.CharField(write_only=True, required=False)
+    name_bank = serializers.CharField(write_only=True, required=False)
+    payment_account = serializers.CharField(write_only=True, required=False)
+    correspondent_account = serializers.CharField(write_only=True, required=False)
+    city_bank = serializers.CharField(write_only=True, required=False)
+
     class Meta:
         model = Bank
         fields = '__all__'
@@ -494,6 +511,12 @@ class BankShowAndCreateSerializer(serializers.ModelSerializer):
 
 
 class BankUpdateSerializer(serializers.ModelSerializer):
+    bic = serializers.CharField(write_only=True, required=False)
+    name_bank = serializers.CharField(write_only=True, required=False)
+    payment_account = serializers.CharField(write_only=True, required=False)
+    correspondent_account = serializers.CharField(write_only=True, required=False)
+    city_bank = serializers.CharField(write_only=True, required=False)
+
     class Meta:
         model = Bank
         fields = '__all__'
