@@ -81,8 +81,12 @@ class DocumentsWorker(models.Model):
 
         pk = self.pk
         if Tasks.objects.filter(document_id=pk).exists():
-            today = date.today()
+            if self.archive:
+                Tasks.objects.get(document_id=pk).delete()
+                super(DocumentsWorker, self).save(*args, **kwargs)
+                return
 
+            today = date.today()
             doc_task = Tasks.objects.get(document_id=pk)
 
             if self.date_end <= today:  # Документ просрочен?
@@ -126,7 +130,7 @@ class DocumentsWorker(models.Model):
                 super(DocumentsWorker, self).save(*args, **kwargs)
             else:
                 super(DocumentsWorker, self).save(*args, **kwargs)
-                exit()
+                return
 
             Tasks.objects.create(document_id=self, status=status, days_until_expiration=days_until_expiration,
                                  recommended_start_date=recommended_start_date)

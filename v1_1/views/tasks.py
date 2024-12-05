@@ -159,4 +159,7 @@ class DocumentsWorkerTaskAPIViewSet(mixins.CreateModelMixin, viewsets.GenericVie
         serializer.is_valid(raise_exception=True)
         response_data = serializer.create(serializer.validated_data)  # Используем метод create из сериализатора
         id_old_doc.save()   # Сохранение занесения предыдущего документа из задачи в архив
+        print('arh')
+        old_task = Tasks.objects.get(document_id=id_old_doc)
+        old_task.delete()
         return Response(response_data)
