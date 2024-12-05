@@ -53,10 +53,11 @@ def GenerationEmploymentContractDocument(data):
         raise CustomValidationError({'error': 'Нет банковских данных компании (расчетный счет, кредитный счет, '
                                               'БИК)'})
 
-    payment_account = Bank.objects.get(organization_id=organization_id).payment_account
-    correspondent_account = Bank.objects.get(organization_id=organization_id).correspondent_account
-    bic = Bank.objects.get(organization_id=organization_id).bic
-    name_bank = GetInfoBank(bic)[0]['value']
+    bank = Bank.objects.get(organization_id=organization_id)
+    payment_account = bank.payment_account
+    correspondent_account = bank.correspondent_account
+    bic = bank.bic
+    name_bank = bank.name_bank
     phone = Organization.objects.get(pk=organization_id).phone
 
     # Юридический/фактический адрес организации
@@ -101,12 +102,12 @@ def GenerationEmploymentContractDocument(data):
     if patronymic_worker:
         full_name_worker += f' {patronymic_worker}'
 
-    birthday = str(Worker.objects.get(pk=organization_id).birthday)
+    birthday = str(Worker.objects.get(pk=worker_id).birthday)
     try:
         birthday = birthday.split('-')
         birthday = birthday[2] + '.' + birthday[1] + '.' + birthday[0]
     except Exception:
-        birthday = ''
+        raise CustomValidationError({'error': 'Не заполнена дата рождения сотрудника'})
 
     if not DocumentsWorker.objects.filter(worker_id=worker_id, type_document='passport', archive=False).exists():
         raise CustomValidationError({'error': 'У работника нет актуального паспорта'})

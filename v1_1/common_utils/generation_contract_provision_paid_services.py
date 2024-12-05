@@ -36,10 +36,11 @@ def GenerationContractProvisionPaidServices(data):
         raise CustomValidationError({'error': 'Нет банковских данных компании (расчетный счет, кредитный счет, '
                                               'БИК)'})
 
-    payment_account = Bank.objects.get(organization_id=organization_id).payment_account
-    correspondent_account = Bank.objects.get(organization_id=organization_id).correspondent_account
-    bic = Bank.objects.get(organization_id=organization_id).bic
-    name_bank = GetInfoBank(bic)[0]['value']
+    bank = Bank.objects.get(organization_id=organization_id)
+    payment_account = bank.payment_account
+    correspondent_account = bank.correspondent_account
+    bic = bank.bic
+    name_bank = bank.name_bank
 
     # Юридический/фактический адрес организации
     organization_address = Organization.objects.get(pk=organization_id).legal_address
@@ -67,9 +68,10 @@ def GenerationContractProvisionPaidServices(data):
         director_declension += f' {patronymic_director_declension}'
 
     # ФИО работника
-    name_worker = Worker.objects.get(pk=organization_id).name
-    surname_worker = Worker.objects.get(pk=organization_id).surname
-    patronymic_worker = Worker.objects.get(pk=organization_id).patronymic
+    worker = Worker.objects.get(pk=worker_id)
+    name_worker = worker.name
+    surname_worker = worker.surname
+    patronymic_worker = worker.patronymic
 
     full_name_worker = f'{surname_worker} {name_worker}'
     if patronymic_worker:
@@ -86,7 +88,7 @@ def GenerationContractProvisionPaidServices(data):
     passport_number = DocumentsWorker.objects.get(worker_id=worker_id, type_document='passport', archive=False).number
 
     # Адрес регистрации работника
-    registration_address = Worker.objects.get(pk=organization_id).registration_address
+    registration_address = worker.registration_address
 
     context = {
         'number': number,

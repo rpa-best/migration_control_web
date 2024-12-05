@@ -264,13 +264,16 @@ def GenerationNoticeConclusion(data):
     #             break
 
     list_birthday = birthday.split('-')
-    #День
-    sheet['R104'],  sheet['T104'] = list_birthday[2][0], list_birthday[2][1]
-    #Месяц
-    sheet['W104'], sheet['Y104'] = list_birthday[1][0], list_birthday[1][1]
-    #Год
-    sheet['AB104'], sheet['AD104'] = list_birthday[0][0], list_birthday[0][1]
-    sheet['AF104'], sheet['AH104'] = list_birthday[0][2], list_birthday[0][3]
+    try:
+        #День
+        sheet['R104'],  sheet['T104'] = list_birthday[2][0], list_birthday[2][1]
+        #Месяц
+        sheet['W104'], sheet['Y104'] = list_birthday[1][0], list_birthday[1][1]
+        #Год
+        sheet['AB104'], sheet['AD104'] = list_birthday[0][0], list_birthday[0][1]
+        sheet['AF104'], sheet['AH104'] = list_birthday[0][2], list_birthday[0][3]
+    except:
+        raise CustomValidationError({'error': 'Не заполнена дата рождения сотрудника'})
 
     # ============= Запись паспорта =============
     list_columns_for_passport_series = ['G', 'I', 'K', 'M', 'O', 'Q', 'S']

@@ -74,9 +74,10 @@ def GenerationSuspensionOrder(data):
         full_name_director += f' {patronymic_director}'
 
     # ФИО работника
-    name_worker = Worker.objects.get(pk=organization_id).name
-    surname_worker = Worker.objects.get(pk=organization_id).surname
-    patronymic_worker = Worker.objects.get(pk=organization_id).patronymic
+    worker = Worker.objects.get(pk=worker_id)
+    name_worker = worker.name.upper()
+    surname_worker = worker.surname.upper()
+    patronymic_worker = worker.patronymic
 
     full_name_worker = f'{surname_worker} {name_worker}'
     if patronymic_worker:

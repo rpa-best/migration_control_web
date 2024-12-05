@@ -47,6 +47,10 @@ def GenerationArrivalNotice(data):
         raise CustomValidationError({'error': 'У сотрудника не указана дата рождения'})
 
     birthday_worker = str(worker.birthday).split('-')
+
+    if len(birthday_worker) == 0:
+        raise CustomValidationError({'error': 'Не заполнена дата рождения сотрудника'})
+
     gender_worker = worker.gender
     place_birth_worker = worker.place_birth.upper()
     phone_worker = worker.phone
@@ -131,16 +135,18 @@ def GenerationArrivalNotice(data):
             break
         if stop is True:
             break
-
-    # День рождения
-    sheet['AD21'], sheet['AH21'] = birthday_worker[2][0], birthday_worker[2][1]
-    # Месяц рождения
-    sheet['AT21'], sheet['AX21'] = birthday_worker[1][0], birthday_worker[1][1]
-    # Год рождения
-    sheet['BF21'] = birthday_worker[0][0]
-    sheet['BJ21'] = birthday_worker[0][1]
-    sheet['BN21'] = birthday_worker[0][2]
-    sheet['BR21'] = birthday_worker[0][3]
+    try:
+        # День рождения
+        sheet['AD21'], sheet['AH21'] = birthday_worker[2][0], birthday_worker[2][1]
+        # Месяц рождения
+        sheet['AT21'], sheet['AX21'] = birthday_worker[1][0], birthday_worker[1][1]
+        # Год рождения
+        sheet['BF21'] = birthday_worker[0][0]
+        sheet['BJ21'] = birthday_worker[0][1]
+        sheet['BN21'] = birthday_worker[0][2]
+        sheet['BR21'] = birthday_worker[0][3]
+    except:
+        raise CustomValidationError({'error': 'У сотрудника не указана дата рождения'})
 
     if gender_worker == 'male':
         sheet['CL21'] = 'X'
