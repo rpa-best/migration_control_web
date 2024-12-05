@@ -80,17 +80,22 @@ class DocumentsWorker(models.Model):
         """Переопределение метода save() для обновления данных в задаче, когда меняется значение поля date_end"""
 
         pk = self.pk
-
         if Tasks.objects.filter(document_id=pk).exists():
             today = date.today()
 
             doc_task = Tasks.objects.get(document_id=pk)
 
             if self.date_end <= today:  # Документ просрочен?
-                doc_task.status = 'Просрочено'
+                doc_task.status = 'overdue'
                 days_until_expiration = 'Просрочено'
-            else:
+            elif self.date_end <= today + timedelta(days=30):
+                doc_task.status = 'open'
                 days_until_expiration = (self.date_end - today).days
+            else:
+                # Удаление задачи, если документ актуален
+                doc_task.delete()
+                super(DocumentsWorker, self).save(*args, **kwargs)
+                return
 
             recommended_start_date = self.date_end - timedelta(days=7)
 
@@ -104,9 +109,28 @@ class DocumentsWorker(models.Model):
             if doc_task.recommended_start_date != recommended_start_date:
                 # В таком же случае изменяется рекомендуемая дата
                 doc_task.recommended_start_date = recommended_start_date
-                doc_task.save()
 
-        super(DocumentsWorker, self).save(*args, **kwargs)
+            doc_task.save()
+        else:
+            today = date.today()
+
+            if self.date_end <= today:  # Документ просрочен?
+                status = 'overdue'
+                days_until_expiration = 'Просрочено'
+                recommended_start_date = self.date_end - timedelta(days=7)
+                super(DocumentsWorker, self).save(*args, **kwargs)
+            elif self.date_end <= today + timedelta(days=30):
+                status = 'open'
+                days_until_expiration = (self.date_end - today).days
+                recommended_start_date = self.date_end - timedelta(days=7)
+                super(DocumentsWorker, self).save(*args, **kwargs)
+            else:
+                super(DocumentsWorker, self).save(*args, **kwargs)
+                exit()
+
+            Tasks.objects.create(document_id=self, status=status,
+                                            days_until_expiration=days_until_expiration,
+                                            recommended_start_date=recommended_start_date)
 
 
 class FileDocuments(models.Model):
@@ -143,6 +167,9 @@ def task_formation():
     filter_conditions &= Q(
         type_document__in=['migration_card', 'patent', 'paycheck', 'temporary_residence', 'certificate_asylum'])
 
+    # Удаление из таблицы задач, у которых документ в архиве
+    Tasks.objects.filter(document_id__archive=True).delete()
+
     expiring_documents = DocumentsWorker.objects.filter(filter_conditions, archive=False)
 
     for doc in expiring_documents:
@@ -150,26 +177,34 @@ def task_formation():
 
         today = date.today()
 
-        status = 'open'
         if doc.date_end <= today:  # Документ просрочен?
+            status = 'overdue'
             days_until_expiration = 'Просрочено'
         else:
+            status = 'open'
             days_until_expiration = (doc.date_end - today).days
 
         recommended_start_date = doc.date_end - timedelta(days=7)
 
         if exists:  # Запись с таким вторичным ключом существует в задачах
             """В этом блоке обновление данных в задачах случае, когда дата окончания документа поменялась"""
-            doc_task = Tasks.objects.get(document_id=doc.pk)
 
-            if str(doc_task.days_until_expiration) != str(days_until_expiration):   # Есть ли изменения в дате документа?
-                # Если дата окончания (date_end) документа изменилась, то в задаче поле `days_until_expiration` должно
-                # поменять значение
-                Tasks.objects.update(days_until_expiration=days_until_expiration)
+            if doc.archive is True:
+                Tasks.objects.get(document_id=doc.pk).delete()
+            else:
+                doc_task = Tasks.objects.get(document_id=doc.pk)
+                if str(doc_task.days_until_expiration) != str(days_until_expiration):   # Есть ли изменения в дате документа?
+                    # Если дата окончания (date_end) документа изменилась, то в задаче поле `days_until_expiration` должно
+                    # поменять значение
+                    doc_task.days_until_expiration = days_until_expiration
 
-            if doc_task.recommended_start_date != recommended_start_date:
-                # В таком же случае изменяется рекомендуемая дата
-                Tasks.objects.update(recommended_start_date=recommended_start_date)
+                if doc_task.recommended_start_date != recommended_start_date:
+                    # В таком же случае изменяется рекомендуемая дата
+                    doc_task.recommended_start_date = recommended_start_date
+
+                doc_task.status = status
+                # Сохранение изменений
+                doc_task.save()
         else:   # Документ не содержится в задачах
             document = DocumentsWorker.objects.get(pk=doc.pk)
             Tasks.objects.create(   # Запись документа в задачах
