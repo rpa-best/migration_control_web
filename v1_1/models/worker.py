@@ -128,9 +128,8 @@ class DocumentsWorker(models.Model):
                 super(DocumentsWorker, self).save(*args, **kwargs)
                 exit()
 
-            Tasks.objects.create(document_id=self, status=status,
-                                            days_until_expiration=days_until_expiration,
-                                            recommended_start_date=recommended_start_date)
+            Tasks.objects.create(document_id=self, status=status, days_until_expiration=days_until_expiration,
+                                 recommended_start_date=recommended_start_date)
 
 
 class FileDocuments(models.Model):

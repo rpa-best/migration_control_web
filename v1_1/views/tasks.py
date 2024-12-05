@@ -120,7 +120,11 @@ class ShowNumberTasksView(mixins.ListModelMixin, viewsets.GenericViewSet):
         except OrganizationUser.DoesNotExist:
             return Response({'error': 'Вы не связаны ни с какой организацией'}, status=400)
 
-        filter_conditions = Q(document_id__worker_id__organization_id__in=[org for org in organizations])
+        filter_conditions = Q(document_id__worker_id__organization_id__in=[org for org in organizations],
+                              document_id__type_document__in=['migration_card', 'patent', 'paycheck',
+                                                              'temporary_residence',
+                                                              'certificate_asylum']
+                              )
 
         number = Tasks.objects.filter(filter_conditions).count()
 
