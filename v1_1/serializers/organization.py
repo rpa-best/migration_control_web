@@ -442,7 +442,6 @@ class ResponsiblePersonsSerializer(serializers.ModelSerializer):
     passport_number = serializers.CharField(write_only=True, required=False)
     issued_whom = serializers.CharField(write_only=True, required=False)
     date_issue_passport = serializers.DateField(write_only=True, required=False)
-    date_end_passport = serializers.DateField(write_only=True, required=False)
 
     class Meta:
         model = ResponsiblePersons
