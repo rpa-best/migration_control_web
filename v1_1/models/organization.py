@@ -76,6 +76,7 @@ class ResponsiblePersons(models.Model):
     passport_number = models.CharField(max_length=255, blank=True, null=True)
     issued_whom = models.CharField(max_length=150)
     date_issue_passport = models.DateField(blank=True, null=True)
+    date_end_passport = models.DateField(blank=True, null=True)
 
 
 class BookkeeperOrganization(models.Model):
