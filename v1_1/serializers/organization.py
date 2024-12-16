@@ -440,9 +440,8 @@ class ResponsiblePersonsSerializer(serializers.ModelSerializer):
     patronymic = serializers.CharField(required=False)
     passport_series = serializers.CharField(required=False)
     passport_number = serializers.CharField(required=False)
-    issued_whom = serializers.CharField( required=False)
+    issued_whom = serializers.CharField(required=False)
     date_issue_passport = serializers.DateField(required=False)
-    date_end_passport = serializers.DateField(required=False)
 
     class Meta:
         model = ResponsiblePersons
@@ -458,7 +457,7 @@ class ResponsiblePersonsSerializer(serializers.ModelSerializer):
 
 
 class BodiesMIASerializer(serializers.ModelSerializer):
-    name = serializers.CharField(write_only=True, required=False)
+    name = serializers.CharField(required=False)
 
     class Meta:
         model = BodiesMIA

@@ -199,18 +199,21 @@ def task_formation():
                 Tasks.objects.get(document_id=doc.pk).delete()
             else:
                 doc_task = Tasks.objects.get(document_id=doc.pk)
-                if str(doc_task.days_until_expiration) != str(days_until_expiration):   # Есть ли изменения в дате документа?
-                    # Если дата окончания (date_end) документа изменилась, то в задаче поле `days_until_expiration` должно
-                    # поменять значение
-                    doc_task.days_until_expiration = days_until_expiration
+                if doc_task.status != 'shifted':
+                    if str(doc_task.days_until_expiration) != str(days_until_expiration):   # Есть ли изменения в дате документа?
+                        # Если дата окончания (date_end) документа изменилась, то в задаче поле `days_until_expiration` должно
+                        # поменять значение
+                        doc_task.days_until_expiration = days_until_expiration
+                        doc_task.status = status
+                        # Сохранение изменений
+                        doc_task.save()
 
-                if doc_task.recommended_start_date != recommended_start_date:
-                    # В таком же случае изменяется рекомендуемая дата
-                    doc_task.recommended_start_date = recommended_start_date
-
-                doc_task.status = status
-                # Сохранение изменений
-                doc_task.save()
+                    if doc_task.recommended_start_date != recommended_start_date:
+                        # В таком же случае изменяется рекомендуемая дата
+                        doc_task.recommended_start_date = recommended_start_date
+                        doc_task.status = status
+                        # Сохранение изменений
+                        doc_task.save()
         else:   # Документ не содержится в задачах
             document = DocumentsWorker.objects.get(pk=doc.pk)
             Tasks.objects.create(   # Запись документа в задачах
