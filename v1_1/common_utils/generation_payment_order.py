@@ -4,7 +4,6 @@ import pytz
 from django.http import HttpResponse
 from dateutil.relativedelta import relativedelta
 from number_to_string import get_string_by_number
-from v1_1.apies.DaData import GetInfoBank
 from v1_1.common_utils.functions_blanks import ConvertDate
 from v1_1.models.organization import Organization, Bank
 from v1_1.models.worker import Worker, DocumentsWorker
