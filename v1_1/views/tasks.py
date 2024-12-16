@@ -17,16 +17,15 @@ from rest_framework.generics import DestroyAPIView, UpdateAPIView
 
 @extend_schema(tags=['Tasks'])
 class ExpiringDocumentsView(mixins.ListModelMixin, viewsets.GenericViewSet):
-    """Список всех задач. Есть возможность искать задачи по определённому названию документа"""
+    """Список всех задач. Есть возможность искать задачи по определённому названию документа и фильтровать по статусу."""
     serializer_class = TaskDocuments
     permission_class = IsAuthenticated
     search_fields = ['type_document']
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
-    filterset_fields = ['type_document', 'worker_id__organization_id', 'status']
+    filterset_fields = ['type_document', 'worker_id__organization_id']
 
     def list(self, request, **kwargs):
         search_type_document = request.query_params.get('search', '')
-
         user = request.user  # Получение авторизованного пользователя
 
         try:
@@ -41,32 +40,34 @@ class ExpiringDocumentsView(mixins.ListModelMixin, viewsets.GenericViewSet):
         worker_organization_id = request.query_params.get('worker_id__organization_id')
         status = request.query_params.get('status')
 
+        filter_conditions = Q()
+
+        # Фильтрация по типу документа
         if type_document:
-            filter_conditions = Q(document_id__type_document=type_document)
+            filter_conditions &= Q(document_id__type_document=type_document)
         else:
-            filter_conditions = Q(
+            filter_conditions &= Q(
                 document_id__type_document__in=['migration_card', 'patent', 'paycheck', 'temporary_residence',
-                                                'certificate_asylum'])
+                                                  'certificate_asylum'])
 
-        list_types_documents = []
+        # Фильтрация по поисковому запросу
         if search_type_document:
-            for document in DocumentsWorker.TYPES_DOCUMENTS:    # Итерация типов документов
-                # Входит ли строка из поиска в тип документа?
-                if search_type_document.lower() in document[1].lower():
-                    list_types_documents.append(document[0])
+            list_types_documents = [
+                document[0] for document in DocumentsWorker.TYPES_DOCUMENTS
+                if search_type_document.lower() in document[1].lower()
+            ]
+            if list_types_documents:
+                filter_conditions &= Q(document_id__type_document__in=list_types_documents)
 
-            for doc in list_types_documents:
-                filter_conditions &= Q(document_id__type_document__icontains=doc)
-
-        # Если значение поля worker_id__organization_id передано, добавляем его в условие фильтрации
+        # Фильтрация по организации работника
         if worker_organization_id:
             if not OrganizationUser.objects.filter(organization=worker_organization_id, user_id=user).exists():
-                raise CustomValidationError({'error': 'Сотрудник не из ваше компании'})
+                return Response({'error': 'Сотрудник не из вашей компании'}, status=400)
             filter_conditions &= Q(document_id__id__organization_id=worker_organization_id)
         else:
-            # Иначе список будет для всех организацией, в которых есть авторизованный пользователь
-            filter_conditions &= Q(document_id__worker_id__organization_id__in=[org for org in organizations])
+            filter_conditions &= Q(document_id__worker_id__organization_id__in=organizations)
 
+        # Фильтрация по статусу
         if status:
             filter_conditions &= Q(status=status)
 
