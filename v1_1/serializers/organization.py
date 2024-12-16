@@ -435,13 +435,14 @@ class SearchOrganizationSerializer(serializers.Serializer):
 
 
 class ResponsiblePersonsSerializer(serializers.ModelSerializer):
-    name = serializers.CharField(write_only=True, required=False)
-    surname = serializers.CharField(write_only=True, required=False)
-    patronymic = serializers.CharField(write_only=True, required=False)
-    passport_series = serializers.CharField(write_only=True, required=False)
-    passport_number = serializers.CharField(write_only=True, required=False)
-    issued_whom = serializers.CharField(write_only=True, required=False)
-    date_issue_passport = serializers.DateField(write_only=True, required=False)
+    name = serializers.CharField(required=False)
+    surname = serializers.CharField(required=False)
+    patronymic = serializers.CharField(required=False)
+    passport_series = serializers.CharField(required=False)
+    passport_number = serializers.CharField(required=False)
+    issued_whom = serializers.CharField( required=False)
+    date_issue_passport = serializers.DateField(required=False)
+    date_end_passport = serializers.DateField(required=False)
 
     class Meta:
         model = ResponsiblePersons
