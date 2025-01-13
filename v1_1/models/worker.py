@@ -50,6 +50,8 @@ class Worker(models.Model):
     date_dismissal = models.DateField(blank=True, null=True)
     create_at = models.DateTimeField(default=timezone.now)
     paid = models.BooleanField(default=False, null=True, blank=True)
+    inn = models.CharField(max_length=30, null=True, blank=True)
+    snils = models.CharField(max_length=30, null=True, blank=True)
 
 
 class DocumentsWorker(models.Model):
@@ -63,7 +65,8 @@ class DocumentsWorker(models.Model):
         ('residence_permit', 'Вид на жительство'),
         ('certificate_asylum', 'Свидетельство о предоставлении временного убежища'),
         ('SNILS', 'СНИЛС'),
-        ('INN', 'ИНН')
+        ('INN', 'ИНН'),
+        ('VMI_policy', 'Добровольное медицинское страхование')
     )
 
     worker_id = models.ForeignKey(Worker, models.CASCADE)
