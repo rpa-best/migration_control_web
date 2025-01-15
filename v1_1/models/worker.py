@@ -53,6 +53,11 @@ class Worker(models.Model):
     inn = models.CharField(max_length=30, null=True, blank=True)
     snils = models.CharField(max_length=30, null=True, blank=True)
 
+    def save(self, *args, **kwargs):
+        if self.status == 'dismissed':
+            Tasks.objects.filter(document_id__worker_id__status='dismissed').delete()
+            super(Worker, self).save(*args, **kwargs)
+
 
 class DocumentsWorker(models.Model):
     TYPES_DOCUMENTS = (
@@ -85,60 +90,63 @@ class DocumentsWorker(models.Model):
         if self.type_document in ['passport', 'migration_card', 'registration', 'patent', 'paycheck',
                                   'temporary_residence', 'certificate_asylum']:
             pk = self.pk
-            if Tasks.objects.filter(document_id=pk).exists():
-                if self.archive:
-                    Tasks.objects.get(document_id=pk).delete()
-                    super(DocumentsWorker, self).save(*args, **kwargs)
-                    return
+            if not Worker.objects.filter(pk=self.worker_id, status='dismissed').exists():
+                if Tasks.objects.filter(document_id=pk).exists():
+                    if self.archive:
+                        Tasks.objects.get(document_id=pk).delete()
+                        super(DocumentsWorker, self).save(*args, **kwargs)
+                        return
 
-                today = date.today()
-                doc_task = Tasks.objects.get(document_id=pk)
+                    today = date.today()
+                    doc_task = Tasks.objects.get(document_id=pk)
 
-                if self.date_end <= today:  # Документ просрочен?
-                    doc_task.status = 'overdue'
-                    days_until_expiration = 'Просрочено'
-                elif self.date_end <= today + timedelta(days=30):
-                    doc_task.status = 'open'
-                    days_until_expiration = (self.date_end - today).days
-                else:
-                    # Удаление задачи, если документ актуален
-                    doc_task.delete()
-                    super(DocumentsWorker, self).save(*args, **kwargs)
-                    return
+                    if self.date_end <= today:  # Документ просрочен?
+                        doc_task.status = 'overdue'
+                        days_until_expiration = 'Просрочено'
+                    elif self.date_end <= today + timedelta(days=30):
+                        doc_task.status = 'open'
+                        days_until_expiration = (self.date_end - today).days
+                    else:
+                        # Удаление задачи, если документ актуален
+                        doc_task.delete()
+                        super(DocumentsWorker, self).save(*args, **kwargs)
+                        return
 
-                recommended_start_date = self.date_end - timedelta(days=7)
+                    recommended_start_date = self.date_end - timedelta(days=7)
 
-                # Есть ли изменения в дате документа?
-                if str(doc_task.days_until_expiration) != str(days_until_expiration):
-                    # Если дата окончания (date_end) документа изменилась, то в задаче поле `days_until_expiration` должно
-                    # поменять значение
-                    doc_task.days_until_expiration = days_until_expiration
+                    # Есть ли изменения в дате документа?
+                    if str(doc_task.days_until_expiration) != str(days_until_expiration):
+                        # Если дата окончания (date_end) документа изменилась, то в задаче поле `days_until_expiration` должно
+                        # поменять значение
+                        doc_task.days_until_expiration = days_until_expiration
+                        doc_task.save()
+
+                    if doc_task.recommended_start_date != recommended_start_date:
+                        # В таком же случае изменяется рекомендуемая дата
+                        doc_task.recommended_start_date = recommended_start_date
+
                     doc_task.save()
-
-                if doc_task.recommended_start_date != recommended_start_date:
-                    # В таком же случае изменяется рекомендуемая дата
-                    doc_task.recommended_start_date = recommended_start_date
-
-                doc_task.save()
-            else:
-                today = date.today()
-
-                if self.date_end <= today:  # Документ просрочен?
-                    status = 'overdue'
-                    days_until_expiration = 'Просрочено'
-                    recommended_start_date = self.date_end - timedelta(days=7)
-                    super(DocumentsWorker, self).save(*args, **kwargs)
-                elif self.date_end <= today + timedelta(days=30):
-                    status = 'open'
-                    days_until_expiration = (self.date_end - today).days
-                    recommended_start_date = self.date_end - timedelta(days=7)
-                    super(DocumentsWorker, self).save(*args, **kwargs)
                 else:
-                    super(DocumentsWorker, self).save(*args, **kwargs)
-                    return
+                    today = date.today()
 
-                Tasks.objects.create(document_id=self, status=status, days_until_expiration=days_until_expiration,
-                                     recommended_start_date=recommended_start_date)
+                    if self.date_end <= today:  # Документ просрочен?
+                        status = 'overdue'
+                        days_until_expiration = 'Просрочено'
+                        recommended_start_date = self.date_end - timedelta(days=7)
+                        super(DocumentsWorker, self).save(*args, **kwargs)
+                    elif self.date_end <= today + timedelta(days=30):
+                        status = 'open'
+                        days_until_expiration = (self.date_end - today).days
+                        recommended_start_date = self.date_end - timedelta(days=7)
+                        super(DocumentsWorker, self).save(*args, **kwargs)
+                    else:
+                        super(DocumentsWorker, self).save(*args, **kwargs)
+                        return
+
+                    Tasks.objects.create(document_id=self, status=status, days_until_expiration=days_until_expiration,
+                                         recommended_start_date=recommended_start_date)
+            else:
+                super(DocumentsWorker, self).save(*args, **kwargs)
         else:
             super(DocumentsWorker, self).save(*args, **kwargs)
 
@@ -171,7 +179,7 @@ def task_formation():
     today = datetime.now().date()
 
     # Необходимо, чтобы не возвращались документы у уволенных сотрудников
-    filter_conditions = Q(date_end__lte=today) | Q(date_end__gte=today, date_end__lte=today + timedelta(days=30))
+    filter_conditions = ~Q(worker_id__status='dismissed')
 
     # Необходимо, чтобы возвращались документы, которым остаётся 30 дней до окончания срока или которые уже
     # просрочены

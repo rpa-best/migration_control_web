@@ -17,16 +17,40 @@ class CreateWorkerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Worker
+        # fields = (
+        #     'avatar',
+        #     'organization',
+        #     'name',
+        #     'surname',
+        #     'patronymic',
+        #     'citizenship',
+        #     'identification_card',
+        #     'phone',
+        #     'email'
+        # )
         fields = (
-            'avatar',
-            'organization',
+            'id',
             'name',
             'surname',
             'patronymic',
+            'gender',
             'citizenship',
+            'birthday',
+            'place_birth',
             'identification_card',
+            'organization',
+            'date_employment',
+            'position',
+            'actual_work_address',
+            'status',
             'phone',
-            'email'
+            'registration_address',
+            'email',
+            'avatar',
+            'processing_personal_data',
+            'date_dismissal',
+            'inn',
+            'snils'
         )
 
     def validate_organization(self, value):
@@ -94,38 +118,37 @@ class WorkerSerializer(serializers.ModelSerializer):
     position = serializers.CharField(required=False)
     actual_work_address = serializers.CharField(required=False)
     status = serializers.CharField(required=False)
-    avatar = serializers.CharField(required=False)
+    avatar = serializers.ImageField(required=False)
     date_dismissal = serializers.DateField(required=False)
     inn = serializers.CharField(required=False)
     snils = serializers.CharField(required=False)
 
     class Meta:
         model = Worker
-        fields = '__all__'
-        # fields = (
-        #     'id',
-        #     'name',
-        #     'surname',
-        #     'patronymic',
-        #     'gender',
-        #     'citizenship',
-        #     'birthday',
-        #     'place_birth',
-        #     'identification_card',
-        #     'organization',
-        #     'date_employment',
-        #     'position',
-        #     'actual_work_address',
-        #     'status',
-        #     'phone',
-        #     'registration_address',
-        #     'email',
-        #     'avatar',
-        #     'processing_personal_data',
-        #     'date_dismissal',
-        #     'inn',
-        #     'snils'
-        # )
+        fields = (
+            'id',
+            'name',
+            'surname',
+            'patronymic',
+            'gender',
+            'citizenship',
+            'birthday',
+            'place_birth',
+            'identification_card',
+            'organization',
+            'date_employment',
+            'position',
+            'actual_work_address',
+            'status',
+            'phone',
+            'registration_address',
+            'email',
+            'avatar',
+            'processing_personal_data',
+            'date_dismissal',
+            'inn',
+            'snils'
+        )
 
     def validate_organization(self, value):
         user = self.context['request'].user.username
@@ -141,38 +164,6 @@ class WorkerSerializer(serializers.ModelSerializer):
             raise CustomValidationError({'email': 'Введён некорректный формат почты'})
 
         return value
-
-    def validate(self, data):
-        if 'phone' in data:
-            if Worker.objects.filter(organization=data['organization'].id, phone=data['phone']).exists():
-                raise CustomValidationError({'phone': 'Номер телефона занят другим работником'})
-
-        # Получение владельца организации
-        organization_owner = OrganizationUser.objects.filter(organization=data['organization'].id, role='owner').first()
-        # Проверка на наличие активной подписки у владельца организации
-        subscription = Subscription.objects.filter(user=organization_owner.user, status='active').first()
-        if not subscription:
-            raise CustomValidationError({'error': "У владельца нет активной подписки."})
-
-        # Получение максимального количества работников, которых можно создать
-        max_employees = subscription.number_workers
-        #
-        # # Получение списка ИНН работников, созданных пользователем
-        # user_employees = Worker.objects.filter(organization__owner=organization_owner.user).values_list('inn',
-        #                                                                                                 flat=True)
-        # # Подсчет количества уникальных ИНН работников
-        # unique_employees = len(set(user_employees))
-
-        # Получение списка работников, созданных пользователем
-        user_employees = Worker.objects.filter(organization__owner=organization_owner.user).count()
-
-        unique_employees = user_employees
-
-        # Проверка на превышение лимита по количеству создаваемых работников
-        if unique_employees >= max_employees:
-            raise CustomValidationError({'error': 'Вы достигли максимального лимита на создание сотрудников.'})
-
-        return data
 
     def validate_registration_address(self, value):
         if AddressSearch(value) is not None:

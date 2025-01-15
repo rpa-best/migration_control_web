@@ -19,14 +19,14 @@ from rest_framework.renderers import JSONRenderer
 
 @extend_schema(tags=['Worker'])
 class CreateWorkerAPIViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
-    serializer_class = WorkerSerializer
-    # def get_serializer_class(self):
-    #     if self.action in ['create']:
-    #         serializer_class = CreateWorkerSerializer
-    #     else:
-    #         serializer_class = WorkerSerializer
+    # serializer_class = CreateWorkerSerializer
+    def get_serializer_class(self):
+        if self.action in ['create']:
+            serializer_class = CreateWorkerSerializer
+        else:
+            serializer_class = WorkerSerializer
 
-        # return serializer_class
+        return serializer_class
 
     def get_queryset(self):
         # Получение авторизованного пользователя
@@ -118,10 +118,18 @@ class DocumentsWorkerAPIViewSet(ModelViewSet):
     serializer_class = DocumentsWorkerSerializer
     filterset_fields = ['archive']
 
+    def get_queryset(self):
+        return DocumentsWorker.objects.filter(Q(worker_id=self.kwargs.get('worker_id')))
+
     def list(self, request, **kwargs):
         archive = request.query_params.get('archive')
-        documents = DocumentsWorker.objects.filter(Q(worker_id=self.kwargs.get('worker_id'),
-                                                     archive=archive))
+
+        documents = DocumentsWorker.objects.filter(Q(worker_id=self.kwargs.get('worker_id')))
+
+        # Приводим значение к булевому типу
+        if archive is not None:
+            archive = archive.lower() == 'true'  # Преобразуем строку в булевое значение
+            documents &= DocumentsWorker.objects.filter(Q(archive=archive))
 
         page = self.paginate_queryset(documents)
         if page is not None:
