@@ -82,7 +82,8 @@ class DocumentsWorker(models.Model):
     def save(self, *args, **kwargs):
         """Переопределение метода save() для обновления данных в задаче, когда меняется значение поля date_end"""
 
-        if self.type_document in ['migration_card', 'patent', 'paycheck', 'temporary_residence', 'certificate_asylum']:
+        if self.type_document in ['passport', 'migration_card', 'registration', 'patent', 'paycheck',
+                                  'temporary_residence', 'certificate_asylum']:
             pk = self.pk
             if Tasks.objects.filter(document_id=pk).exists():
                 if self.archive:
@@ -169,12 +170,16 @@ def task_formation():
     # Текущая дата
     today = datetime.now().date()
 
-    # Необходимо, чтобы возвращались документы, которым остаётся 30 дней до окончания срока или которые уже
-    # просрочены
+    # Необходимо, чтобы не возвращались документы у уволенных сотрудников
     filter_conditions = Q(date_end__lte=today) | Q(date_end__gte=today, date_end__lte=today + timedelta(days=30))
 
+    # Необходимо, чтобы возвращались документы, которым остаётся 30 дней до окончания срока или которые уже
+    # просрочены
+    filter_conditions &= Q(date_end__lte=today) | Q(date_end__gte=today, date_end__lte=today + timedelta(days=30))
+
     filter_conditions &= Q(
-        type_document__in=['migration_card', 'patent', 'paycheck', 'temporary_residence', 'certificate_asylum'])
+        type_document__in=['passport', 'migration_card', 'registration', 'patent', 'paycheck', 'temporary_residence',
+                           'certificate_asylum'])
 
     # Удаление из таблицы задач, у которых документ в архиве
     Tasks.objects.filter(document_id__archive=True).delete()
