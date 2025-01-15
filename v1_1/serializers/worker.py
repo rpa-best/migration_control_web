@@ -1,4 +1,6 @@
 import re
+from datetime import timedelta
+from django.utils.datetime_safe import date
 from rest_framework import serializers
 from v1_1.apies.DaData import AddressSearch
 from v1_1.common_utils.custom_handler import CustomValidationError
@@ -84,12 +86,93 @@ class CreateWorkerSerializer(serializers.ModelSerializer):
 
 
 class WorkerSerializer(serializers.ModelSerializer):
-    registration_address = serializers.CharField()
-    identification_card = serializers.ChoiceField(choices=Worker.IDENTIFICATION_CARD, required=False)
+    patronymic = serializers.CharField(required=False)
+    phone = serializers.CharField(required=False)
+    email = serializers.CharField(required=False)
+    registration_address = serializers.CharField(required=False)
+    identification_card = serializers.ChoiceField(choices=Worker.IDENTIFICATION_CARD)
+    position = serializers.CharField(required=False)
+    actual_work_address = serializers.CharField(required=False)
+    status = serializers.CharField(required=False)
+    avatar = serializers.CharField(required=False)
+    date_dismissal = serializers.DateField(required=False)
+    inn = serializers.CharField(required=False)
+    snils = serializers.CharField(required=False)
 
     class Meta:
         model = Worker
         fields = '__all__'
+        # fields = (
+        #     'id',
+        #     'name',
+        #     'surname',
+        #     'patronymic',
+        #     'gender',
+        #     'citizenship',
+        #     'birthday',
+        #     'place_birth',
+        #     'identification_card',
+        #     'organization',
+        #     'date_employment',
+        #     'position',
+        #     'actual_work_address',
+        #     'status',
+        #     'phone',
+        #     'registration_address',
+        #     'email',
+        #     'avatar',
+        #     'processing_personal_data',
+        #     'date_dismissal',
+        #     'inn',
+        #     'snils'
+        # )
+
+    def validate_organization(self, value):
+        user = self.context['request'].user.username
+        # Можно указать только ту организацию, в которой работает пользователь.
+        if not OrganizationUser.objects.filter(organization=value, user_id=user).exists():
+            raise CustomValidationError({'organization': 'Вы не являетесь сотрудником этой организации'})
+
+        return value
+
+    @staticmethod
+    def validate_email(value):
+        if not re.match(r"[^@]+@[^@]+\.[^@]+", value):
+            raise CustomValidationError({'email': 'Введён некорректный формат почты'})
+
+        return value
+
+    def validate(self, data):
+        if 'phone' in data:
+            if Worker.objects.filter(organization=data['organization'].id, phone=data['phone']).exists():
+                raise CustomValidationError({'phone': 'Номер телефона занят другим работником'})
+
+        # Получение владельца организации
+        organization_owner = OrganizationUser.objects.filter(organization=data['organization'].id, role='owner').first()
+        # Проверка на наличие активной подписки у владельца организации
+        subscription = Subscription.objects.filter(user=organization_owner.user, status='active').first()
+        if not subscription:
+            raise CustomValidationError({'error': "У владельца нет активной подписки."})
+
+        # Получение максимального количества работников, которых можно создать
+        max_employees = subscription.number_workers
+        #
+        # # Получение списка ИНН работников, созданных пользователем
+        # user_employees = Worker.objects.filter(organization__owner=organization_owner.user).values_list('inn',
+        #                                                                                                 flat=True)
+        # # Подсчет количества уникальных ИНН работников
+        # unique_employees = len(set(user_employees))
+
+        # Получение списка работников, созданных пользователем
+        user_employees = Worker.objects.filter(organization__owner=organization_owner.user).count()
+
+        unique_employees = user_employees
+
+        # Проверка на превышение лимита по количеству создаваемых работников
+        if unique_employees >= max_employees:
+            raise CustomValidationError({'error': 'Вы достигли максимального лимита на создание сотрудников.'})
+
+        return data
 
     def validate_registration_address(self, value):
         if AddressSearch(value) is not None:
@@ -116,6 +199,7 @@ class DocumentsWorkerSerializer(serializers.ModelSerializer):
     type_document = serializers.ChoiceField(choices=DocumentsWorker.TYPES_DOCUMENTS, required=False)
     file_documents = serializers.ListField(child=serializers.FileField(required=False), write_only=True, required=False)
     archive = serializers.BooleanField(required=False)
+    status = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = DocumentsWorker
@@ -129,9 +213,26 @@ class DocumentsWorkerSerializer(serializers.ModelSerializer):
             'issued_whom',
             'territory_action',
             'date_end',
-            'archive'
+            'archive',
+            'status'
         )
-        read_only_fields = ('id', 'worker_id',)
+        read_only_fields = ('id', 'worker_id', 'status')
+
+    def get_status(self, obj):
+        if obj.type_document in ['passport', 'migration_card', 'registration', 'patent', 'paycheck',
+                                  'temporary_residence', 'certificate_asylum']:
+            today = date.today()
+
+            if obj.date_end is None:
+                return 'not overdue'
+            if obj.date_end < today:  # Документ просрочен?
+                return 'overdue'
+            elif obj.date_end <= today + timedelta(days=30):
+                return 'close to overdue'
+            else:
+                return 'not overdue'
+        else:
+            return 'not overdue'
 
     def validate(self, data):
         if not Worker.objects.filter(pk=self.context['request'].parser_context['kwargs'].get('worker_id')).exists():
