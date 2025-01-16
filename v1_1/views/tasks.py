@@ -47,8 +47,8 @@ class ExpiringDocumentsView(mixins.ListModelMixin, viewsets.GenericViewSet):
             filter_conditions &= Q(document_id__type_document=type_document)
         else:
             filter_conditions &= Q(
-                document_id__type_document__in=['migration_card', 'patent', 'paycheck', 'temporary_residence',
-                                                  'certificate_asylum'])
+                document_id__type_document__in=['passport', 'migration_card', 'registration', 'patent', 'paycheck',
+                                                'temporary_residence', 'certificate_asylum'])
 
         # Фильтрация по поисковому запросу
         if search_type_document:

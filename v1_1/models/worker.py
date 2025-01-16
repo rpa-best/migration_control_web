@@ -90,7 +90,7 @@ class DocumentsWorker(models.Model):
         if self.type_document in ['passport', 'migration_card', 'registration', 'patent', 'paycheck',
                                   'temporary_residence', 'certificate_asylum']:
             pk = self.pk
-            if not Worker.objects.filter(pk=self.worker_id, status='dismissed').exists():
+            if not Worker.objects.filter(pk=self.worker_id.id, status='dismissed').exists():
                 if Tasks.objects.filter(document_id=pk).exists():
                     if self.archive:
                         Tasks.objects.get(document_id=pk).delete()
