@@ -55,8 +55,9 @@ class Worker(models.Model):
 
     def save(self, *args, **kwargs):
         if self.status == 'dismissed':
-            Tasks.objects.filter(document_id__worker_id__status='dismissed').delete()
-            super(Worker, self).save(*args, **kwargs)
+            tasks_to_delete = Tasks.objects.filter(document_id__worker_id=self.pk)
+            tasks_to_delete.delete()
+        super(Worker, self).save(*args, **kwargs)
 
 
 class DocumentsWorker(models.Model):
