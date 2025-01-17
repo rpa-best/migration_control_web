@@ -72,7 +72,7 @@ class DocumentsWorker(models.Model):
         ('certificate_asylum', 'Свидетельство о предоставлении временного убежища'),
         ('SNILS', 'СНИЛС'),
         ('INN', 'ИНН'),
-        ('VMI_policy', 'Добровольное медицинское страхование')
+        ('vmi_policy', 'Добровольное медицинское страхование')
     )
 
     worker_id = models.ForeignKey(Worker, models.CASCADE)

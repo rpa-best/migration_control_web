@@ -184,7 +184,7 @@ class DocumentsWorkerSerializer(serializers.ModelSerializer):
         'certificate_asylum': ['series', 'number', 'issued_whom', 'date_issue', 'date_end'],
         'SNILS': ['number'],
         'INN': ['number'],
-        'VMI_policy': ['series', 'number', 'issued_whom', 'date_issue', 'date_end']
+        'vmi_policy': ['series', 'number', 'issued_whom', 'date_issue', 'date_end']
     }
 
     type_document = serializers.ChoiceField(choices=DocumentsWorker.TYPES_DOCUMENTS, required=False)
