@@ -40,7 +40,8 @@ class ExpiringDocumentsView(mixins.ListModelMixin, viewsets.GenericViewSet):
         worker_organization_id = request.query_params.get('worker_id__organization_id')
         status = request.query_params.get('status')
 
-        filter_conditions = Q()
+        # Необходимо, чтобы не возвращались документы у уволенных сотрудников
+        filter_conditions = ~Q(worker_id__status='dismissed')
 
         # Фильтрация по типу документа
         if type_document:
@@ -48,7 +49,7 @@ class ExpiringDocumentsView(mixins.ListModelMixin, viewsets.GenericViewSet):
         else:
             filter_conditions &= Q(
                 document_id__type_document__in=['passport', 'migration_card', 'registration', 'patent', 'paycheck',
-                                                'temporary_residence', 'certificate_asylum'])
+                                                'temporary_residence', 'certificate_asylum', 'vmi_policy'])
 
         # Фильтрация по поисковому запросу
         if search_type_document:
@@ -121,9 +122,13 @@ class ShowNumberTasksView(mixins.ListModelMixin, viewsets.GenericViewSet):
         except OrganizationUser.DoesNotExist:
             return Response({'error': 'Вы не связаны ни с какой организацией'}, status=400)
 
-        filter_conditions = Q(document_id__worker_id__organization_id__in=[org for org in organizations],
+        # Необходимо, чтобы не возвращались документы у уволенных сотрудников
+        filter_conditions = ~Q(document_id__worker_id__status='dismissed')
+
+        filter_conditions &= Q(document_id__worker_id__organization_id__in=[org for org in organizations],
                               document_id__type_document__in=['passport', 'migration_card', 'registration', 'patent',
-                                                              'paycheck', 'temporary_residence', 'certificate_asylum'])
+                                                              'paycheck', 'temporary_residence', 'certificate_asylum',
+                                                              'vmi_policy'])
 
         number = Tasks.objects.filter(filter_conditions).count()
 

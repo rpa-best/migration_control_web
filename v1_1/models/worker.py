@@ -54,7 +54,8 @@ class Worker(models.Model):
     snils = models.CharField(max_length=30, null=True, blank=True)
 
     def save(self, *args, **kwargs):
-        if self.status == 'dismissed':
+        """ Удаление документов из задач, если сотрудника увольняют """
+        if self.status == 'dismissed':      # Уволен?
             tasks_to_delete = Tasks.objects.filter(document_id__worker_id=self.pk)
             tasks_to_delete.delete()
         super(Worker, self).save(*args, **kwargs)
@@ -89,7 +90,7 @@ class DocumentsWorker(models.Model):
         """Переопределение метода save() для обновления данных в задаче, когда меняется значение поля date_end"""
 
         if self.type_document in ['passport', 'migration_card', 'registration', 'patent', 'paycheck',
-                                  'temporary_residence', 'certificate_asylum']:
+                                  'temporary_residence', 'certificate_asylum', 'vmi_policy']:
             pk = self.pk
             if not Worker.objects.filter(pk=self.worker_id.id, status='dismissed').exists():
                 if Tasks.objects.filter(document_id=pk).exists():
@@ -188,7 +189,7 @@ def task_formation():
 
     filter_conditions &= Q(
         type_document__in=['passport', 'migration_card', 'registration', 'patent', 'paycheck', 'temporary_residence',
-                           'certificate_asylum'])
+                           'certificate_asylum', 'vmi_policy'])
 
     # Удаление из таблицы задач, у которых документ в архиве
     Tasks.objects.filter(document_id__archive=True).delete()

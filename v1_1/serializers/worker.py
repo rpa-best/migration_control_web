@@ -211,7 +211,7 @@ class DocumentsWorkerSerializer(serializers.ModelSerializer):
 
     def get_status(self, obj):
         if obj.type_document in ['passport', 'migration_card', 'registration', 'patent', 'paycheck',
-                                  'temporary_residence', 'certificate_asylum']:
+                                  'temporary_residence', 'certificate_asylum', 'vmi_policy']:
             today = date.today()
 
             if obj.date_end is None:
