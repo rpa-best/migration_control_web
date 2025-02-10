@@ -41,7 +41,7 @@ class ExpiringDocumentsView(mixins.ListModelMixin, viewsets.GenericViewSet):
         status = request.query_params.get('status')
 
         # Необходимо, чтобы не возвращались документы у уволенных сотрудников
-        filter_conditions = ~Q(worker_id__status='dismissed')
+        filter_conditions = ~Q(document_id__worker_id__status='dismissed')
 
         # Фильтрация по типу документа
         if type_document:

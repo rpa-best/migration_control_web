@@ -63,7 +63,7 @@ class IsOwnerOrIsAdministratorInOrganizationWorker(BasePermission):
                     # Проверка на активную подписку владельца
                     if Subscription.objects.filter(
                             Q(user=owner) & Q(status='active') & (Q(service_rate=standard) | Q(service_rate=pro))
-                    ).exists():
+                    ).exists() and not owner.balance < 0:
                         return True
             else:
                 return False
