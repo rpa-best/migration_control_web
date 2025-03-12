@@ -17,17 +17,6 @@ class CreateWorkerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Worker
-        # fields = (
-        #     'avatar',
-        #     'organization',
-        #     'name',
-        #     'surname',
-        #     'patronymic',
-        #     'citizenship',
-        #     'identification_card',
-        #     'phone',
-        #     'email'
-        # )
         fields = (
             'id',
             'name',
@@ -61,14 +50,6 @@ class CreateWorkerSerializer(serializers.ModelSerializer):
 
         return value
 
-    # @staticmethod
-    # def validate_phone(value):
-    #     phone_pattern = re.compile(r'^\+?1?\d{9,15}$')
-    #     if not phone_pattern.match(value):
-    #         raise CustomValidationError({'phone': 'Введён некорректный номер телефона'})
-    #
-    #     return value
-
     @staticmethod
     def validate_email(value):
         if not re.match(r"[^@]+@[^@]+\.[^@]+", value):
@@ -79,34 +60,38 @@ class CreateWorkerSerializer(serializers.ModelSerializer):
     def validate(self, data):
         if 'phone' in data:
             if Worker.objects.filter(organization=data['organization'].id, phone=data['phone']).exists():
-                raise CustomValidationError({'phone': 'Номер телефона занят другим работником'})
+                raise CustomValidationError({'phone': 'Номер телефона занят другим сотрудником'})
 
+        return data
+
+    def create(self, validated_data):
         # Получение владельца организации
-        organization_owner = OrganizationUser.objects.filter(organization=data['organization'].id, role='owner').first()
+        organization_owner = OrganizationUser.objects.filter(organization=validated_data['organization'].id, role='owner').first()
         # Проверка на наличие активной подписки у владельца организации
         subscription = Subscription.objects.filter(user=organization_owner.user, status='active').first()
         if not subscription:
             raise CustomValidationError({'error': "У владельца нет активной подписки."})
 
         # Получение максимального количества работников, которых можно создать
-        max_employees = subscription.number_workers
-        #
-        # # Получение списка ИНН работников, созданных пользователем
-        # user_employees = Worker.objects.filter(organization__owner=organization_owner.user).values_list('inn',
-        #                                                                                                 flat=True)
-        # # Подсчет количества уникальных ИНН работников
-        # unique_employees = len(set(user_employees))
+        max_employees = subscription.service_rate.number_workers
 
         # Получение списка работников, созданных пользователем
-        user_employees = Worker.objects.filter(organization__owner=organization_owner.user).count()
-
-        unique_employees = user_employees
+        count_worker = Worker.objects.filter(organization__owner=organization_owner.user).count()
 
         # Проверка на превышение лимита по количеству создаваемых работников
-        if unique_employees >= max_employees:
-            raise CustomValidationError({'error': 'Вы достигли максимального лимита на создание сотрудников.'})
+        if count_worker >= max_employees:
+            if organization_owner.user.balance >= subscription.service_rate.cost_workers:
+                instance: Worker = super().create(validated_data)
+                instance.save()
+                return instance
+            else:
+                raise CustomValidationError({'error': 'Вы достигли максимального лимита на создание сотрудников.'})
 
-        return data
+        validated_data['paid'] = True
+
+        instance: Worker = super().create(validated_data)
+        instance.save()
+        return instance
 
 
 class WorkerSerializer(serializers.ModelSerializer):

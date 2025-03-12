@@ -1,7 +1,6 @@
 import datetime
 from django.db import models
 from v1_1.common_utils.file_paths import UploadPath
-from v1_1.models.organization import Organization
 from v1_1.models.subscription import Subscription
 from datetime import date, datetime, timedelta
 from django.utils import timezone
@@ -41,7 +40,7 @@ class Worker(models.Model):
     position = models.CharField(max_length=255, blank=True)
     actual_work_address = models.CharField(max_length=255, blank=True)
     status = models.CharField(max_length=50, choices=STATUS, default='vacancy')
-    phone = models.CharField(max_length=28, unique=True, blank=True, null=True,
+    phone = models.CharField(max_length=28, blank=True, null=True,
                              default=None)
     registration_address = models.CharField(max_length=255, blank=True)
     email = models.EmailField(blank=True, null=True)

@@ -15,11 +15,13 @@ from rest_framework import mixins, viewsets
 from rest_framework.response import Response
 from ..common_utils.renderers import FileRenderer
 from rest_framework.renderers import JSONRenderer
+from django.db.models import Case, When, Value
+from django.db import models
+from rest_framework import status
 
 
 @extend_schema(tags=['Worker'])
 class CreateWorkerAPIViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
-    # serializer_class = CreateWorkerSerializer
     def get_serializer_class(self):
         if self.action in ['create']:
             serializer_class = CreateWorkerSerializer
@@ -48,6 +50,16 @@ class CreateWorkerAPIViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
             permission_classes = [IsAuthenticated]
 
         return [permission() for permission in permission_classes]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        # Установка поля paid в True перед сохранением
+        serializer.validated_data['paid'] = True
+
+        self.perform_create(serializer)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 @extend_schema(tags=['Worker'])
@@ -130,6 +142,15 @@ class DocumentsWorkerAPIViewSet(ModelViewSet):
         if archive is not None:
             archive = archive.lower() == 'true'  # Преобразуем строку в булевое значение
             documents &= DocumentsWorker.objects.filter(Q(archive=archive))
+
+        # Используем Case и When для сортировки по русскому названию типа документа
+        documents = documents.annotate(
+            type_document_display=Case(
+                *[When(type_document=doc_type[0], then=Value(doc_type[1])) for doc_type in
+                  DocumentsWorker.TYPES_DOCUMENTS],
+                output_field=models.CharField()
+            )
+        ).order_by('type_document_display')  # Сортировка по русскому названию
 
         page = self.paginate_queryset(documents)
         if page is not None:
