@@ -1,5 +1,10 @@
 from django.contrib import admin
-from ..models.user import BalanceTransfer
+from ..models.user import BalanceTransfer, User
+
+
+@admin.register(User)
+class UserAdmin(admin.ModelAdmin):
+    list_display = ['username', 'first_name', 'surname', 'patronymic', 'phone']
 
 
 @admin.register(BalanceTransfer)
