@@ -90,8 +90,11 @@ def GenerationEmploymentContractDocument(data):
     if patronymic_director:
         surname_initials_director += f'{patronymic_director[0]}.'
 
-    # Гражданство работника
-    citizenship = CountryDeclination(Worker.objects.get(pk=worker_id).citizenship).upper()
+    try:
+        # Гражданство работника
+        citizenship = Worker.objects.get(pk=worker_id).citizenship.upper()
+    except:
+        raise CustomValidationError({'error': 'Не заполнена страна сотрудника'})
 
     # ФИО работника
     name_worker = Worker.objects.get(pk=worker_id).name

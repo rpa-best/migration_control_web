@@ -154,11 +154,11 @@ def GenerationPaymentOrder(data):
     if patronymic_worker:
         full_name_worker += f' {patronymic_worker}'
 
-    if not DocumentsWorker.objects.filter(worker_id=worker_id, type_document='INN', archive=False).exists():
+    # ИНН работника
+    worker_inn = worker.inn
+    if worker_inn == '' or worker_inn is None:
         raise CustomValidationError({'error': 'У работника нет ИНН'})
 
-    # ИНН работника
-    worker_inn = DocumentsWorker.objects.get(worker_id=worker_id, type_document='INN', archive=False).number
     worker_inn = 'ИНН: ' + worker_inn
 
     if not DocumentsWorker.objects.filter(worker_id=worker_id, type_document='patent', archive=False).exists():
