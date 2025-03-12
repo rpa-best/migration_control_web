@@ -33,6 +33,10 @@ class User(AbstractBaseUser, PermissionsMixin, BaseUserManager):
 
     objects = get_manager('user')
 
+    class Meta:
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
+
     def create_superuser(self, email, username, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
