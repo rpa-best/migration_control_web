@@ -7,7 +7,7 @@ class IsOwner(BasePermission):
     message = 'У вас нет активной подписки'
 
     def has_permission(self, request, view):
-        if request.user.is_authenticated and Subscription.objects.filter(user=request.user, status='active').exists() and not request.user.balance < 0:
+        if request.user.is_authenticated and Subscription.objects.filter(user=request.user, status='active').exists():
             return True
         else:
             return False
@@ -23,7 +23,7 @@ class IsnOwnerInOrganization(BasePermission):
         organization = request.data.get('organization')
         if request.user.is_authenticated:
             # Проверяем, является ли пользователь владельцем организации
-            if OrganizationUser.objects.filter(user=request.user, organization=organization, role='owner').exists() and not request.user.balance < 0:
+            if OrganizationUser.objects.filter(user=request.user, organization=organization, role='owner').exists():
                 # Проверка на активную подписку владельца
                 if Subscription.objects.filter(user=request.user, status='active').exists():
                     return True
