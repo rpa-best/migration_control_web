@@ -40,12 +40,12 @@ class DirectorOrganization(models.Model):
 
 
 class Bank(models.Model):
-    organization = models.OneToOneField(Organization, on_delete=models.CASCADE, unique=True)
-    bic = models.CharField(max_length=9)
-    name_bank = models.CharField(max_length=255, blank=True)
-    payment_account = models.CharField(max_length=20)
-    correspondent_account = models.CharField(max_length=20)
-    city_bank = models.CharField(max_length=255, blank=True)
+    organization = models.OneToOneField(Organization, on_delete=models.CASCADE, unique=True, null=True)
+    bic = models.CharField(max_length=9, null=True)
+    name_bank = models.CharField(max_length=255, blank=True, null=True)
+    payment_account = models.CharField(max_length=20, null=True)
+    correspondent_account = models.CharField(max_length=20, null=True)
+    city_bank = models.CharField(max_length=255, null=True, blank=True)
 
 
 class OrganizationUser(models.Model):

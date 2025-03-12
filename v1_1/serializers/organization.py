@@ -477,11 +477,11 @@ class SearchBankSerializer(serializers.Serializer):
 
 
 class BankShowAndCreateSerializer(serializers.ModelSerializer):
-    bic = serializers.CharField(write_only=True, required=False)
-    name_bank = serializers.CharField(write_only=True, required=False)
-    payment_account = serializers.CharField(write_only=True, required=False)
-    correspondent_account = serializers.CharField(write_only=True, required=False)
-    city_bank = serializers.CharField(write_only=True, required=False)
+    bic = serializers.CharField(required=False)
+    name_bank = serializers.CharField(required=False)
+    payment_account = serializers.CharField(required=False)
+    correspondent_account = serializers.CharField(required=False)
+    city_bank = serializers.CharField(required=False)
 
     class Meta:
         model = Bank
