@@ -4,6 +4,7 @@ from django.utils.datetime_safe import date
 from rest_framework import serializers
 from v1_1.apies.DaData import AddressSearch
 from v1_1.common_utils.custom_handler import CustomValidationError
+from v1_1.models import Country
 from v1_1.models.organization import OrganizationUser
 from v1_1.models.subscription import Subscription
 from v1_1.models.worker import Worker, DocumentsWorker, FileDocuments
@@ -322,3 +323,9 @@ class FileDocumentsSerializer(serializers.ModelSerializer):
         }
 
         return response_date
+
+
+class CountrySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Country
+        fields = '__all__'

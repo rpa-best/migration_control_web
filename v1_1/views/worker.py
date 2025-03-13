@@ -5,13 +5,13 @@ from rest_framework.viewsets import ModelViewSet
 from v1_1.common_utils.custom_handler import CustomValidationError
 from v1_1.common_utils.renderers import XMLRender
 from v1_1.common_utils.xml import json_to_xml
-from v1_1.models import OrganizationUser
+from v1_1.models import OrganizationUser, Country
 from v1_1.models import Worker, DocumentsWorker, FileDocuments
 from v1_1.permissions.owner_or_admin import IsOwnerOrIsAdministratorInOrganization, \
     IsOwnerOrIsAdministratorInOrganizationWorker, IsOwnerOrIsAdministratorForFileDocument
 from v1_1.serializers.worker import WorkerSerializer, CreateWorkerSerializer, DocumentsWorkerSerializer, \
-    FileDocumentsSerializer
-from rest_framework import mixins, viewsets
+    FileDocumentsSerializer, CountrySerializer
+from rest_framework import mixins, viewsets, generics
 from rest_framework.response import Response
 from ..common_utils.renderers import FileRenderer
 from rest_framework.renderers import JSONRenderer
@@ -209,3 +209,11 @@ class FileDocumentsAPIViewSet(ModelViewSet):
 
         # Если не запрашивается ZIP архив, возвращаем JSON
         return super().list(request, *args, **kwargs)
+
+
+@extend_schema(tags=['Country'])
+class ListCountryView(generics.ListAPIView):
+    queryset = Country.objects.all()
+    permission_classes = ()
+    serializer_class = CountrySerializer
+
