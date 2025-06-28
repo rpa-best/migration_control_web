@@ -36,6 +36,7 @@ jobs:
           key: ${{ secrets.PROD_SSH_KEY }}
           script: |
             cd /var/www/migrascope-back
-            docker-compose pull
             docker-compose down
+            docker rmi khtkarimzhonov/migrascope-back:latest
+            docker-compose pull
             docker-compose up -d
