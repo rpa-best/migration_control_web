@@ -1,4 +1,4 @@
-FROM python:3.12.0
+FROM python:3.12.0-alpine
 ENV PYTHONUNBUFFERED=1
 WORKDIR /app
 COPY requirements.txt /app/
