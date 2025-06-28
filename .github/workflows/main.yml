@@ -38,5 +38,5 @@ jobs:
             cd /var/www/migrascope-back
             docker-compose down
             docker rmi khtkarimzhonov/migrascope-back:latest
-            docker-compose pull
+            docker pull khtkarimzhonov/migrascope-back:latest
             docker-compose up -d
