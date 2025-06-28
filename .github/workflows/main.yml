@@ -1,0 +1,41 @@
+name: CI/CD Workflow
+
+on:
+  push:
+    branches:
+      - prod
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest  # Стандартный GitHub runner
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+
+      - name: Log in to Docker registry
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "khtkarimzhonov" --password-stdin
+
+      - name: Build Docker image
+        run: |
+          docker build -t khtkarimzhonov/migrascope-back:latest .
+
+      - name: Push Docker image
+        run: |
+          docker push khtkarimzhonov/migrascope-back:latest
+
+  deploy:
+    needs: build  # Этот job запустится только после build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to production server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USER }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          script: |
+            cd /var/www/migrascope-back
+            docker-compose pull
+            docker-compose down
+            docker-compose up -d
