@@ -187,16 +187,19 @@ class FileDocumentsAPIViewSet(ModelViewSet):
     renderer_classes = (JSONRenderer, FileRenderer)
 
     def get_queryset(self):
-        return FileDocuments.objects.filter(Q(document_id=self.kwargs.get('document_id')))
+        document_id = self.kwargs.get('document_id')
+        doc = DocumentsWorker.objects.filter(pk=document_id).first()
+        if doc is None:
+            return FileDocuments.objects.none()
+        user_org_ids = OrganizationUser.objects.filter(
+            user=self.request.user
+        ).values_list('organization_id', flat=True)
+        if doc.worker_id.organization_id not in user_org_ids:
+            return FileDocuments.objects.none()
+        return FileDocuments.objects.filter(document_id=document_id)
 
     def get_permissions(self):
-        # Определение разрешений в зависимости от типа запроса
-        if self.action in ['create', 'update', 'partial_update', 'destroy']:
-            permission_classes = [IsOwnerOrIsAdministratorForFileDocument]
-        else:
-            permission_classes = [IsAuthenticated]
-
-        return [permission() for permission in permission_classes]
+        return [IsOwnerOrIsAdministratorForFileDocument()]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)

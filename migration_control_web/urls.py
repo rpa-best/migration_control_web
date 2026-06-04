@@ -18,13 +18,14 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from v1_1.views.media import protected_media
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/v1.1/', include('v1_1.urls')),
+    path('api/v1.1/media/<path:path>', protected_media, name='protected-media'),
     path("i18n/", include('django.conf.urls.i18n')),
 ]
 
 if settings.DEBUG:
-    urlpatterns = static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) \
-                  + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + urlpatterns
+    urlpatterns = static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + urlpatterns
