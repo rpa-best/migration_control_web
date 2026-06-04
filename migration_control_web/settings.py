@@ -60,11 +60,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ORIGIN_WHITELIST = [
-    'http://localhost:8080',
-    'http://127.0.0.1:8080',
-    'http://178.208.94.197',
-]
+_cors_origins = os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:8080,http://127.0.0.1:8080,http://localhost:3000')
+CORS_ORIGIN_WHITELIST = [o.strip() for o in _cors_origins.split(',') if o.strip()]
 
 XS_SHARING_ALLOWED_METHODS = ['POST', 'GET', 'OPTIONS', 'PUT', 'PATCH', 'DELETE']
 
