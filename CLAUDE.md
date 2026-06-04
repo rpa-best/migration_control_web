@@ -47,6 +47,66 @@ POSTGRES_PORT=
 EMAIL_HOST_USER=
 EMAIL_HOST_PASSWORD=
 PORT=5002
+CORS_ALLOWED_ORIGINS=
+ALLOWED_HOSTS=
+CLIENT_SIGNING_KEY=
+DEBUG=
+```
+
+## Production Infrastructure
+
+### Servers
+
+| Role | Host | Details |
+|------|------|---------|
+| Backend + Frontend | `88.218.168.214` | root SSH access |
+| Database (PostgreSQL) | `45.8.96.179` | external managed DB |
+
+### Server 88.218.168.214 — layout
+
+| Container | Port | Path |
+|-----------|------|------|
+| `migration_control_web` (Django/Gunicorn) | 8000 | `/var/www/migration-control-web/` |
+| `migrascope-front` (Next.js) | 4000 | `/var/www/migrascope-new/` |
+| `migration_control_celery` | — | same image as backend |
+| `migration_control_celery_beat` | — | same image as backend |
+| `migration_control_redis` | 6379 | Alpine Redis |
+
+Nginx proxies:
+- `https://api.migradocs.ru` → `localhost:8000`
+- `https://migradocs.ru` → `localhost:4000`
+
+Backend compose: `/var/www/migration-control-web/docker-compose.yml`
+Backend env: `/var/www/migration-control-web/.env`
+Frontend env: `/var/www/migrascope-new/.env.local`
+
+### Database 45.8.96.179
+
+- DB name: `migration_control_db`
+- User: `gen_user`
+- Port: `5432`
+- **Important:** there is at least one other database on this server — do not touch it.
+
+### Deploy commands (backend)
+
+```bash
+# Upload changed files via SCP, then:
+cd /var/www/migration-control-web && docker compose up -d --force-recreate migration_control_web
+# Use --force-recreate (not restart) to pick up .env changes
+```
+
+### Deploy commands (frontend)
+
+```bash
+cd /var/www/migrascope-new && npm run build && docker compose up -d --force-recreate
+```
+
+### Run one-off Django scripts on server
+
+```bash
+docker cp script.py migration_control_web:/app/script.py
+docker exec migration_control_web python /app/script.py
+docker exec migration_control_web rm /app/script.py
 ```
 
 ## Architecture
@@ -87,7 +147,7 @@ Most write endpoints require `IsOwner`. Access is gated by subscription status b
 
 ### Subscription model (`v1_1/models/subscription.py`)
 
-Two tariffs: `standard` and `pro`. Subscription statuses: `process → active → not_active`. On activation, balance is debited and a `HistoryPayment` record is created. A Celery beat task (`checking_subscription_relevance`) runs every second to expire subscriptions past their `expiration_date`.
+Three tariffs: `basic` (free, 1 org / 5 workers), `standard` (1990₽, 3 orgs / 50 workers), `pro` (4990₽, 10 orgs / 500 workers). Subscription statuses: `process → active → not_active`. On activation, balance is debited and a `HistoryPayment` record is created. A Celery beat task (`checking_subscription_relevance`) runs every 60s to expire subscriptions past their `expiration_date`. Any active subscription (including `basic`) is sufficient for document management; only `pro` gates the Blanks section.
 
 ### Worker lifecycle (`v1_1/models/worker.py`)
 
