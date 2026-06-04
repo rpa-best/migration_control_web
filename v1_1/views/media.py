@@ -11,7 +11,7 @@ from v1_1.models.worker import FileDocuments
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([])
 def protected_media(request, path):
     file_path = os.path.join(settings.MEDIA_ROOT, path)
     # Prevent path traversal
@@ -23,9 +23,11 @@ def protected_media(request, path):
     if not os.path.isfile(real_path):
         raise Http404
 
-    # Verify the requesting user belongs to the org that owns this file
+    # Sensitive employee documents require auth + org membership
     file_doc = FileDocuments.objects.filter(file_document=path).first()
     if file_doc is not None:
+        if not request.user.is_authenticated:
+            raise Http404
         organization = file_doc.document_id.worker_id.organization
         user_in_org = OrganizationUser.objects.filter(
             user=request.user, organization=organization

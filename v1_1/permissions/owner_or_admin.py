@@ -58,12 +58,8 @@ class IsOwnerOrIsAdministratorInOrganizationWorker(BasePermission):
                                                         role='admin').exists():
                     # Получение владельца организации
                     owner = OrganizationUser.objects.filter(organization=organization, role='owner').first().user
-                    paid_rates = list(ServiceRate.objects.filter(
-                        type_tariff__in=['standard', 'pro']).values_list('id', flat=True))
-                    # Проверка на активную подписку владельца (standard или pro)
-                    if paid_rates and Subscription.objects.filter(
-                            Q(user=owner) & Q(status='active') & Q(service_rate__in=paid_rates)
-                    ).exists():
+                    # Проверка на любую активную подписку владельца (basic, standard или pro)
+                    if Subscription.objects.filter(user=owner, status='active').exists():
                         return True
             else:
                 return False
