@@ -20,6 +20,7 @@ class Benefits(models.Model):
 
 class ServiceRate(models.Model):
     TYPES_TARIFFS = (
+        ('basic', 'Базовая'),
         ('standard', 'Стандартная'),
         ('pro', 'Про'),
     )

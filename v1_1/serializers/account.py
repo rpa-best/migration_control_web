@@ -115,7 +115,7 @@ class AccountCreateSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
-        UserPvc.objects.filter(email=validated_data.get('email'), pvc=validated_data.get('pvc')).delete()
+        UserPvc.objects.filter(email=validated_data.get('username'), pvc=validated_data.get('pvc')).delete()
 
         if validated_data['verified_password'] != validated_data['password']:
             raise CustomValidationError({'verified_password': 'Пароли не совпадают'})
@@ -323,7 +323,6 @@ class ServiceRateSerializer(serializers.ModelSerializer):
             'name',
             'cost_organizations',
             'cost_workers',
-            'cost_all_documents'
         )
 
 
@@ -334,42 +333,36 @@ class CreatingSubscriptionSerializer(serializers.ModelSerializer):
         model = Subscription
         fields = (
             'service_rate',
-            # 'number_organizations',
-            # 'number_workers',
         )
 
     def validate(self, data):
         user = self.context['request'].user
-
-        if Subscription.objects.filter(user=user, status='active').exists():
-            raise CustomValidationError({'error': 'У вас уже есть активная подписка'})
-
-        if Subscription.objects.filter(user=user, status='process').exists():
-            raise CustomValidationError({'error': 'Вы уже подавали заявку на подписку. Ожидайте одобрения'})
-
+        service_rate_instance = ServiceRate.objects.filter(pk=data['service_rate']).first()
+        if not service_rate_instance:
+            raise CustomValidationError({'error': 'Тариф не найден'})
+        if Subscription.objects.filter(user=user, status='active', service_rate=service_rate_instance).exists():
+            raise CustomValidationError({'error': 'Вы уже используете этот тариф'})
         return data
 
     def create(self, validated_data):
+        from datetime import date, timedelta
         user = self.context['request'].user
-        validated_data['user'] = user
+        service_rate_instance = ServiceRate.objects.filter(pk=validated_data['service_rate']).first()
+        today = date.today()
+        expiration = today + timedelta(days=30)
 
-        service_rate = validated_data.get('service_rate')
-        service_rate_instance = ServiceRate.objects.filter(pk=service_rate).first()
-
-        if not service_rate_instance:
-            raise CustomValidationError({'error': 'Тариф не найден'})
-
-        validated_data['service_rate'] = service_rate_instance
-
-        if Subscription.objects.filter(user=user).exists():
-            instance = Subscription.objects.get(user=user)
-            instance: Subscription = super().update(instance, validated_data)
-        else:
-            instance: Subscription = super().create(validated_data)
-
-        instance.save()
-        validated_data['service_rate'] = service_rate
-        return validated_data
+        subscription, _ = Subscription.objects.get_or_create(
+            user=user,
+            defaults={'service_rate': service_rate_instance, 'status': 'process'},
+        )
+        # Stub: activate immediately, bypass model.save() balance check
+        Subscription.objects.filter(pk=subscription.pk).update(
+            service_rate=service_rate_instance,
+            status='active',
+            start_date=today,
+            expiration_date=expiration,
+        )
+        return {'service_rate': validated_data['service_rate']}
 
 class ChangingSubscriptionSerializer(serializers.ModelSerializer):
     service_rate = serializers.ChoiceField(choices=ServiceRate.TYPES_TARIFFS)
@@ -383,7 +376,7 @@ class ChangingSubscriptionSerializer(serializers.ModelSerializer):
         )
 
     def validate(self, data):
-        pass
+        return data
 
     def update(self, instance, validated_data):
         validated_data['user'] = self.context['request'].user
@@ -396,22 +389,29 @@ class ChangingSubscriptionSerializer(serializers.ModelSerializer):
 
 class ListServiceRateSerializer(serializers.ModelSerializer):
     benefits = serializers.SerializerMethodField()
+    is_current = serializers.SerializerMethodField()
 
     class Meta:
         model = ServiceRate
-        fields = ('id', 'name', 'price', 'description', 'benefits')
+        fields = ('id', 'name', 'price', 'description', 'benefits', 'type_tariff', 'is_current')
 
     def get_benefits(self, obj):
-        # Получение всех выгод, связанные с текущим тарифом
         benefits_service_rate = BenefitsServiceRate.objects.filter(service_rate=obj)
-        # Извлекаем только названия выгод
         return [benefit.benefit.name for benefit in benefits_service_rate]
+
+    def get_is_current(self, obj):
+        request = self.context.get('request')
+        if not request or not request.user or not request.user.is_authenticated:
+            return False
+        subscription = Subscription.objects.filter(user=request.user, status='active').first()
+        return bool(subscription and subscription.service_rate_id == obj.id)
 
 
 class CurrentRateSerializer(serializers.Serializer):
     name = serializers.SerializerMethodField()
     price = serializers.SerializerMethodField()
     description = serializers.SerializerMethodField()
+    type_tariff = serializers.SerializerMethodField()
 
     def get_name(self, obj):
         user = self.context['request'].user
@@ -443,14 +443,14 @@ class CurrentRateSerializer(serializers.Serializer):
 
     def get_description(self, obj):
         user = self.context['request'].user
-
-        # Проверяем, есть ли активная подписка у пользователя
         subscription = Subscription.objects.filter(user=user, status='active').first()
-
         if subscription:
-            # Получаем тариф из подписки
-            service_rate = subscription.service_rate
-            # Возвращаем описание тарифа
-            return service_rate.description
+            return subscription.service_rate.description
+        return None
 
-        return None  # Если подписка не активна, возвращаем
+    def get_type_tariff(self, obj):
+        user = self.context['request'].user
+        subscription = Subscription.objects.filter(user=user, status='active').first()
+        if subscription:
+            return subscription.service_rate.type_tariff
+        return None

@@ -58,11 +58,11 @@ class IsOwnerOrIsAdministratorInOrganizationWorker(BasePermission):
                                                         role='admin').exists():
                     # Получение владельца организации
                     owner = OrganizationUser.objects.filter(organization=organization, role='owner').first().user
-                    standard = ServiceRate.objects.filter(type_tariff='standard').first().id    # Получение id тарифа
-                    pro = ServiceRate.objects.filter(type_tariff='pro').first().id  # Получение id тарифа
-                    # Проверка на активную подписку владельца
-                    if Subscription.objects.filter(
-                            Q(user=owner) & Q(status='active') & (Q(service_rate=standard) | Q(service_rate=pro))
+                    paid_rates = list(ServiceRate.objects.filter(
+                        type_tariff__in=['standard', 'pro']).values_list('id', flat=True))
+                    # Проверка на активную подписку владельца (standard или pro)
+                    if paid_rates and Subscription.objects.filter(
+                            Q(user=owner) & Q(status='active') & Q(service_rate__in=paid_rates)
                     ).exists():
                         return True
             else:
@@ -130,9 +130,10 @@ class isPro(BasePermission):
                                                         role='admin').exists():
                     # Получение владельца организации
                     owner = OrganizationUser.objects.filter(organization=organization, role='owner').first().user
-                    # Проверка на активную подписку владельца
-                    pro = ServiceRate.objects.filter(type_tariff='pro').first().id  # Получение id тарифа
-                    if Subscription.objects.filter(user=owner, status='active', service_rate=pro).exists():
+                    # Проверка на активную Про-подписку владельца
+                    pro_rate = ServiceRate.objects.filter(type_tariff='pro').first()
+                    if pro_rate and Subscription.objects.filter(
+                            user=owner, status='active', service_rate=pro_rate).exists():
                         return True
             else:
                 return False
