@@ -147,7 +147,7 @@ class MyAvatarViewSet(generics.UpdateAPIView):
         if current_avatar:
             try:
                 os.remove(current_avatar.path)
-            except:
+            except OSError:
                 pass
 
         # сохранение нового аватара

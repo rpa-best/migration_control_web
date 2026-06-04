@@ -26,9 +26,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 # Application definition
 
@@ -59,8 +59,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
-CORS_ORIGIN_ALLOW_ALL = True
 
 CORS_ORIGIN_WHITELIST = [
     'http://localhost:8080',
@@ -100,7 +98,7 @@ CORS_ALLOW_HEADERS = (
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-CLIENT_SIGNING_KEY = 'r9ow+8^)ne0o5d#e$cn(ck2xw04$&w=_$kq-rzg17#5#6ui2lk'
+CLIENT_SIGNING_KEY = os.getenv('CLIENT_SIGNING_KEY')
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
@@ -146,43 +144,6 @@ SIMPLE_JWT = {
     # 'AUTH_COOKIE_PATH': '/',        # The path of the auth cookie.
     # 'AUTH_COOKIE_SAMESITE': 'Lax',  # Whether to set the flag restricting cookie leaks on cross-site requests. This can be 'Lax', 'Strict', or None to disable the flag.
 }
-
-# SIMPLE_JWT = {
-#   'ACCESS_TOKEN_LIFETIME': datetime.timedelta(days=1),
-#   'REFRESH_TOKEN_LIFETIME': datetime.timedelta(days=30),
-#   'ROTATE_REFRESH_TOKENS': False,
-#   'BLACKLIST_AFTER_ROTATION': True,
-#   'UPDATE_LAST_LOGIN': False,
-#
-#   'ALGORITHM': 'HS256',
-#   'SIGNING_KEY': SECRET_KEY,
-#   'VERIFYING_KEY': None,
-#   'AUDIENCE': None,
-#   'ISSUER': None,
-#
-#   'AUTH_HEADER_TYPES': ('Bearer',),
-#   'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
-#   'USER_ID_FIELD': 'id',
-#   'USER_ID_CLAIM': 'user_id',
-#   'USER_AUTHENTICATION_RULE': 'rest_framework_simplejwt.authentication.default_user_authentication_rule',
-#
-#   'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
-#   'TOKEN_TYPE_CLAIM': 'token_type',
-#
-#   'JTI_CLAIM': 'jti',
-#
-#   'SLIDING_TOKEN_REFRESH_EXP_CLAIM': 'refresh_exp',
-#   'SLIDING_TOKEN_LIFETIME': datetime.timedelta(days=1),
-#   'SLIDING_TOKEN_REFRESH_LIFETIME': datetime.timedelta(days=1),
-#
-#   # custom
-#   'AUTH_COOKIE': 'access_token',  # Cookie name. Enables cookies if value is set.
-#   'AUTH_COOKIE_DOMAIN': None,     # A string like "example.com", or None for standard domain cookie.
-#   'AUTH_COOKIE_SECURE': False,    # Whether the auth cookies should be secure (https:// only).
-#   'AUTH_COOKIE_HTTP_ONLY': True, # Http only cookie flag.It's not fetch by javascript.
-#   'AUTH_COOKIE_PATH': '/',        # The path of the auth cookie.
-#   'AUTH_COOKIE_SAMESITE': 'Lax',  # Whether to set the flag restricting cookie leaks on cross-site requests. This can be 'Lax', 'Strict', or None to disable the flag.
-# }
 
 SPECTACULAR_ACCOUNT_SETTINGS = {
     'TITLE': 'Migration control Account',
@@ -343,15 +304,15 @@ EMAIL_USE_SSL = False
 CELERY_BEAT_SCHEDULE = {
     'checking_subscription_relevance': {
         'task': 'v1_1.models.subscription.checking_subscription_relevance',
-        'schedule': 1,  # каждую секунду
+        'schedule': 60,
     },
     'payment_for_worker': {
         'task': 'v1_1.models.worker.payment_for_worker',
-        'schedule': 1,  # каждую секунду
+        'schedule': 60,
     },
     'task_formation': {
         'task': 'v1_1.models.worker.task_formation',
-        'schedule': 1,  # каждую секунду
+        'schedule': 60,
     }
 }
 CELERY_TIMEZONE = 'Europe/Moscow'
