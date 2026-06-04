@@ -290,6 +290,17 @@ class DocumentsWorkerSerializer(serializers.ModelSerializer):
 
         return response_data
 
+    def update(self, instance, validated_data):
+        file_documents = validated_data.pop('file_documents') if 'file_documents' in validated_data else []
+
+        instance = super(DocumentsWorkerSerializer, self).update(instance, validated_data)
+        instance.save()
+
+        for file_document in file_documents:
+            FileDocuments.objects.create(document_id=instance, file_document=file_document)
+
+        return instance
+
 
 class FileDocumentsSerializer(serializers.ModelSerializer):
     file_document = serializers.FileField(required=True)

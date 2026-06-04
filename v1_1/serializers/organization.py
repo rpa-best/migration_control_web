@@ -80,7 +80,7 @@ class OrganizationCreateSerializer(serializers.ModelSerializer):
             raise CustomValidationError({'message': 'У вас нет активной подписки.'})
 
         # Проверка на превышение лимита по количеству создаваемых организаций
-        max_organizations = subscription.number_organizations
+        max_organizations = subscription.service_rate.number_organizations
         current_organizations = Organization.objects.filter(owner=user).count()
         if current_organizations >= max_organizations:
             raise CustomValidationError({'message': 'Вы достигли максимального предела для создания организаций'})

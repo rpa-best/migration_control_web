@@ -1,4 +1,9 @@
+import io
+import os
+import zipfile
+
 from django.db.models import Q
+from django.http import HttpResponse
 from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
@@ -202,12 +207,17 @@ class FileDocumentsAPIViewSet(ModelViewSet):
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
 
-        # Проверяем, запрашивается ли ZIP архив
         if request.query_params.get("format") == "zip":
-            files = [self.request.build_absolute_uri(file.file_document.url) for file in queryset]
-            return Response(files)
+            buffer = io.BytesIO()
+            with zipfile.ZipFile(buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
+                for file_doc in queryset:
+                    file_path = file_doc.file_document.path
+                    zf.write(file_path, os.path.basename(file_path))
+            buffer.seek(0)
+            response = HttpResponse(buffer.read(), content_type='application/zip')
+            response['Content-Disposition'] = 'attachment; filename="documents.zip"'
+            return response
 
-        # Если не запрашивается ZIP архив, возвращаем JSON
         return super().list(request, *args, **kwargs)
 
 
