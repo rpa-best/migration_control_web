@@ -218,6 +218,11 @@ class DocumentsWorkerSerializer(serializers.ModelSerializer):
         if 'archive' not in data:
             data['archive'] = False
 
+        max_file_size = 3 * 1024 * 1024  # 3 MB
+        for f in data.get('file_documents') or []:
+            if f and hasattr(f, 'size') and f.size > max_file_size:
+                raise CustomValidationError({'file_documents': f'Файл {f.name} превышает допустимый размер 3 МБ'})
+
         worker_id = self.context['request'].parser_context['kwargs'].get('worker_id')
         type_document = data.get('type_document')
         archive = data.get('archive')
@@ -305,6 +310,8 @@ class DocumentsWorkerSerializer(serializers.ModelSerializer):
 class FileDocumentsSerializer(serializers.ModelSerializer):
     file_document = serializers.FileField(required=True)
 
+    MAX_FILE_SIZE = 3 * 1024 * 1024  # 3 MB
+
     class Meta:
         model = FileDocuments
         fields = '__all__'
@@ -319,6 +326,11 @@ class FileDocumentsSerializer(serializers.ModelSerializer):
         # Проверка на количество загруженных файлов для документа
         if FileDocuments.objects.filter(document_id=document_id).count() >= 20:
             raise CustomValidationError({'file_document': 'Превышено максимальное количество файлов для документа'})
+
+        # Проверка на размер файла
+        file_document = data.get('file_document')
+        if file_document and file_document.size > self.MAX_FILE_SIZE:
+            raise CustomValidationError({'file_document': 'Размер файла не должен превышать 3 МБ'})
 
         return data
 

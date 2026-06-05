@@ -285,6 +285,9 @@ MEDIA_ROOT = BASE_DIR / 'media'
 STATIC_URL = 'api/v1.1/static/'
 MEDIA_URL = 'api/v1.1/media/'
 
+DATA_UPLOAD_MAX_MEMORY_SIZE = 3 * 1024 * 1024  # 3 MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 3 * 1024 * 1024  # 3 MB
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 

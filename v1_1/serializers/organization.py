@@ -42,6 +42,10 @@ class OrganizationCreateSerializer(serializers.ModelSerializer):
     surname_director = serializers.CharField()
     patronymic_director = serializers.CharField(required=False)
 
+    kpp = serializers.CharField(required=False, allow_blank=True, default='')
+    ogrn = serializers.CharField(required=False, allow_blank=True, default='')
+    okved = serializers.CharField(required=False, allow_blank=True, default='')
+
     class Meta:
         model = Organization
         fields = (
@@ -49,6 +53,9 @@ class OrganizationCreateSerializer(serializers.ModelSerializer):
             'organizational_form',
             'name',
             'inn',
+            'kpp',
+            'ogrn',
+            'okved',
             'legal_address',
             'actual_address',
             'name_director',
