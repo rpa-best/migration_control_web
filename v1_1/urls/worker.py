@@ -3,7 +3,7 @@ from rest_framework import routers
 
 from v1_1.views.account import ListServiceRateView
 from v1_1.views.worker import CreateWorkerAPIViewSet, DocumentsWorkerAPIViewSet, ShowWorkersAPIViewSet, \
-    FileDocumentsAPIViewSet, UpdateWorkerAPIViewSet, ListCountryView
+    FileDocumentsAPIViewSet, UpdateWorkerAPIViewSet, ListCountryView, ExportWorkersXLSXView
 
 router = routers.DefaultRouter()
 router.register('create', CreateWorkerAPIViewSet, 'create-worker')
@@ -15,4 +15,5 @@ router.register(r'(?P<document_id>\d+)/file-document', FileDocumentsAPIViewSet, 
 urlpatterns = [
     path('', include(router.urls)),
     path('list-country/', ListCountryView.as_view()),
+    path('export-xlsx/', ExportWorkersXLSXView.as_view()),
 ]

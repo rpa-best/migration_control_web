@@ -9,15 +9,11 @@ class IsOwnerOrIsAdministratorInOrganization(BasePermission):
     message = 'У Вас недостаточно прав. Необходимо быть владельцем или администратором'
 
     def has_permission(self, request, view):
-        if request.data.get('organization') is not None:
-            # Получение id организации из поля запроса
+        # URL kwargs take priority — cannot be tampered by client
+        organization = view.kwargs.get('organization')
+        if organization is None:
+            # Fallback: org supplied in request body (e.g. POST /worker/create/)
             organization = request.data.get('organization')
-        elif request.query_params.get('organization') is not None:
-            # Получение id организации из параметров запроса
-            organization = request.query_params.get('organization')
-        else:
-            # Получение id организации из url пути
-            organization = view.kwargs.get('organization')
 
         if request.user.is_authenticated:
             # Проверяем, является ли пользователь владельцем или администратором организации
@@ -38,15 +34,10 @@ class IsOwnerOrIsAdministratorInOrganization(BasePermission):
 class IsOwnerOrIsAdministratorInOrganizationWorker(BasePermission):
     def has_permission(self, request, view):
         if request.user.is_authenticated:
-            if request.data.get('worker_id') is not None:
-                # Получение id работника из поля запроса
+            # URL kwargs take priority — cannot be tampered by client
+            worker_id = view.kwargs.get('worker_id')
+            if worker_id is None:
                 worker_id = request.data.get('worker_id')
-            elif request.query_params.get('worker_id') is not None:
-                # Получение id работника из параметров запроса
-                worker_id = request.query_params.get('worker_id')
-            else:
-                # Получение id работника из url пути
-                worker_id = view.kwargs.get('worker_id')
 
             if Worker.objects.filter(pk=worker_id).exists():
                 # Получение id организации работника
@@ -106,15 +97,10 @@ class IsOwnerOrIsAdministratorForFileDocument(BasePermission):
 class isPro(BasePermission):
     def has_permission(self, request, view):
         if request.user.is_authenticated:
-            if request.data.get('worker_id') is not None:
-                # Получение id работника из поля запроса
+            # URL kwargs take priority — cannot be tampered by client
+            worker_id = view.kwargs.get('worker_id')
+            if worker_id is None:
                 worker_id = request.data.get('worker_id')
-            elif request.query_params.get('worker_id') is not None:
-                # Получение id работника из параметров запроса
-                worker_id = request.query_params.get('worker_id')
-            else:
-                # Получение id работника из url пути
-                worker_id = view.kwargs.get('worker_id')
 
             if Worker.objects.filter(pk=worker_id).exists():
                 # Получение id организации работника

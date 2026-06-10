@@ -2,6 +2,9 @@ import io
 import os
 import zipfile
 
+import openpyxl
+from openpyxl.styles import Font, PatternFill, Alignment
+
 from django.db.models import Q
 from django.http import HttpResponse
 from drf_spectacular.utils import extend_schema
@@ -23,6 +26,80 @@ from rest_framework.renderers import JSONRenderer
 from django.db.models import Case, When, Value
 from django.db import models
 from rest_framework import status
+
+
+STATUS_LABELS = {
+    'vacancy': 'Вакансия',
+    'accepted': 'Принят',
+    'dismissed': 'Уволен',
+}
+
+GENDER_LABELS = {
+    'male': 'Мужской',
+    'female': 'Женский',
+}
+
+
+@extend_schema(tags=['Worker'])
+class ExportWorkersXLSXView(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        org_ids = OrganizationUser.objects.filter(user=request.user).values_list('organization_id', flat=True)
+        workers = Worker.objects.filter(organization_id__in=org_ids).select_related('organization').order_by(
+            'organization__name', 'surname', 'name'
+        )
+
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = 'Сотрудники'
+
+        headers = [
+            'Организация', 'Фамилия', 'Имя', 'Отчество', 'Email', 'Телефон',
+            'Статус', 'Гражданство', 'Пол', 'Дата рождения', 'Дата трудоустройства',
+            'Должность', 'ИНН', 'СНИЛС',
+        ]
+
+        header_fill = PatternFill(start_color='4472C4', end_color='4472C4', fill_type='solid')
+        header_font = Font(bold=True, color='FFFFFF')
+
+        for col_idx, header in enumerate(headers, start=1):
+            cell = ws.cell(row=1, column=col_idx, value=header)
+            cell.fill = header_fill
+            cell.font = header_font
+            cell.alignment = Alignment(horizontal='center')
+
+        for row_idx, worker in enumerate(workers, start=2):
+            org_name = f"{worker.organization.get_organizational_form_display()} {worker.organization.name}".strip()
+            ws.cell(row=row_idx, column=1, value=org_name)
+            ws.cell(row=row_idx, column=2, value=worker.surname or '')
+            ws.cell(row=row_idx, column=3, value=worker.name or '')
+            ws.cell(row=row_idx, column=4, value=worker.patronymic or '')
+            ws.cell(row=row_idx, column=5, value=worker.email or '')
+            ws.cell(row=row_idx, column=6, value=worker.phone or '')
+            ws.cell(row=row_idx, column=7, value=STATUS_LABELS.get(worker.status, worker.status))
+            ws.cell(row=row_idx, column=8, value=worker.citizenship or '')
+            ws.cell(row=row_idx, column=9, value=GENDER_LABELS.get(worker.gender, worker.gender or ''))
+            ws.cell(row=row_idx, column=10, value=str(worker.birthday) if worker.birthday else '')
+            ws.cell(row=row_idx, column=11, value=str(worker.date_employment) if worker.date_employment else '')
+            ws.cell(row=row_idx, column=12, value=worker.position or '')
+            ws.cell(row=row_idx, column=13, value=worker.inn or '')
+            ws.cell(row=row_idx, column=14, value=worker.snils or '')
+
+        for col in ws.columns:
+            max_len = max((len(str(cell.value or '')) for cell in col), default=0)
+            ws.column_dimensions[col[0].column_letter].width = min(max_len + 4, 40)
+
+        buffer = io.BytesIO()
+        wb.save(buffer)
+        buffer.seek(0)
+
+        response = HttpResponse(
+            buffer.read(),
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        )
+        response['Content-Disposition'] = 'attachment; filename="workers.xlsx"'
+        return response
 
 
 @extend_schema(tags=['Worker'])

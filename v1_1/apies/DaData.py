@@ -1,8 +1,10 @@
-from dadata import Dadata
+import os
 import re
 
-token = 'de4144a486735962685109c249279deb926a1331'
-dadata = Dadata(token)
+from dadata import Dadata
+
+dadata = Dadata(os.getenv('DADATA_TOKEN'))
+
 
 def OrganizationSearch(value):
     return dadata.find_by_id('party', value)

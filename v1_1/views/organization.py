@@ -49,7 +49,7 @@ class OrganizationAPIViewSet(ModelViewSet):
 @extend_schema(tags=['Organization'], responses={'200': OrganizationCreateSerializer})
 class SearchOrganizationAPIViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = SearchOrganizationSerializer
-    permission_class = IsOwner
+    permission_classes = [IsOwner]
 
     def list(self, request, **kwargs):
         # Получение ИНН или ОРГН из пути url
@@ -57,7 +57,6 @@ class SearchOrganizationAPIViewSet(mixins.ListModelMixin, viewsets.GenericViewSe
 
         if inn_or_ogrn.isdigit():
             info = OrganizationSearch(inn_or_ogrn)
-            print(info)
             if len(info) != 0:
                 try:
                     organizational_form = info[0]['data']['opf']['short']

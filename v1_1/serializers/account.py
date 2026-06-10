@@ -110,12 +110,13 @@ class AccountCreateSerializer(serializers.ModelSerializer):
             raise CustomValidationError({'error': 'Превышено максимальное количество регистраций с вашего устройства. '
                                                   'Повторите попытку через 24 часа'})
 
-        if not UserPvc.objects.filter(email=data['username'], pvc=data['pvc']).exists():
+        pvc_instance = UserPvc.objects.filter(email=data['username']).last()
+        if not pvc_instance or not check_password(data['pvc'], pvc_instance.pvc):
             raise CustomValidationError({'pvc':  'Неверный код'})
         return data
 
     def create(self, validated_data):
-        UserPvc.objects.filter(email=validated_data.get('username'), pvc=validated_data.get('pvc')).delete()
+        UserPvc.objects.filter(email=validated_data.get('username')).delete()
 
         if validated_data['verified_password'] != validated_data['password']:
             raise CustomValidationError({'verified_password': 'Пароли не совпадают'})
@@ -265,14 +266,15 @@ class ChangePasswordSerializer(serializers.Serializer):
         return value
 
     def validate(self, data):
-        if not UserPvc.objects.filter(email=data['email'], pvc=data['pvc']).exists():
+        pvc_instance = UserPvc.objects.filter(email=data['email']).last()
+        if not pvc_instance or not check_password(data['pvc'], pvc_instance.pvc):
             raise CustomValidationError({'pvc': 'Неверный код'})
         if not data['password'] == data['verified_password']:
             raise CustomValidationError({'password': 'Пароли не совпадают'})
         return data
 
     def create(self, validated_data):
-        UserPvc.objects.filter(email=validated_data.get('email'), pvc=validated_data.get('pvc')).delete()
+        UserPvc.objects.filter(email=validated_data.get('email')).delete()
         user = User.objects.get(username=validated_data.get('email'))
         user.set_password(validated_data['password'])
         user.save()
