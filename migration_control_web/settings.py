@@ -47,7 +47,6 @@ INSTALLED_APPS = [
     'corsheaders',
     'drf_spectacular',
     'django_celery_beat',
-    'rest_framework_simplejwt.token_blacklist',
 ]
 
 MIDDLEWARE = [
@@ -129,7 +128,7 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': datetime.timedelta(minutes=30),
     'REFRESH_TOKEN_LIFETIME': datetime.timedelta(days=7),
     'ROTATE_REFRESH_TOKENS': True,
-    'BLACKLIST_AFTER_ROTATION': True,
+    'BLACKLIST_AFTER_ROTATION': False,
     'AUTH_HEADER_TYPES': ('Bearer', 'Token',),
     'USER_ID_FIELD': 'username',
     'USER_ID_CLAIM': 'username',
