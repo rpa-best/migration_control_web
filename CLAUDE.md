@@ -63,15 +63,15 @@ DEBUG=
 
 | Role | Host | Details |
 |------|------|---------|
-| Backend + Frontend | `88.218.168.214` | root SSH access |
+| Backend + Frontend | `88.218.168.214` | root SSH access — key-based (`~/.ssh/migradocs_deploy`), password auth is intermittently unstable |
 | Database (PostgreSQL) | `45.8.96.179` | external managed DB |
 
 ### Server 88.218.168.214 — layout
 
-| Container | Port | Path |
-|-----------|------|------|
-| `migration_control_web` (Django/Gunicorn) | 8000 | `/var/www/migration-control-web/` |
-| `migrascope-front` (Next.js) | 4000 | `/var/www/migrascope-new/` |
+| Container | Port | docker-compose dir | Actual code path (volume-mounted) |
+|-----------|------|---------------------|-------------------------------------|
+| `migration_control_web` (Django/Gunicorn) | 8000 | `/var/www/migration-control-web/` | `/var/www/migration-control-web/`**`app/`** ← code lives under `app/`, not the compose dir root |
+| `migrascope-front` (Next.js) | 4000 | `/var/www/migrascope-new/` | same path (no nested `app/`) |
 | `migration_control_celery` | — | same image as backend |
 | `migration_control_celery_beat` | — | same image as backend |
 | `migration_control_redis` | 6379 | Alpine Redis |
