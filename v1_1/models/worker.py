@@ -18,7 +18,7 @@ class Worker(models.Model):
     IDENTIFICATION_CARD = (
         ('passport', 'Паспорт'),
         ('residence_permit', 'Вид на жительство'),
-        ('certificate_asylum', 'Свидетельство о предоставлении убежища')
+        ('certificate_asylum', 'Свидетельство о предоставлении временного убежища')
     )
 
     STATUS = (

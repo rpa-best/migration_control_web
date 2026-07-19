@@ -286,7 +286,7 @@ class ArrivalNoticeSerializer(serializers.Serializer):
     IDENTIFICATION_CARD = (
         ('passport', 'Паспорт'),
         ('residence_permit', 'Вид на жительство'),
-        ('certificate_asylum', 'Свидетельство о предоставлении убежища')
+        ('certificate_asylum', 'Свидетельство о предоставлении временного убежища')
     )
 
     TYPE_PLACE_STAY = (
