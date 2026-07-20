@@ -54,7 +54,9 @@ class SearchWorkers(mixins.ListModelMixin, viewsets.GenericViewSet):
             results.append({
                 'organization_id': organization.id,
                 'worker_id': worker.id,
-                'worker': result_str
+                'worker': result_str,
+                'date_employment': worker.date_employment,
+                'position': worker.position,
             })
 
         return Response(results)
